@@ -1,0 +1,628 @@
+// =====================================================
+// CBT - CLUBE BAIANO DE TIRO - PRISMA SCHEMA
+// Portal de Associados com Gestao Completa
+// =====================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// ENUMS
+// =====================================================
+
+enum Role {
+  ADMIN
+  ASSOCIATE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum TransactionType {
+  AMMUNITION_SALE
+  TARGET_SALE
+  EQUIPMENT_RENTAL
+  MAGAZINE_RENTAL
+  LANE_RENTAL
+  ANNUITY_PAYMENT
+  COURSE_ENROLLMENT
+  GUEST_ENTRY
+  OTHER_SALE
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum EquipmentType {
+  FIREARM
+  HOLSTER
+  EAR_PROTECTION
+  EYE_PROTECTION
+  MAGAZINE
+  OTHER
+}
+
+enum EquipmentCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  NEEDS_REPAIR
+  DECOMMISSIONED
+}
+
+enum ProductCategory {
+  AMMUNITION
+  TARGET
+  ACCESSORY
+  SAFETY_EQUIPMENT
+  RENTAL_ITEM
+  COURSE
+  OTHER
+}
+
+enum StockMovementType {
+  PURCHASE_IN
+  SALE_OUT
+  LOAN_OUT
+  RETURN_IN
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  DAMAGE_OUT
+  INITIAL_STOCK
+}
+
+enum ExpenseCategory {
+  INVENTORY_PURCHASE
+  MAINTENANCE
+  UTILITIES
+  STAFF
+  INSURANCE
+  AMMUNITION_RESTOCK
+  EQUIPMENT_PURCHASE
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  STATUS_CHANGE
+  STOCK_ADJUSTMENT
+  LOAN_ISSUED
+  LOAN_RETURNED
+  PAYMENT_RECEIVED
+}
+
+enum CaliberCategory {
+  RIMFIRE
+  CENTERFIRE
+  SHOTGUN
+  RIFLE
+}
+
+enum EventType {
+  TRAINING
+  COMPETITION
+  COURSE
+  WORKSHOP
+}
+
+enum DocumentType {
+  CR
+  CRAF
+  FILIATION
+  HABITUALITY
+  WAIVER
+  MEMBERSHIP_CARD
+  OTHER
+}
+
+enum LaneStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+}
+
+// =====================================================
+// MODELS
+// =====================================================
+
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  cpf             String     @unique
+  passwordHash    String     @db.Text
+  role            Role       @default(ASSOCIATE)
+  status          UserStatus @default(ACTIVE)
+
+  // Dados pessoais
+  fullName        String
+  dateOfBirth     DateTime?  @db.Date
+  phone           String?
+  address         String?    @db.Text
+  city            String?
+  state           String?    @default("BA")
+  zipCode         String?
+  photoUrl        String?    @db.Text
+
+  // Dados do clube
+  memberNumber    String     @unique
+  cr              String?
+  crExpiry        DateTime?  @db.Date
+  crLevel         Int?       @default(1) // Nivel 1, 2 ou 3
+  membershipTier  String?    @default("STANDARD")
+  memberSince     DateTime   @default(now()) @db.Date
+
+  // Anuidade
+  annuityValidUntil DateTime? @db.Date
+
+  // Metadata
+  clubId          String     @default("cbt-bahia")
+  isActive        Boolean    @default(true)
+  metadata        Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relacoes
+  attachments       UserAttachment[]
+  visits            Visit[]
+  visitDetails      VisitDetail[]
+  transactionsMember   Transaction[]   @relation("TransactionMember")
+  transactionsRegistered Transaction[] @relation("TransactionRegisteredBy")
+  loansReceived     EquipmentLoan[]    @relation("LoanMember")
+  loansIssuedBy     EquipmentLoan[]    @relation("LoanIssuedBy")
+  loansReturnedBy   EquipmentLoan[]    @relation("LoanReturnedBy")
+  annuityPayments   AnnuityPayment[]
+  newsAuthored      News[]
+  expenses          Expense[]
+  auditLogsAffected AuditLog[]         @relation("AuditUser")
+  auditLogsPerformed AuditLog[]        @relation("AuditPerformedBy")
+  habitualityRecords HabitualityRecord[] @relation("HabitualityMember")
+  habitualityVerified HabitualityRecord[] @relation("HabitualityVerifiedBy")
+  eventParticipations EventParticipation[]
+  documentsGenerated MemberDocument[]  @relation("DocumentMember")
+  documentsIssuedBy  MemberDocument[]  @relation("DocumentGeneratedBy")
+  laneAssignments   Lane[]             @relation("LaneCurrentMember")
+  visitsRegistered  Visit[]            @relation("VisitRegisteredBy")
+
+  @@index([clubId])
+  @@index([status])
+  @@index([memberNumber])
+}
+
+model UserAttachment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String   @db.Text
+  fileType    String
+  fileSize    Int?
+  description String?
+  uploadedAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model News {
+  id          String   @id @default(uuid())
+  clubId      String   @default("cbt-bahia")
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  title       String
+  content     String   @db.Text
+  summary     String?  @db.Text
+  imageUrl    String?  @db.Text
+  isPinned    Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([clubId, publishedAt])
+  @@index([isPinned])
+}
+
+model Visit {
+  id              String    @id @default(uuid())
+  clubId          String    @default("cbt-bahia")
+  memberId        String
+  member          User      @relation(fields: [memberId], references: [id])
+  registeredById  String?
+  registeredBy    User?     @relation("VisitRegisteredBy", fields: [registeredById], references: [id])
+  visitDate       DateTime  @db.Date
+  checkInTime     DateTime
+  checkOutTime    DateTime?
+  laneId          String?
+  lane            Lane?     @relation(fields: [laneId], references: [id])
+  purpose         String?
+  instructorName  String?
+  notes           String?   @db.Text
+  isGuestVisit    Boolean   @default(false)
+  guestName       String?
+  guestDocument   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relacoes
+  details         VisitDetail[]
+  transactions    Transaction[]
+  habitualityRecords HabitualityRecord[]
+
+  @@index([memberId, visitDate])
+  @@index([clubId, visitDate])
+}
+
+model VisitDetail {
+  id          String   @id @default(uuid())
+  visitId     String
+  visit       Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      User     @relation(fields: [memberId], references: [id])
+  caliber     String
+  shotsFired  Int
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([visitId])
+  @@index([memberId])
+}
+
+model Product {
+  id              String          @id @default(uuid())
+  clubId          String          @default("cbt-bahia")
+  name            String
+  description     String?         @db.Text
+  sku             String?         @unique
+  category        ProductCategory
+  caliber         String?
+  caliberCategory CaliberCategory?
+  unitPrice       Decimal         @db.Decimal(10, 2)
+  costPrice       Decimal?        @db.Decimal(10, 2)
+  unit            String          @default("un")
+  isForSale       Boolean         @default(true)
+  isForLoan       Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  imageUrl        String?         @db.Text
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relacoes
+  stockItems      StockItem[]
+  transactionItems TransactionItem[]
+
+  @@index([clubId, category])
+  @@index([caliber])
+}
+
+model Equipment {
+  id              String             @id @default(uuid())
+  clubId          String             @default("cbt-bahia")
+  name            String
+  description     String?            @db.Text
+  equipmentType   EquipmentType
+  serialNumber    String?            @unique
+  registrationId  String?
+  caliber         String?
+  brand           String?
+  model           String?
+  condition       EquipmentCondition @default(GOOD)
+  isAvailable     Boolean            @default(true)
+  isActive        Boolean            @default(true)
+  notes           String?            @db.Text
+  imageUrl        String?            @db.Text
+  acquisitionDate DateTime?          @db.Date
+  metadata        Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relacoes
+  loans           EquipmentLoan[]
+
+  @@index([clubId, equipmentType])
+  @@index([isAvailable])
+}
+
+model EquipmentLoan {
+  id                String             @id @default(uuid())
+  clubId            String             @default("cbt-bahia")
+  equipmentId       String
+  equipment         Equipment          @relation(fields: [equipmentId], references: [id])
+  memberId          String
+  member            User               @relation("LoanMember", fields: [memberId], references: [id])
+  issuedById        String
+  issuedBy          User               @relation("LoanIssuedBy", fields: [issuedById], references: [id])
+  returnedById      String?
+  returnedBy        User?              @relation("LoanReturnedBy", fields: [returnedById], references: [id])
+  loanDate          DateTime           @default(now())
+  expectedReturn    DateTime?
+  actualReturn      DateTime?
+  status            LoanStatus         @default(ACTIVE)
+  conditionAtLoan   EquipmentCondition?
+  conditionAtReturn EquipmentCondition?
+  notes             String?            @db.Text
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([memberId])
+  @@index([equipmentId, status])
+  @@index([status])
+}
+
+model Transaction {
+  id              String          @id @default(uuid())
+  clubId          String          @default("cbt-bahia")
+  memberId        String
+  member          User            @relation("TransactionMember", fields: [memberId], references: [id])
+  registeredById  String
+  registeredBy    User            @relation("TransactionRegisteredBy", fields: [registeredById], references: [id])
+  visitId         String?
+  visit           Visit?          @relation(fields: [visitId], references: [id])
+  type            TransactionType
+  totalAmount     Decimal         @db.Decimal(10, 2)
+  discount        Decimal?        @db.Decimal(10, 2) @default(0)
+  paymentMethod   String?
+  notes           String?         @db.Text
+  transactionDate DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relacoes
+  items           TransactionItem[]
+
+  @@index([clubId, transactionDate])
+  @@index([memberId])
+  @@index([type])
+}
+
+model TransactionItem {
+  id              String      @id @default(uuid())
+  transactionId   String
+  transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  productId       String?
+  product         Product?    @relation(fields: [productId], references: [id])
+  description     String
+  quantity        Int         @default(1)
+  unitPrice       Decimal     @db.Decimal(10, 2)
+  subtotal        Decimal     @db.Decimal(10, 2)
+
+  @@index([transactionId])
+}
+
+model AnnuityPayment {
+  id              String   @id @default(uuid())
+  clubId          String   @default("cbt-bahia")
+  memberId        String
+  member          User     @relation(fields: [memberId], references: [id])
+  amount          Decimal  @db.Decimal(10, 2)
+  paymentDate     DateTime @default(now())
+  paymentMethod   String?
+  referenceYear   Int
+  validFrom       DateTime @db.Date
+  validUntil      DateTime @db.Date
+  receipt         String?  @db.Text
+  notes           String?  @db.Text
+  registeredById  String?
+  createdAt       DateTime @default(now())
+
+  @@index([memberId])
+  @@index([clubId, referenceYear])
+}
+
+model StockItem {
+  id              String   @id @default(uuid())
+  clubId          String   @default("cbt-bahia")
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  currentStock    Int      @default(0)
+  minimumStock    Int      @default(0)
+  maximumStock    Int?
+  location        String?
+  lastRestocked   DateTime?
+  updatedAt       DateTime @updatedAt
+
+  // Relacoes
+  movements       StockMovement[]
+
+  @@unique([clubId, productId])
+  @@index([currentStock])
+}
+
+model StockMovement {
+  id              String            @id @default(uuid())
+  stockItemId     String
+  stockItem       StockItem         @relation(fields: [stockItemId], references: [id])
+  movementType    StockMovementType
+  quantity        Int
+  previousStock   Int
+  newStock        Int
+  referenceId     String?
+  referenceType   String?
+  notes           String?           @db.Text
+  performedById   String?
+  createdAt       DateTime          @default(now())
+
+  @@index([stockItemId, createdAt])
+}
+
+model Expense {
+  id              String          @id @default(uuid())
+  clubId          String          @default("cbt-bahia")
+  category        ExpenseCategory
+  description     String
+  amount          Decimal         @db.Decimal(10, 2)
+  vendor          String?
+  invoiceNumber   String?
+  receiptUrl      String?         @db.Text
+  expenseDate     DateTime        @db.Date
+  registeredById  String
+  registeredBy    User            @relation(fields: [registeredById], references: [id])
+  notes           String?         @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([clubId, expenseDate])
+  @@index([category])
+}
+
+model AuditLog {
+  id              String      @id @default(uuid())
+  clubId          String      @default("cbt-bahia")
+  userId          String?
+  user            User?       @relation("AuditUser", fields: [userId], references: [id])
+  performedById   String
+  performedBy     User        @relation("AuditPerformedBy", fields: [performedById], references: [id])
+  action          AuditAction
+  entityType      String
+  entityId        String?
+  previousData    Json?
+  newData         Json?
+  ipAddress       String?
+  userAgent       String?     @db.Text
+  description     String      @db.Text
+  createdAt       DateTime    @default(now())
+
+  @@index([clubId, createdAt])
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@index([action])
+}
+
+model ClubSettings {
+  id              String   @id @default(uuid())
+  clubId          String   @unique @default("cbt-bahia")
+  clubName        String   @default("Clube Baiano de Tiro")
+  annuityAmount   Decimal  @db.Decimal(10, 2) @default(0)
+  totalLanes      Int      @default(6)
+  operatingHours  Json?
+  logoUrl         String?  @db.Text
+  settings        Json?
+  updatedAt       DateTime @updatedAt
+}
+
+// =====================================================
+// NOVOS MODELS - Habitualidade, Eventos, Documentos, Baias
+// =====================================================
+
+model Event {
+  id                  String    @id @default(uuid())
+  clubId              String    @default("cbt-bahia")
+  title               String
+  description         String?   @db.Text
+  eventType           EventType
+  eventDate           DateTime  @db.Date
+  startTime           DateTime?
+  endTime             DateTime?
+  location            String?
+  maxParticipants     Int?
+  isPublic            Boolean   @default(true)
+  registrationDeadline DateTime?
+  results             Json?
+  imageUrl            String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relacoes
+  participations      EventParticipation[]
+  habitualityRecords  HabitualityRecord[]
+
+  @@index([clubId, eventDate])
+  @@index([eventType])
+}
+
+model EventParticipation {
+  id                  String   @id @default(uuid())
+  eventId             String
+  event               Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  memberId            String
+  member              User     @relation(fields: [memberId], references: [id])
+  registeredAt        DateTime @default(now())
+  placement           Int?
+  score               Decimal? @db.Decimal(10, 2)
+  notes               String?  @db.Text
+  countsAsHabituality Boolean  @default(true)
+  caliberUsed         String?
+
+  @@unique([eventId, memberId])
+  @@index([memberId])
+}
+
+model HabitualityRecord {
+  id              String    @id @default(uuid())
+  clubId          String    @default("cbt-bahia")
+  memberId        String
+  member          User      @relation("HabitualityMember", fields: [memberId], references: [id])
+  caliber         String
+  activityDate    DateTime  @db.Date
+  activityType    String    // TRAINING or COMPETITION
+  visitId         String?
+  visit           Visit?    @relation(fields: [visitId], references: [id])
+  eventId         String?
+  event           Event?    @relation(fields: [eventId], references: [id])
+  description     String?   @db.Text
+  verifiedById    String?
+  verifiedBy      User?     @relation("HabitualityVerifiedBy", fields: [verifiedById], references: [id])
+  createdAt       DateTime  @default(now())
+
+  @@index([memberId, caliber])
+  @@index([clubId, activityDate])
+}
+
+model MemberDocument {
+  id              String       @id @default(uuid())
+  clubId          String       @default("cbt-bahia")
+  memberId        String
+  member          User         @relation("DocumentMember", fields: [memberId], references: [id])
+  documentType    DocumentType
+  title           String
+  description     String?      @db.Text
+  fileUrl         String?      @db.Text
+  generatedAt     DateTime     @default(now())
+  validUntil      DateTime?
+  generatedById   String?
+  generatedBy     User?        @relation("DocumentGeneratedBy", fields: [generatedById], references: [id])
+  templateData    Json?
+
+  @@index([memberId, documentType])
+  @@index([clubId])
+}
+
+model Lane {
+  id                String     @id @default(uuid())
+  clubId            String     @default("cbt-bahia")
+  number            Int
+  name              String?
+  status            LaneStatus @default(AVAILABLE)
+  currentMemberId   String?
+  currentMember     User?      @relation("LaneCurrentMember", fields: [currentMemberId], references: [id])
+  sessionStartTime  DateTime?
+  notes             String?    @db.Text
+  maxCaliberCategory CaliberCategory?
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // Relacoes
+  visits            Visit[]
+
+  @@unique([clubId, number])
+  @@index([status])
+}
