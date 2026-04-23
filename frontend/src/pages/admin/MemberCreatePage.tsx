@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
+import { createUser, type CreateUserData } from '@/services/usersService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -120,13 +121,13 @@ const MemberCreatePage = () => {
     }
 
     // ── Build payload ────────────────────────────────────────────────────
-    const payload: Record<string, unknown> = {
+    const payload: CreateUserData = {
       fullName: form.fullName.trim(),
       cpf: stripCpfMask(form.cpf),
-      email: form.email.trim(),
+      email: form.email.trim().toLowerCase(),
       password: form.password,
       memberNumber: form.memberNumber.trim(),
-      role: form.role,
+      role: form.role === 'ADMIN' ? 'ADMIN' : 'ASSOCIATE',
     };
 
     if (form.phone.trim()) payload.phone = form.phone.trim();
@@ -136,24 +137,25 @@ const MemberCreatePage = () => {
     if (form.membershipTier) payload.membershipTier = form.membershipTier;
     if (form.address.trim()) payload.address = form.address.trim();
     if (form.city.trim()) payload.city = form.city.trim();
-    if (form.state.trim()) payload.state = form.state.trim();
+    if (form.state.trim()) payload.state = form.state.trim().toUpperCase().slice(0, 2);
     if (form.zipCode.trim()) payload.zipCode = form.zipCode.trim();
 
     // ── Submit ───────────────────────────────────────────────────────────
     setIsSubmitting(true);
     try {
-      const response = await api.post('/api/users', payload);
+      const result = await createUser(payload);
 
-      if (response.data.success) {
-        // Upload attachments if any
-        if (response.data.data?.id && files.length > 0) {
+      if (result.success && result.data) {
+        if (files.length > 0) {
           for (const file of files) {
-            await api.post(`/api/users/${response.data.data.id}/attachments`, {
-              fileName: file.name,
-              fileUrl: file.data,
-              fileType: file.type,
-              fileSize: file.size,
-            }).catch(() => {});
+            await api
+              .post(`/api/users/${result.data.id}/attachments`, {
+                fileName: file.name,
+                fileUrl: file.data,
+                fileType: file.type,
+                fileSize: file.size,
+              })
+              .catch(() => {});
           }
         }
         toast({ title: 'Associado cadastrado com sucesso' });
@@ -161,16 +163,10 @@ const MemberCreatePage = () => {
       } else {
         toast({
           title: 'Erro ao cadastrar associado',
-          description: response.data.error,
+          description: result.error || 'Erro inesperado. Verifique os dados e tente novamente.',
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao cadastrar associado',
-        description: error.response?.data?.error || 'Erro inesperado. Tente novamente.',
-        variant: 'destructive',
-      });
     } finally {
       setIsSubmitting(false);
     }

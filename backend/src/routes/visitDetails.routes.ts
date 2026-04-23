@@ -14,12 +14,14 @@ router.use(authMiddleware);
 
 const createVisitDetailSchema = z.object({
   caliber: z.string().min(1, 'Calibre e obrigatorio'),
+  firearmName: z.string().max(100).optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1'),
   notes: z.string().optional(),
 });
 
 const updateVisitDetailSchema = z.object({
   caliber: z.string().min(1, 'Calibre e obrigatorio').optional(),
+  firearmName: z.string().max(100).nullable().optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1').optional(),
   notes: z.string().nullable().optional(),
 });
@@ -111,6 +113,7 @@ router.post('/visit/:visitId', async (req: Request, res: Response): Promise<void
         visitId,
         memberId: visit.memberId,
         caliber: data.caliber,
+        firearmName: data.firearmName?.trim() || null,
         shotsFired: data.shotsFired,
         notes: data.notes || null,
       },

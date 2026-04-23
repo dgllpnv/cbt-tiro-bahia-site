@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { formatDateTime } from '@/lib/formatters';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import api from '@/services/api';
@@ -29,6 +30,7 @@ const AuditLogsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedLog, setSelectedLog] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -36,11 +38,18 @@ const AuditLogsPage = () => {
       try {
         const res = await api.get('/api/audit-logs', { params: { page, limit: 20, entityType: search || undefined } });
         if (res.data.success) { setLogs(res.data.data); setTotalPages(res.data.pagination?.totalPages || 1); }
-      } catch {}
+      } catch (e: any) {
+        setLogs([]);
+        toast({
+          title: 'Erro ao carregar logs',
+          description: e?.response?.data?.error || 'Nao foi possivel obter o log de auditoria.',
+          variant: 'destructive',
+        });
+      }
       setLoading(false);
     };
     fetchLogs();
-  }, [page, search]);
+  }, [page, search, toast]);
 
   return (
     <div>

@@ -12,8 +12,12 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:demo": "tsx prisma/seed-demo.ts",
+    "db:seed:news-events": "tsx prisma/seed-news-events.ts",
+    "db:seed:financial": "tsx prisma/seed-financial.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:demo && npm run db:seed:news-events && npm run db:seed:financial",
     "db:studio": "prisma studio",
-    "db:reset": "prisma db push --force-reset && npm run db:seed"
+    "db:reset": "prisma db push --force-reset && npm run db:seed:all"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

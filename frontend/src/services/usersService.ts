@@ -8,10 +8,17 @@ export interface CreateUserData {
   cpf: string;
   fullName: string;
   password: string;
-  role?: string;
+  memberNumber: string;
+  role: 'ADMIN' | 'ASSOCIATE';
+  dateOfBirth?: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   cr?: string;
   crLevel?: number;
+  membershipTier?: string;
 }
 
 export interface UpdateUserData {
@@ -93,11 +100,17 @@ export async function listUsers(params?: ListUsersParams): Promise<UsersListResp
   try {
     const response = await api.get('/api/users', { params });
     if (response.data.success) {
-      const { users, pagination } = response.data.data;
+      const usersRaw: any[] = Array.isArray(response.data.data) ? response.data.data : [];
+      const pagination: PaginationMeta = response.data.pagination ?? {
+        page: 1,
+        limit: usersRaw.length,
+        total: usersRaw.length,
+        totalPages: 1,
+      };
       return {
         success: true,
         data: {
-          users: users.map(mapUser),
+          users: usersRaw.map(mapUser),
           pagination,
         },
       };

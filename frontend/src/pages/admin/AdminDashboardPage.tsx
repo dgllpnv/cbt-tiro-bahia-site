@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -11,7 +11,6 @@ import {
   Newspaper,
   ShoppingCart,
   Warehouse,
-  Crosshair,
   Wrench,
   ArrowRight,
   Activity,
@@ -20,28 +19,23 @@ import {
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import { Button } from '@/components/ui/button';
+import PresentMembersPanel from '@/components/admin/PresentMembersPanel';
+import RankingsPanel from '@/components/admin/RankingsPanel';
+import TopFirearmsPanel from '@/components/admin/TopFirearmsPanel';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/formatters';
-import api from '@/services/api';
+import { getAdminDashboard, type AdminDashboard } from '@/services/dashboardService';
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Defaults ───────────────────────────────────────────────────────────────
 
-interface DashboardStats {
-  activeMembers: number;
-  todayVisits: number;
-  monthRevenue: number;
-  lowStockItems: number;
-  activeLoans: number;
-  expiringAnnuities: number;
-}
-
-interface Lane {
-  id: string;
-  name: string;
-  status: 'available' | 'occupied' | 'maintenance';
-  currentUser?: string;
-}
+const defaultStats: AdminDashboard = {
+  activeMembers: 0,
+  todayVisits: 0,
+  monthRevenue: 0,
+  lowStockCount: 0,
+  activeLoans: 0,
+  expiringAnnuities: 0,
+};
 
 // ── StatCard ───────────────────────────────────────────────────────────────
 
@@ -70,33 +64,6 @@ const StatCard = ({ icon: Icon, label, value, color, bgColor, borderColor }: Sta
   </div>
 );
 
-// ── Lane Card ──────────────────────────────────────────────────────────────
-
-const laneStatusConfig = {
-  available: { label: 'Disponivel', color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', dot: 'bg-green-400' },
-  occupied: { label: 'Ocupada', color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30', dot: 'bg-red-400' },
-  maintenance: { label: 'Manutencao', color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', dot: 'bg-yellow-400' },
-};
-
-const LaneCard = ({ lane }: { lane: Lane }) => {
-  const config = laneStatusConfig[lane.status] || laneStatusConfig.available;
-  return (
-    <div className={`${config.bg} border ${config.border} rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Crosshair className={`h-4 w-4 ${config.color}`} />
-          <span className="text-white font-military text-sm tracking-wide">{lane.name}</span>
-        </div>
-        <span className={`h-2.5 w-2.5 rounded-full ${config.dot} animate-pulse`} />
-      </div>
-      <p className={`text-xs font-tactical ${config.color}`}>{config.label}</p>
-      {lane.currentUser && (
-        <p className="text-xs text-gray-500 font-tactical mt-1 truncate">{lane.currentUser}</p>
-      )}
-    </div>
-  );
-};
-
 // ── Quick Action ───────────────────────────────────────────────────────────
 
 interface QuickActionProps {
@@ -122,66 +89,34 @@ const QuickAction = ({ icon: Icon, label, description, to }: QuickActionProps) =
   </Link>
 );
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
-
-const mockLanes: Lane[] = [
-  { id: '1', name: 'Baia 01', status: 'occupied', currentUser: 'Joao Silva' },
-  { id: '2', name: 'Baia 02', status: 'available' },
-  { id: '3', name: 'Baia 03', status: 'occupied', currentUser: 'Maria Santos' },
-  { id: '4', name: 'Baia 04', status: 'maintenance' },
-  { id: '5', name: 'Baia 05', status: 'available' },
-  { id: '6', name: 'Baia 06', status: 'occupied', currentUser: 'Carlos Oliveira' },
-];
-
-const defaultStats: DashboardStats = {
-  activeMembers: 0,
-  todayVisits: 0,
-  monthRevenue: 0,
-  lowStockItems: 0,
-  activeLoans: 0,
-  expiringAnnuities: 0,
-};
-
 // ── Page ───────────────────────────────────────────────────────────────────
 
 const AdminDashboardPage = () => {
   const { toast } = useToast();
-  const [stats, setStats] = useState<DashboardStats>(defaultStats);
-  const [lanes, setLanes] = useState<Lane[]>(mockLanes);
+  const [stats, setStats] = useState<AdminDashboard>(defaultStats);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchDashboard = useCallback(async () => {
+    setIsLoading(true);
+    const dashRes = await getAdminDashboard();
+
+    if (dashRes.success && dashRes.data) {
+      setStats(dashRes.data);
+    } else {
+      setStats(defaultStats);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao carregar dashboard',
+        description: dashRes.error || 'Nao foi possivel obter as metricas.',
+      });
+    }
+
+    setIsLoading(false);
+  }, [toast]);
+
   useEffect(() => {
-    const fetchDashboard = async () => {
-      setIsLoading(true);
-      try {
-        const [dashRes, lanesRes] = await Promise.allSettled([
-          api.get('/api/dashboard/admin'),
-          api.get('/api/lanes'),
-        ]);
-
-        if (dashRes.status === 'fulfilled' && dashRes.value.data?.data) {
-          setStats(dashRes.value.data.data);
-        }
-
-        if (lanesRes.status === 'fulfilled' && lanesRes.value.data?.data) {
-          // Normalizar status para lowercase
-          const normalizedLanes = lanesRes.value.data.data.map((l: any) => ({
-            ...l,
-            name: l.name || `Baia ${String(l.number).padStart(2, '0')}`,
-            status: (l.status || 'available').toLowerCase(),
-            currentUser: l.currentMember?.fullName,
-          }));
-          setLanes(normalizedLanes);
-        }
-      } catch {
-        // Usa dados mock em caso de falha
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchDashboard();
-  }, []);
+  }, [fetchDashboard]);
 
   if (isLoading) {
     return (
@@ -206,6 +141,21 @@ const AdminDashboardPage = () => {
           </div>
         }
       />
+
+      {/* ── Presentes no Clube (foco do front-desk) ─────────────────────── */}
+      <div className="mb-6">
+        <PresentMembersPanel />
+      </div>
+
+      {/* ── Rankings (frequência + maestria) ───────────────────────────── */}
+      <div className="mb-6">
+        <RankingsPanel />
+      </div>
+
+      {/* ── Armas mais usadas (clube todo) ─────────────────────────────── */}
+      <div className="mb-8">
+        <TopFirearmsPanel />
+      </div>
 
       {/* ── KPI Stats Row 1 ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -240,7 +190,7 @@ const AdminDashboardPage = () => {
         <StatCard
           icon={AlertTriangle}
           label="Estoque Baixo"
-          value={stats.lowStockItems}
+          value={stats.lowStockCount}
           color="#eab308"
           bgColor="bg-yellow-500/10"
           borderColor="border-yellow-500/20"
@@ -261,35 +211,6 @@ const AdminDashboardPage = () => {
           bgColor="bg-red-500/10"
           borderColor="border-red-500/20"
         />
-      </div>
-
-      {/* ── Painel de Baias ─────────────────────────────────────────────── */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-military font-bold text-white tracking-wide">Painel de Baias</h2>
-            <p className="text-xs font-tactical text-gray-500 mt-0.5">Status em tempo real das baias de tiro</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-green-400" />
-              <span className="text-xs font-tactical text-gray-500">Livre</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-400" />
-              <span className="text-xs font-tactical text-gray-500">Ocupada</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-yellow-400" />
-              <span className="text-xs font-tactical text-gray-500">Manutencao</span>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {lanes.map((lane) => (
-            <LaneCard key={lane.id} lane={lane} />
-          ))}
-        </div>
       </div>
 
       {/* ── Acoes Rapidas ───────────────────────────────────────────────── */}

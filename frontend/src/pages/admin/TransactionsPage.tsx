@@ -13,6 +13,7 @@ import {
   DollarSign,
   Clock,
   UserCheck,
+  LogOut,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,45 +53,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/formatters';
-import api from '@/services/api';
 import MemberSearch from '@/components/shared/MemberSearch';
 import EquipmentSearch from '@/components/shared/EquipmentSearch';
 import ProductSearch from '@/components/shared/ProductSearch';
-import { transactionTypeLabels, loanStatusLabels } from '@/lib/constants';
+import { loanStatusLabels } from '@/lib/constants';
 
-// ── Types ──────────────────────────────────────────────────────────────────
+import { listTransactions, createTransaction } from '@/services/transactionsService';
+import { listLoans, issueLoan } from '@/services/loansService';
+import { getTodayVisits, createVisit, checkoutVisit } from '@/services/visitsService';
+import { createAnnuityPayment } from '@/services/annuitiesService';
+import { listLanes, type Lane as ApiLane } from '@/services/lanesService';
 
-interface Transaction {
+// ── Display Types (mapped from API responses) ──────────────────────────────
+
+interface TxRow {
   id: string;
-  memberId: string;
   memberName: string;
   type: string;
   total: number;
-  paymentMethod: string;
+  paymentMethod: string | null;
   status: string;
   createdAt: string;
 }
 
-interface Loan {
+interface LoanRow {
   id: string;
-  memberId: string;
   memberName: string;
   itemName: string;
   quantity: number;
   status: string;
   borrowedAt: string;
-  dueDate: string;
+  dueDate: string | null;
 }
 
-interface Visit {
+interface VisitRow {
   id: string;
-  memberId: string;
   memberName: string;
-  lane: string;
+  laneName: string;
   purpose: string;
   checkIn: string;
-  checkOut?: string;
-  notes?: string;
+  checkOut: string | null;
+  notes: string | null;
 }
 
 interface SaleItem {
@@ -129,25 +132,6 @@ const ActionCard = ({ icon: Icon, label, description, color, bgColor, borderColo
   </button>
 );
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
-
-const mockTransactions: Transaction[] = [
-  { id: '1', memberId: 'u1', memberName: 'Joao Silva', type: 'SALE', total: 350, paymentMethod: 'PIX', status: 'COMPLETED', createdAt: new Date().toISOString() },
-  { id: '2', memberId: 'u2', memberName: 'Maria Santos', type: 'SALE', total: 120, paymentMethod: 'CREDIT_CARD', status: 'COMPLETED', createdAt: new Date().toISOString() },
-  { id: '3', memberId: 'u3', memberName: 'Carlos Oliveira', type: 'SALE', total: 85.5, paymentMethod: 'CASH', status: 'PENDING', createdAt: new Date().toISOString() },
-];
-
-const mockLoans: Loan[] = [
-  { id: '1', memberId: 'u1', memberName: 'Joao Silva', itemName: 'Pistola Taurus G3', quantity: 1, status: 'ACTIVE', borrowedAt: new Date().toISOString(), dueDate: new Date(Date.now() + 7 * 86400000).toISOString() },
-  { id: '2', memberId: 'u4', memberName: 'Ana Souza', itemName: 'Protetor Auricular', quantity: 2, status: 'ACTIVE', borrowedAt: new Date().toISOString(), dueDate: new Date(Date.now() + 1 * 86400000).toISOString() },
-];
-
-const mockVisits: Visit[] = [
-  { id: '1', memberId: 'u1', memberName: 'Joao Silva', lane: 'Baia 01', purpose: 'Treino', checkIn: new Date(Date.now() - 3600000).toISOString(), notes: 'Treino de precisao' },
-  { id: '2', memberId: 'u2', memberName: 'Maria Santos', lane: 'Baia 03', purpose: 'Treino', checkIn: new Date(Date.now() - 1800000).toISOString() },
-  { id: '3', memberId: 'u5', memberName: 'Pedro Lima', lane: 'Baia 06', purpose: 'Avaliacao', checkIn: new Date(Date.now() - 900000).toISOString(), checkOut: new Date().toISOString() },
-];
-
 // ── Payment method label ───────────────────────────────────────────────────
 
 const paymentMethodLabel: Record<string, string> = {
@@ -158,15 +142,27 @@ const paymentMethodLabel: Record<string, string> = {
   BANK_TRANSFER: 'Transferencia',
 };
 
+const saleTypeLabel: Record<string, string> = {
+  AMMUNITION_SALE: 'Venda de Municao',
+  TARGET_SALE: 'Venda de Alvos',
+  EQUIPMENT_RENTAL: 'Aluguel de Equipamento',
+  MAGAZINE_RENTAL: 'Aluguel de Carregador',
+  LANE_RENTAL: 'Aluguel de Baia',
+  COURSE_ENROLLMENT: 'Inscricao em Curso',
+  GUEST_ENTRY: 'Entrada de Visitante',
+  OTHER_SALE: 'Outra Venda',
+};
+
 // ── Page ───────────────────────────────────────────────────────────────────
 
 const TransactionsPage = () => {
   const { toast } = useToast();
 
   // ── Data State ─────────────────────────────────────────────────────────
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
-  const [loans, setLoans] = useState<Loan[]>(mockLoans);
-  const [visits, setVisits] = useState<Visit[]>(mockVisits);
+  const [transactions, setTransactions] = useState<TxRow[]>([]);
+  const [loans, setLoans] = useState<LoanRow[]>([]);
+  const [visits, setVisits] = useState<VisitRow[]>([]);
+  const [lanesList, setLanesList] = useState<ApiLane[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Dialog States ──────────────────────────────────────────────────────
@@ -175,9 +171,11 @@ const TransactionsPage = () => {
   const [loanDialogOpen, setLoanDialogOpen] = useState(false);
   const [annuityDialogOpen, setAnnuityDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [checkoutLoadingId, setCheckoutLoadingId] = useState<string | null>(null);
 
   // ── Sale Form ──────────────────────────────────────────────────────────
   const [saleMemberId, setSaleMemberId] = useState('');
+  const [saleType, setSaleType] = useState('OTHER_SALE');
   const [salePaymentMethod, setSalePaymentMethod] = useState('PIX');
   const [saleItems, setSaleItems] = useState<SaleItem[]>([
     { productId: '', description: '', quantity: 1, unitPrice: 0 },
@@ -185,7 +183,7 @@ const TransactionsPage = () => {
 
   // ── Visit Form ─────────────────────────────────────────────────────────
   const [visitMemberId, setVisitMemberId] = useState('');
-  const [visitLane, setVisitLane] = useState('');
+  const [visitLaneId, setVisitLaneId] = useState('');
   const [visitPurpose, setVisitPurpose] = useState('Treino');
   const [visitNotes, setVisitNotes] = useState('');
 
@@ -203,28 +201,97 @@ const TransactionsPage = () => {
   // ── Fetch Data ─────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    try {
-      const [txRes, loanRes, visitRes] = await Promise.allSettled([
-        api.get('/api/transactions', { params: { limit: 20 } }),
-        api.get('/api/loans', { params: { status: 'ACTIVE', limit: 20 } }),
-        api.get('/api/visits', { params: { today: true, limit: 20 } }),
-      ]);
+    const [txRes, loanRes, visitRes, laneRes] = await Promise.all([
+      listTransactions({ limit: 20 }),
+      listLoans({ status: 'ACTIVE', limit: 20 }),
+      getTodayVisits(),
+      listLanes(),
+    ]);
 
-      if (txRes.status === 'fulfilled' && txRes.value.data?.data) {
-        setTransactions(txRes.value.data.data);
+    if (txRes.success && txRes.data) {
+      setTransactions(
+        txRes.data.map((t) => ({
+          id: t.id,
+          memberName: t.member?.fullName || '—',
+          type: t.type,
+          total: Number(t.totalAmount) || 0,
+          paymentMethod: t.paymentMethod,
+          status: 'COMPLETED',
+          createdAt: t.transactionDate,
+        })),
+      );
+    } else {
+      setTransactions([]);
+      if (!txRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar vendas',
+          description: txRes.error || 'Tente novamente.',
+        });
       }
-      if (loanRes.status === 'fulfilled' && loanRes.value.data?.data) {
-        setLoans(loanRes.value.data.data);
-      }
-      if (visitRes.status === 'fulfilled' && visitRes.value.data?.data) {
-        setVisits(visitRes.value.data.data);
-      }
-    } catch {
-      // Fallback to mock data already set
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+
+    if (loanRes.success && loanRes.data) {
+      setLoans(
+        loanRes.data.map((l) => ({
+          id: l.id,
+          memberName: l.member?.fullName || '—',
+          itemName: l.equipment?.name || '—',
+          quantity: 1,
+          status: l.status,
+          borrowedAt: l.loanDate,
+          dueDate: l.expectedReturn,
+        })),
+      );
+    } else {
+      setLoans([]);
+      if (!loanRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar emprestimos',
+          description: loanRes.error || 'Tente novamente.',
+        });
+      }
+    }
+
+    if (visitRes.success && visitRes.data) {
+      setVisits(
+        visitRes.data.map((v) => ({
+          id: v.id,
+          memberName: v.member?.fullName || '—',
+          laneName: v.lane?.name || (v.lane?.number != null ? `Baia ${String(v.lane.number).padStart(2, '0')}` : 'Sem baia'),
+          purpose: v.purpose || '—',
+          checkIn: v.checkInTime,
+          checkOut: v.checkOutTime,
+          notes: v.notes,
+        })),
+      );
+    } else {
+      setVisits([]);
+      if (!visitRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar visitas',
+          description: visitRes.error || 'Tente novamente.',
+        });
+      }
+    }
+
+    if (laneRes.success && laneRes.data) {
+      setLanesList(laneRes.data);
+    } else {
+      setLanesList([]);
+      if (!laneRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar baias',
+          description: laneRes.error || 'Tente novamente.',
+        });
+      }
+    }
+
+    setIsLoading(false);
+  }, [toast]);
 
   useEffect(() => {
     fetchData();
@@ -251,64 +318,72 @@ const TransactionsPage = () => {
   // ── Submit Handlers ────────────────────────────────────────────────────
   const handleSubmitSale = async () => {
     if (!saleMemberId.trim()) {
-      toast({ title: 'Informe o ID do membro', variant: 'destructive' });
+      toast({ title: 'Selecione o associado', variant: 'destructive' });
       return;
     }
-    if (saleItems.some((i) => !i.productId)) {
-      toast({ title: 'Selecione todos os produtos', variant: 'destructive' });
+    if (saleItems.some((i) => !i.description || i.quantity <= 0 || i.unitPrice < 0)) {
+      toast({ title: 'Complete os itens da venda', variant: 'destructive' });
       return;
     }
 
     setIsSaving(true);
-    try {
-      await api.post('/api/transactions', {
-        memberId: saleMemberId,
-        type: 'SALE',
-        paymentMethod: salePaymentMethod,
-        items: saleItems,
-        total: saleTotal,
-      });
-      toast({ title: 'Venda registrada com sucesso' });
+    const res = await createTransaction({
+      memberId: saleMemberId,
+      type: saleType,
+      paymentMethod: salePaymentMethod,
+      items: saleItems.map((it) => ({
+        productId: it.productId || null,
+        description: it.description || 'Item avulso',
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+      })),
+    });
+    setIsSaving(false);
+
+    if (res.success) {
+      toast({ title: 'Venda registrada com sucesso.' });
       setSaleDialogOpen(false);
       resetSaleForm();
       fetchData();
-    } catch (err: any) {
+    } else {
       toast({
-        title: 'Erro ao registrar venda',
-        description: err.response?.data?.error || 'Tente novamente.',
         variant: 'destructive',
+        title: 'Erro ao registrar venda',
+        description: res.error || 'Tente novamente.',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handleSubmitVisit = async () => {
     if (!visitMemberId.trim()) {
-      toast({ title: 'Informe o ID do membro', variant: 'destructive' });
+      toast({ title: 'Selecione o associado', variant: 'destructive' });
       return;
     }
 
     setIsSaving(true);
-    try {
-      await api.post('/api/visits', {
-        memberId: visitMemberId,
-        lane: visitLane,
-        purpose: visitPurpose,
-        notes: visitNotes || undefined,
-      });
-      toast({ title: 'Visita registrada com sucesso' });
+    const now = new Date();
+    const visitDate = now.toISOString().slice(0, 10);
+    const res = await createVisit({
+      memberId: visitMemberId,
+      visitDate,
+      checkInTime: now.toISOString(),
+      laneId: visitLaneId || undefined,
+      purpose: visitPurpose,
+      notes: visitNotes || undefined,
+    });
+    setIsSaving(false);
+
+    if (res.success) {
+      toast({ title: 'Visita registrada com sucesso.' });
       setVisitDialogOpen(false);
       resetVisitForm();
       fetchData();
-    } catch (err: any) {
+    } else {
       toast({
-        title: 'Erro ao registrar visita',
-        description: err.response?.data?.error || 'Tente novamente.',
         variant: 'destructive',
+        title: 'Erro ao registrar visita',
+        description: res.error || 'Tente novamente.',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -319,24 +394,25 @@ const TransactionsPage = () => {
     }
 
     setIsSaving(true);
-    try {
-      await api.post('/api/loans', {
-        equipmentId: loanEquipmentId,
-        memberId: loanMemberId,
-        dueDays: loanDueDays,
-      });
-      toast({ title: 'Emprestimo registrado com sucesso' });
+    const expectedReturn = new Date(Date.now() + loanDueDays * 86400000).toISOString();
+    const res = await issueLoan({
+      memberId: loanMemberId,
+      equipmentId: loanEquipmentId,
+      expectedReturn,
+    });
+    setIsSaving(false);
+
+    if (res.success) {
+      toast({ title: 'Emprestimo registrado com sucesso.' });
       setLoanDialogOpen(false);
       resetLoanForm();
       fetchData();
-    } catch (err: any) {
+    } else {
       toast({
-        title: 'Erro ao registrar emprestimo',
-        description: err.response?.data?.error || 'Tente novamente.',
         variant: 'destructive',
+        title: 'Erro ao registrar emprestimo',
+        description: res.error || 'Tente novamente.',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -347,38 +423,56 @@ const TransactionsPage = () => {
     }
 
     setIsSaving(true);
-    try {
-      await api.post('/api/annuities', {
-        memberId: annuityMemberId,
-        amount: parseFloat(annuityAmount),
-        paymentMethod: annuityPaymentMethod,
-        referenceYear: parseInt(annuityYear),
-      });
-      toast({ title: 'Anuidade registrada com sucesso' });
+    const res = await createAnnuityPayment({
+      memberId: annuityMemberId,
+      amount: parseFloat(annuityAmount),
+      paymentMethod: annuityPaymentMethod,
+      referenceYear: parseInt(annuityYear, 10),
+    });
+    setIsSaving(false);
+
+    if (res.success) {
+      toast({ title: 'Anuidade registrada com sucesso.' });
       setAnnuityDialogOpen(false);
       resetAnnuityForm();
       fetchData();
-    } catch (err: any) {
+    } else {
       toast({
-        title: 'Erro ao registrar anuidade',
-        description: err.response?.data?.error || 'Tente novamente.',
         variant: 'destructive',
+        title: 'Erro ao registrar anuidade',
+        description: res.error || 'Tente novamente.',
       });
-    } finally {
-      setIsSaving(false);
+    }
+  };
+
+  const handleCheckoutVisit = async (visitId: string) => {
+    setCheckoutLoadingId(visitId);
+    const res = await checkoutVisit(visitId);
+    setCheckoutLoadingId(null);
+
+    if (res.success) {
+      toast({ title: 'Visita finalizada. Baia liberada.' });
+      fetchData();
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao finalizar visita',
+        description: res.error || 'Tente novamente.',
+      });
     }
   };
 
   // ── Reset Forms ────────────────────────────────────────────────────────
   const resetSaleForm = () => {
     setSaleMemberId('');
+    setSaleType('OTHER_SALE');
     setSalePaymentMethod('PIX');
     setSaleItems([{ productId: '', description: '', quantity: 1, unitPrice: 0 }]);
   };
 
   const resetVisitForm = () => {
     setVisitMemberId('');
-    setVisitLane('');
+    setVisitLaneId('');
     setVisitPurpose('Treino');
     setVisitNotes('');
   };
@@ -415,6 +509,9 @@ const TransactionsPage = () => {
     OVERDUE: 'Atrasado',
     RETURNED: 'Devolvido',
   };
+
+  // Lanes available for Nova Visita (not occupied / not under maintenance)
+  const availableLanes = lanesList.filter((l) => l.status === 'AVAILABLE' || l.status === 'RESERVED');
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
@@ -507,6 +604,7 @@ const TransactionsPage = () => {
                   <TableHeader>
                     <TableRow className="border-gray-800 hover:bg-transparent">
                       <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
+                      <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Valor</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Pagamento</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Status</TableHead>
@@ -518,11 +616,14 @@ const TransactionsPage = () => {
                     {transactions.map((tx) => (
                       <TableRow key={tx.id} className="border-gray-800 hover:bg-gray-800/50">
                         <TableCell className="text-white font-medium">{tx.memberName}</TableCell>
+                        <TableCell className="text-gray-300 text-xs font-tactical">
+                          {saleTypeLabel[tx.type] || tx.type}
+                        </TableCell>
                         <TableCell className="text-green-400 font-mono text-sm font-medium">
                           {formatCurrency(tx.total)}
                         </TableCell>
                         <TableCell className="text-gray-300 text-sm">
-                          {paymentMethodLabel[tx.paymentMethod] || tx.paymentMethod}
+                          {tx.paymentMethod ? paymentMethodLabel[tx.paymentMethod] || tx.paymentMethod : '—'}
                         </TableCell>
                         <TableCell>
                           <Badge className={statusBadge(tx.status)}>
@@ -564,7 +665,6 @@ const TransactionsPage = () => {
                     <TableRow className="border-gray-800 hover:bg-transparent">
                       <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Item</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Qtd</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Status</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Emprestimo</TableHead>
                       <TableHead className="text-gray-400 font-tactical">Devolucao</TableHead>
@@ -573,12 +673,11 @@ const TransactionsPage = () => {
                   </TableHeader>
                   <TableBody>
                     {loans.map((loan) => {
-                      const isOverdue = new Date(loan.dueDate) < new Date() && loan.status === 'ACTIVE';
+                      const isOverdue = loan.dueDate ? new Date(loan.dueDate) < new Date() && loan.status === 'ACTIVE' : false;
                       return (
                         <TableRow key={loan.id} className="border-gray-800 hover:bg-gray-800/50">
                           <TableCell className="text-white font-medium">{loan.memberName}</TableCell>
                           <TableCell className="text-gray-300">{loan.itemName}</TableCell>
-                          <TableCell className="text-gray-300 font-mono">{loan.quantity}</TableCell>
                           <TableCell>
                             <Badge className={statusBadge(isOverdue ? 'OVERDUE' : loan.status)}>
                               {isOverdue ? 'Atrasado' : loanStatusLabels[loan.status] || loan.status}
@@ -588,7 +687,7 @@ const TransactionsPage = () => {
                             {formatDate(loan.borrowedAt)}
                           </TableCell>
                           <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-400' : 'text-gray-400'}`}>
-                            {formatDate(loan.dueDate)}
+                            {loan.dueDate ? formatDate(loan.dueDate) : '—'}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -628,7 +727,7 @@ const TransactionsPage = () => {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-white font-medium text-sm">{visit.memberName}</span>
                           <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-xs">
-                            {visit.lane}
+                            {visit.laneName}
                           </Badge>
                           <Badge className="bg-gray-500/10 text-gray-400 border-gray-500/20 text-xs">
                             {visit.purpose}
@@ -653,6 +752,24 @@ const TransactionsPage = () => {
                           <p className="text-xs text-gray-600 font-tactical mt-1">{visit.notes}</p>
                         )}
                       </div>
+                      {!visit.checkOut && (
+                        <Button
+                          onClick={() => handleCheckoutVisit(visit.id)}
+                          disabled={checkoutLoadingId === visit.id}
+                          variant="outline"
+                          size="sm"
+                          className="bg-gray-800 border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200 flex-shrink-0"
+                        >
+                          {checkoutLoadingId === visit.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <LogOut className="h-4 w-4 mr-1.5" />
+                              Finalizar
+                            </>
+                          )}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -690,6 +807,21 @@ const TransactionsPage = () => {
             {/* Member */}
             <MemberSearch value={saleMemberId} onChange={setSaleMemberId} />
 
+            {/* Type */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 font-tactical text-sm">Tipo de Lancamento</Label>
+              <Select value={saleType} onValueChange={setSaleType}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {Object.entries(saleTypeLabel).map(([v, label]) => (
+                    <SelectItem key={v} value={v}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -718,7 +850,7 @@ const TransactionsPage = () => {
                                 ? {
                                     ...si,
                                     productId,
-                                    description: product?.name || '',
+                                    description: product?.name || si.description,
                                     unitPrice: product ? Number(product.unitPrice) : si.unitPrice,
                                   }
                                 : si
@@ -741,6 +873,16 @@ const TransactionsPage = () => {
                     </Button>
                   </div>
                   <div className="flex items-end gap-2">
+                    <div className="flex-1 space-y-1.5">
+                      <Label className="text-xs text-gray-500">Descricao</Label>
+                      <Input
+                        type="text"
+                        value={item.description}
+                        onChange={(e) => updateSaleItem(idx, 'description', e.target.value)}
+                        placeholder="Descricao do item"
+                        className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
+                      />
+                    </div>
                     <div className="w-20 space-y-1.5">
                       <Label className="text-xs text-gray-500">Qtd</Label>
                       <Input
@@ -763,7 +905,7 @@ const TransactionsPage = () => {
                         className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
                       />
                     </div>
-                    <div className="flex-1 text-right">
+                    <div className="w-24 text-right">
                       <Label className="text-xs text-gray-500 block mb-1.5">Subtotal</Label>
                       <span className="text-green-400 font-mono text-sm font-medium">
                         {formatCurrency(item.quantity * item.unitPrice)}
@@ -837,20 +979,28 @@ const TransactionsPage = () => {
             <MemberSearch value={visitMemberId} onChange={setVisitMemberId} />
 
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Baia</Label>
-              <Select value={visitLane} onValueChange={setVisitLane}>
+              <Label className="text-gray-300 font-tactical text-sm">Baia (opcional)</Label>
+              <Select value={visitLaneId} onValueChange={setVisitLaneId}>
                 <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                  <SelectValue placeholder="Selecione a baia" />
+                  <SelectValue placeholder={availableLanes.length === 0 ? 'Nenhuma baia disponivel' : 'Selecione a baia'} />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="Baia 01">Baia 01</SelectItem>
-                  <SelectItem value="Baia 02">Baia 02</SelectItem>
-                  <SelectItem value="Baia 03">Baia 03</SelectItem>
-                  <SelectItem value="Baia 04">Baia 04</SelectItem>
-                  <SelectItem value="Baia 05">Baia 05</SelectItem>
-                  <SelectItem value="Baia 06">Baia 06</SelectItem>
+                  {availableLanes.length === 0 ? (
+                    <div className="px-2 py-1.5 text-xs text-gray-500 font-tactical">Nenhuma baia disponivel.</div>
+                  ) : (
+                    availableLanes.map((lane) => (
+                      <SelectItem key={lane.id} value={lane.id}>
+                        {lane.name || `Baia ${String(lane.number).padStart(2, '0')}`}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {lanesList.length > 0 && availableLanes.length < lanesList.length && (
+                <p className="text-xs text-gray-500 font-tactical">
+                  {lanesList.length - availableLanes.length} baia(s) em uso ou manutencao.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

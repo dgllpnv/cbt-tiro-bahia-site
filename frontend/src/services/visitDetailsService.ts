@@ -7,10 +7,11 @@ export interface VisitDetailItem {
   visitId: string;
   memberId: string;
   caliber: string;
+  firearmName: string | null;
   shotsFired: number;
   notes: string | null;
   createdAt: string;
-  member: {
+  member?: {
     id: string;
     fullName: string;
     memberNumber: number | null;
@@ -19,6 +20,7 @@ export interface VisitDetailItem {
 
 export interface CreateVisitDetailData {
   caliber: string;
+  firearmName?: string;
   shotsFired: number;
   notes?: string;
 }

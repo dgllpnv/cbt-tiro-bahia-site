@@ -29,6 +29,8 @@ const createProductSchema = z.object({
   isForSale: z.boolean().optional(),
   isForLoan: z.boolean().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
+  iconKey: z.string().max(60).nullable().optional(),
+  iconColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Cor inválida (use #RRGGBB)').nullable().optional(),
   metadata: z.any().optional(),
   // Initial stock fields
   initialStock: z.number().int().min(0).optional(),
@@ -52,6 +54,8 @@ const updateProductSchema = z.object({
   isForSale: z.boolean().optional(),
   isForLoan: z.boolean().optional(),
   imageUrl: z.string().url().nullable().optional().or(z.literal('')),
+  iconKey: z.string().max(60).nullable().optional(),
+  iconColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Cor inválida (use #RRGGBB)').nullable().optional(),
   metadata: z.any().optional(),
 });
 

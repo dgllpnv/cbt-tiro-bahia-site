@@ -45,7 +45,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         take: limit,
         include: {
           product: {
-            select: { id: true, name: true, category: true, caliber: true, unit: true },
+            select: { id: true, name: true, category: true, caliber: true, unit: true, unitPrice: true },
           },
         },
       }),
@@ -256,7 +256,7 @@ router.post('/adjust', async (req: Request, res: Response): Promise<void> => {
         data: { currentStock: newStock },
         include: {
           product: {
-            select: { id: true, name: true, category: true, caliber: true, unit: true },
+            select: { id: true, name: true, category: true, caliber: true, unit: true, unitPrice: true },
           },
         },
       });

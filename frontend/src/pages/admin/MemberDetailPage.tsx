@@ -19,7 +19,9 @@ import {
   AlertTriangle,
   Upload,
   X,
+  IdCard,
 } from 'lucide-react';
+import MemberProfileTab from '@/components/admin/MemberProfileTab';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -82,11 +84,11 @@ interface VisitTransaction {
 
 interface Visit {
   id: string;
-  date: string;
-  checkIn: string;
-  checkOut?: string;
-  lane?: string;
-  purpose?: string;
+  visitDate: string;
+  checkInTime: string;
+  checkOutTime?: string | null;
+  lane?: { id: string; number: number; name: string; status: string } | null;
+  purpose?: string | null;
   details?: VisitDetail[];
   transactions?: VisitTransaction[];
 }
@@ -142,7 +144,7 @@ const MemberDetailPage = () => {
   const [attachments, setAttachments] = useState<UserAttachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('dados');
+  const [activeTab, setActiveTab] = useState('perfil');
 
   // ── Form State ───────────────────────────────────────────────────────────
   const [form, setForm] = useState<MemberFormData>({
@@ -554,11 +556,18 @@ const MemberDetailPage = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-gray-900/70 border border-gray-800 p-1 mb-6">
           <TabsTrigger
+            value="perfil"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+          >
+            <IdCard className="h-4 w-4 mr-2" />
+            Perfil
+          </TabsTrigger>
+          <TabsTrigger
             value="dados"
             className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
           >
             <FileText className="h-4 w-4 mr-2" />
-            Dados
+            Editar dados
           </TabsTrigger>
           <TabsTrigger
             value="visitas"
@@ -582,6 +591,20 @@ const MemberDetailPage = () => {
             Emprestimos
           </TabsTrigger>
         </TabsList>
+
+        {/* ══════════════════════ TAB: PERFIL ══════════════════════ */}
+        <TabsContent value="perfil">
+          <MemberProfileTab
+            memberId={member.id}
+            fullName={member.fullName}
+            memberNumber={member.memberNumber ?? null}
+            cr={member.cr ?? null}
+            crLevel={member.crLevel ?? null}
+            membershipTier={(member as any).membershipTier ?? null}
+            photoUrl={member.photoUrl ?? null}
+            onGoToVisits={() => setActiveTab('visitas')}
+          />
+        </TabsContent>
 
         {/* ══════════════════════ TAB 1: DADOS ══════════════════════ */}
         <TabsContent value="dados">
@@ -968,14 +991,14 @@ const MemberDetailPage = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-white font-medium">
-                            {formatDate(visit.date)}
+                            {formatDate(visit.visitDate)}
                           </TableCell>
                           <TableCell className="text-gray-300">
-                            {visit.checkIn ? formatDateTime(visit.checkIn).split(' ')[1] : '--'}
+                            {visit.checkInTime ? formatDateTime(visit.checkInTime).split(' ')[1] : '--'}
                           </TableCell>
                           <TableCell className="text-gray-300">
-                            {visit.checkOut ? (
-                              formatDateTime(visit.checkOut).split(' ')[1]
+                            {visit.checkOutTime ? (
+                              formatDateTime(visit.checkOutTime).split(' ')[1]
                             ) : (
                               <Badge variant="outline" className="bg-green-900/50 text-green-400 border-green-800 font-tactical text-xs">
                                 Em andamento
@@ -983,7 +1006,7 @@ const MemberDetailPage = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-gray-300">
-                            {visit.lane || '--'}
+                            {visit.lane?.name || '--'}
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {visit.purpose || '--'}

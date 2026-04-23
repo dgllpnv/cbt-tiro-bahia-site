@@ -134,6 +134,10 @@ router.get('/today', requireRole('ADMIN'), async (req: Request, res: Response): 
         lane: {
           select: { id: true, number: true, name: true, status: true },
         },
+        details: {
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, caliber: true, shotsFired: true, notes: true, createdAt: true },
+        },
       },
     });
 
@@ -228,28 +232,76 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
       return;
     }
 
-    const visit = await prisma.visit.create({
-      data: {
-        memberId: data.memberId,
-        registeredById: req.user!.id,
-        visitDate: new Date(data.visitDate),
-        checkInTime: new Date(data.checkInTime),
-        laneId: data.laneId || null,
-        purpose: data.purpose || null,
-        instructorName: data.instructorName || null,
-        notes: data.notes || null,
-        isGuestVisit: data.isGuestVisit || false,
-        guestName: data.guestName || null,
-        guestDocument: data.guestDocument || null,
-      },
-      include: {
-        member: {
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+    // When a lane is assigned to the visit, validate its availability before
+    // creating the visit so members cannot share a lane accidentally.
+    if (data.laneId) {
+      const lane = await prisma.lane.findUnique({
+        where: { id: data.laneId },
+        select: { id: true, name: true, number: true, status: true, isActive: true },
+      });
+
+      if (!lane) {
+        res.status(404).json({ success: false, error: 'Baia nao encontrada' });
+        return;
+      }
+
+      if (!lane.isActive) {
+        res.status(400).json({ success: false, error: 'Baia esta inativa' });
+        return;
+      }
+
+      if (lane.status === 'OCCUPIED') {
+        const laneLabel = lane.name || `Baia ${String(lane.number).padStart(2, '0')}`;
+        res.status(400).json({ success: false, error: `${laneLabel} ja esta ocupada` });
+        return;
+      }
+
+      if (lane.status === 'MAINTENANCE') {
+        const laneLabel = lane.name || `Baia ${String(lane.number).padStart(2, '0')}`;
+        res.status(400).json({ success: false, error: `${laneLabel} esta em manutencao` });
+        return;
+      }
+    }
+
+    // Atomically create the visit and (if a lane was assigned) mark the lane
+    // as OCCUPIED with the current member so the bay panel stays coherent.
+    const visit = await prisma.$transaction(async (tx) => {
+      const created = await tx.visit.create({
+        data: {
+          memberId: data.memberId,
+          registeredById: req.user!.id,
+          visitDate: new Date(data.visitDate),
+          checkInTime: new Date(data.checkInTime),
+          laneId: data.laneId || null,
+          purpose: data.purpose || null,
+          instructorName: data.instructorName || null,
+          notes: data.notes || null,
+          isGuestVisit: data.isGuestVisit || false,
+          guestName: data.guestName || null,
+          guestDocument: data.guestDocument || null,
         },
-        lane: {
-          select: { id: true, number: true, name: true, status: true },
+        include: {
+          member: {
+            select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+          },
+          lane: {
+            select: { id: true, number: true, name: true, status: true },
+          },
         },
-      },
+      });
+
+      if (data.laneId) {
+        await tx.lane.update({
+          where: { id: data.laneId },
+          data: {
+            status: 'OCCUPIED',
+            currentMemberId: data.memberId,
+            sessionStartTime: new Date(data.checkInTime),
+          },
+        });
+      }
+
+      return created;
     });
 
     console.log(`[VISITS] Visita criada para ${member.fullName} por ${req.user!.email}`);

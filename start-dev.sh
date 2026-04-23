@@ -206,10 +206,10 @@ print_info "Aplicando schema ao banco de dados..."
 npx prisma db push --accept-data-loss 2>&1 | tail -3
 print_ok "Schema aplicado"
 
-# Seed
-print_info "Populando dados iniciais (seed)..."
-npm run db:seed 2>&1 | tail -5
-print_ok "Seed executado"
+# Seed completo (base + demo + noticias/eventos + financeiro). Idempotente.
+print_info "Populando dados (base + demo + noticias/eventos + financeiro)..."
+npm run db:seed:all 2>&1 | tail -10
+print_ok "Seed completo executado"
 
 echo ""
 

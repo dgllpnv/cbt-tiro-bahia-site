@@ -29,6 +29,14 @@ export interface Visit {
     name: string;
     status: string;
   } | null;
+  details?: Array<{
+    id: string;
+    caliber: string;
+    firearmName?: string | null;
+    shotsFired: number;
+    notes: string | null;
+    createdAt: string;
+  }>;
 }
 
 export interface VisitDetail {
@@ -124,6 +132,31 @@ export async function checkoutVisit(id: string) {
   } catch (error: any) {
     return { success: false, error: error.response?.data?.error || 'Erro ao registrar check-out' };
   }
+}
+
+/**
+ * Check-in rápido de presença no clube (sem atribuir baia).
+ * Usado pelo painel "Presentes no Clube" no dashboard admin.
+ */
+export async function checkInPresent(memberId: string) {
+  const now = new Date();
+  const visitDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return createVisit({
+    memberId,
+    visitDate,
+    checkInTime: now.toISOString(),
+  });
+}
+
+/**
+ * Lista as visitas de hoje que ainda estão em aberto (sem checkOutTime),
+ * ou seja, os associados atualmente presentes no clube.
+ */
+export async function getPresentMembers() {
+  const result = await getTodayVisits();
+  if (!result.success) return result;
+  const present = (result.data ?? []).filter((v) => !v.checkOutTime);
+  return { success: true as const, data: present };
 }
 
 export async function deleteVisit(id: string) {

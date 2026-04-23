@@ -33,7 +33,13 @@ const FinancialPage = () => {
       if (sumRes.data.success) setSummary(sumRes.data.data);
       if (expRes.data.success) setExpenses(expRes.data.data);
       if (txRes.data.success) setTransactions(txRes.data.data);
-    } catch {}
+    } catch (e: any) {
+      toast({
+        title: 'Erro ao carregar financeiro',
+        description: e?.response?.data?.error || 'Nao foi possivel obter os dados. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
     setLoading(false);
   };
 

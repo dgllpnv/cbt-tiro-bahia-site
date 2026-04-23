@@ -277,12 +277,14 @@ model VisitDetail {
   memberId    String
   member      User     @relation(fields: [memberId], references: [id])
   caliber     String
+  firearmName String?
   shotsFired  Int
   notes       String?  @db.Text
   createdAt   DateTime @default(now())
 
   @@index([visitId])
   @@index([memberId])
+  @@index([firearmName])
 }
 
 model Product {
@@ -301,6 +303,8 @@ model Product {
   isForLoan       Boolean         @default(false)
   isActive        Boolean         @default(true)
   imageUrl        String?         @db.Text
+  iconKey         String?
+  iconColor       String?
   metadata        Json?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

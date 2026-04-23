@@ -228,7 +228,7 @@ const MembersPage = () => {
                           size="icon"
                           asChild
                           className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
-                          title="Visualizar"
+                          title="Perfil"
                         >
                           <Link to={`/admin/associados/${user.id}`}>
                             <Eye className="h-4 w-4" />

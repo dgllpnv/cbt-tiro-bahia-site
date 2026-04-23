@@ -5,8 +5,14 @@ import {
   startOfDay, endOfDay,
   startOfMonth, endOfMonth,
   startOfYear, endOfYear,
-  addDays, differenceInDays,
+  addDays, differenceInDays, subYears,
 } from 'date-fns';
+import {
+  POPULAR_FIREARMS,
+  getFirearmCategory,
+  getFirearmsInCategory,
+  type FirearmCategory,
+} from '../lib/firearmsCatalog.js';
 
 const router = Router();
 
@@ -175,6 +181,143 @@ router.get('/admin', requireRole('ADMIN'), async (_req: Request, res: Response):
   } catch (error) {
     console.error('Erro ao buscar dashboard administrativo:', error);
     res.status(500).json({ success: false, error: 'Erro ao buscar dashboard administrativo' });
+  }
+});
+
+// =====================================================
+// GET /api/dashboard/rankings — Top members by frequency / mastery (ADMIN)
+// =====================================================
+router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const period = (req.query.period as string) || 'month';
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 5));
+    const firearmCategory = req.query.firearmCategory as FirearmCategory | undefined;
+    const firearmName = req.query.firearmName as string | undefined;
+
+    const now = new Date();
+    let periodStart: Date;
+    if (period === 'year') periodStart = startOfYear(now);
+    else if (period === 'all') periodStart = subYears(now, 50);
+    else periodStart = startOfMonth(now);
+
+    // Build firearm filter for mastery aggregation
+    const detailWhere: any = { createdAt: { gte: periodStart } };
+    if (firearmName) {
+      detailWhere.firearmName = firearmName;
+    } else if (firearmCategory) {
+      const allowedNames = getFirearmsInCategory(firearmCategory);
+      if (allowedNames.length > 0) {
+        detailWhere.firearmName = { in: allowedNames };
+      }
+    }
+
+    const [visitGroup, detailGroup] = await Promise.all([
+      prisma.visit.groupBy({
+        by: ['memberId'],
+        where: { visitDate: { gte: periodStart } },
+        _count: { _all: true },
+        orderBy: { _count: { memberId: 'desc' } },
+        take: limit,
+      }),
+      prisma.visitDetail.groupBy({
+        by: ['memberId'],
+        where: detailWhere,
+        _sum: { shotsFired: true },
+        orderBy: { _sum: { shotsFired: 'desc' } },
+        take: limit,
+      }),
+    ]);
+
+    const memberIds = Array.from(
+      new Set([...visitGroup.map((v) => v.memberId), ...detailGroup.map((d) => d.memberId)]),
+    );
+
+    const members = memberIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: memberIds } },
+          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+        })
+      : [];
+    const byId = new Map(members.map((m) => [m.id, m]));
+
+    const byFrequency = visitGroup
+      .filter((v) => byId.has(v.memberId))
+      .map((v) => ({
+        memberId: v.memberId,
+        fullName: byId.get(v.memberId)!.fullName,
+        memberNumber: byId.get(v.memberId)!.memberNumber,
+        photoUrl: byId.get(v.memberId)!.photoUrl,
+        visitCount: v._count._all,
+      }));
+
+    const byMastery = detailGroup
+      .filter((d) => byId.has(d.memberId))
+      .map((d) => ({
+        memberId: d.memberId,
+        fullName: byId.get(d.memberId)!.fullName,
+        memberNumber: byId.get(d.memberId)!.memberNumber,
+        photoUrl: byId.get(d.memberId)!.photoUrl,
+        totalShots: d._sum.shotsFired || 0,
+      }));
+
+    res.json({
+      success: true,
+      data: {
+        byFrequency,
+        byMastery,
+        period,
+        firearmCategory: firearmCategory ?? null,
+        firearmName: firearmName ?? null,
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao buscar rankings:', error);
+    res.status(500).json({ success: false, error: 'Erro ao buscar rankings' });
+  }
+});
+
+// =====================================================
+// GET /api/dashboard/top-firearms — most-used firearms (ADMIN)
+// =====================================================
+router.get('/top-firearms', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const period = (req.query.period as string) || 'month';
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 10));
+
+    const now = new Date();
+    let periodStart: Date;
+    if (period === 'day') periodStart = startOfDay(now);
+    else if (period === 'year') periodStart = startOfYear(now);
+    else periodStart = startOfMonth(now);
+
+    const detailGroup = await prisma.visitDetail.groupBy({
+      by: ['firearmName'],
+      where: {
+        createdAt: { gte: periodStart },
+        firearmName: { not: null },
+      },
+      _sum: { shotsFired: true },
+      _count: { _all: true },
+      orderBy: { _sum: { shotsFired: 'desc' } },
+      take: limit,
+    });
+
+    const topFirearms = detailGroup
+      .filter((g) => g.firearmName)
+      .map((g) => ({
+        firearmName: g.firearmName as string,
+        category: getFirearmCategory(g.firearmName),
+        totalShots: g._sum.shotsFired ?? 0,
+        uses: g._count._all,
+      }));
+
+    res.json({
+      success: true,
+      data: { topFirearms, period },
+    });
+  } catch (error) {
+    console.error('Erro ao buscar top firearms:', error);
+    res.status(500).json({ success: false, error: 'Erro ao buscar armas mais usadas' });
   }
 });
 

@@ -53,6 +53,22 @@ Write-Host "[3/6] Backend..." -ForegroundColor Cyan
 
 Set-Location "$ROOT\backend"
 
+# Garantir que o arquivo .env existe (sem ele, Prisma falha com P1012)
+if (-not (Test-Path "$ROOT\backend\.env")) {
+    Write-Host "  Criando backend\.env..." -ForegroundColor Yellow
+    $envContent = @"
+DATABASE_URL=postgresql://postgres:cbt_dev_2024@localhost:5434/cbt_portal
+DIRECT_URL=postgresql://postgres:cbt_dev_2024@localhost:5434/cbt_portal
+JWT_SECRET=cbt-dev-jwt-secret-key-change-in-production-2024
+JWT_EXPIRES_IN=7d
+PORT=3002
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:5174
+"@
+    [System.IO.File]::WriteAllText("$ROOT\backend\.env", $envContent, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "  backend\.env criado" -ForegroundColor Green
+}
+
 # Verificar se node_modules existe e tem prisma
 $hasPrisma = Test-Path "$ROOT\backend\node_modules\prisma\build\index.js"
 if (-not $hasPrisma) {
@@ -67,6 +83,16 @@ else {
     Write-Host "  Dependencias OK" -ForegroundColor Green
 }
 
+# Fallback: exportar variaveis do .env para o processo atual
+# (garante que Prisma as veja mesmo se o auto-load do .env falhar)
+Get-Content "$ROOT\backend\.env" | ForEach-Object {
+    if ($_ -match "^\s*([^#=\s]+)\s*=\s*(.*)$") {
+        $name = $matches[1]
+        $value = $matches[2].Trim('"').Trim("'")
+        [System.Environment]::SetEnvironmentVariable($name, $value, "Process")
+    }
+}
+
 # Prisma db push via cmd.exe (mais confiavel no Windows)
 Write-Host "  Aplicando schema no banco..." -ForegroundColor Gray
 & cmd.exe /c "cd /d `"$ROOT\backend`" && npx prisma db push --accept-data-loss"
@@ -76,8 +102,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "  Schema OK" -ForegroundColor Green
 
-Write-Host "  Executando seed..." -ForegroundColor Gray
-& cmd.exe /c "cd /d `"$ROOT\backend`" && npm run db:seed"
+Write-Host "  Executando seed completo (base + demo + noticias/eventos + financeiro)..." -ForegroundColor Gray
+Write-Host "  (idempotente — pula o que ja foi populado)" -ForegroundColor DarkGray
+& cmd.exe /c "cd /d `"$ROOT\backend`" && npm run db:seed:all"
 Write-Host "  Seed OK" -ForegroundColor Green
 
 # --- 4. FRONTEND DEPS ---
@@ -85,6 +112,14 @@ Write-Host ""
 Write-Host "[4/6] Frontend..." -ForegroundColor Cyan
 
 Set-Location "$ROOT\frontend"
+
+# Garantir que frontend\.env existe
+if (-not (Test-Path "$ROOT\frontend\.env")) {
+    Write-Host "  Criando frontend\.env..." -ForegroundColor Yellow
+    [System.IO.File]::WriteAllText("$ROOT\frontend\.env", "VITE_API_URL=http://localhost:3002`n", [System.Text.UTF8Encoding]::new($false))
+    Write-Host "  frontend\.env criado" -ForegroundColor Green
+}
+
 $hasVite = Test-Path "$ROOT\frontend\node_modules\vite\bin\vite.js"
 if (-not $hasVite) {
     Write-Host "  Instalando dependencias..." -ForegroundColor Yellow

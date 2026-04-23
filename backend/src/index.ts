@@ -20,6 +20,7 @@ import eventsRoutes from './routes/events.routes.js';
 import habitualityRoutes from './routes/habituality.routes.js';
 import documentsRoutes from './routes/documents.routes.js';
 import lanesRoutes from './routes/lanes.routes.js';
+import userStatsRoutes from './routes/userStats.routes.js';
 
 // =====================================================
 // EXPRESS APP SETUP
@@ -113,6 +114,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/habituality', habitualityRoutes);
 app.use('/api/documents', documentsRoutes);
 app.use('/api/lanes', lanesRoutes);
+app.use('/api/users', userStatsRoutes);
 
 // =====================================================
 // 404 HANDLER
