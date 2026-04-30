@@ -1,0 +1,96 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;600;700&family=Oswald:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  :root {
+    --background: 15 15 15;
+    --foreground: 250 250 250;
+
+    --card: 20 20 20;
+    --card-foreground: 250 250 250;
+
+    --popover: 20 20 20;
+    --popover-foreground: 250 250 250;
+
+    --primary: 40 100% 50%;
+    --primary-foreground: 15 15 15;
+
+    --secondary: 30 30 30;
+    --secondary-foreground: 250 250 250;
+
+    --muted: 25 25 25;
+    --muted-foreground: 165 165 165;
+
+    --accent: 40 100% 50%;
+    --accent-foreground: 15 15 15;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 250 250 250;
+
+    --border: 40 40 40;
+    --input: 40 40 40;
+    --ring: 40 100% 50%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 15 15 15;
+    --sidebar-foreground: 250 250 250;
+    --sidebar-primary: 40 100% 50%;
+    --sidebar-primary-foreground: 15 15 15;
+    --sidebar-accent: 25 25 25;
+    --sidebar-accent-foreground: 250 250 250;
+    --sidebar-border: 40 40 40;
+    --sidebar-ring: 40 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-tactical;
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .metal-texture {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #2c3e50 50%, #34495e 75%, #2c3e50 100%);
+    position: relative;
+  }
+
+  .metal-texture::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.05) 50%),
+      linear-gradient(0deg, transparent 50%, rgba(255,255,255,0.05) 50%);
+    background-size: 2px 2px;
+    pointer-events: none;
+  }
+
+  .tactical-shadow {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glow-orange {
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
+  }
+}
