@@ -110,11 +110,15 @@ router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promi
 
     const { role, status, search } = req.query;
 
-    // Build where clause
+    // Build where clause — por padrao, /api/users NAO retorna VISITOR
+    // (visitantes vivem em /api/visitors). Filtro aceita ADMIN, ASSOCIATE ou VISITOR
+    // explicitamente quando solicitado.
     const where: any = {};
 
-    if (role && (role === 'ADMIN' || role === 'ASSOCIATE')) {
+    if (role && (role === 'ADMIN' || role === 'ASSOCIATE' || role === 'VISITOR')) {
       where.role = role;
+    } else {
+      where.role = { in: ['ADMIN', 'ASSOCIATE'] };
     }
 
     if (status && (status === 'ACTIVE' || status === 'INACTIVE' || status === 'SUSPENDED')) {

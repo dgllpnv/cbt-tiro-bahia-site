@@ -21,8 +21,13 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     const where: any = {};
 
-    if (req.query.status) {
-      where.status = req.query.status as string;
+    // Status: 'OVERDUE' e derivado (sem cron) — ACTIVE com expectedReturn vencido
+    const statusParam = req.query.status as string | undefined;
+    if (statusParam === 'OVERDUE') {
+      where.status = 'ACTIVE';
+      where.expectedReturn = { lt: new Date(), not: null };
+    } else if (statusParam) {
+      where.status = statusParam;
     }
 
     if (req.query.memberId) {
@@ -33,6 +38,27 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       where.equipmentId = req.query.equipmentId as string;
     }
 
+    // Filtros novos: tipo de equipamento, periodo, busca textual
+    if (req.query.equipmentType) {
+      where.equipment = { equipmentType: req.query.equipmentType as string };
+    }
+
+    if (req.query.startDate || req.query.endDate) {
+      where.loanDate = {};
+      if (req.query.startDate) where.loanDate.gte = new Date(req.query.startDate as string);
+      if (req.query.endDate) where.loanDate.lte = new Date(req.query.endDate as string);
+    }
+
+    const q = (req.query.q as string | undefined)?.trim();
+    if (q) {
+      where.OR = [
+        { equipment: { name: { contains: q, mode: 'insensitive' } } },
+        { equipment: { serialNumber: { contains: q, mode: 'insensitive' } } },
+        { member: { fullName: { contains: q, mode: 'insensitive' } } },
+        { member: { memberNumber: { contains: q, mode: 'insensitive' } } },
+      ];
+    }
+
     const [loans, total] = await Promise.all([
       prisma.equipmentLoan.findMany({
         where,
@@ -41,13 +67,19 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         take: limit,
         include: {
           equipment: {
-            select: { id: true, name: true, serialNumber: true },
+            select: { id: true, name: true, serialNumber: true, equipmentType: true },
           },
           member: {
-            select: { id: true, fullName: true },
+            select: { id: true, fullName: true, memberNumber: true, role: true },
           },
           issuedBy: {
             select: { id: true, fullName: true },
+          },
+          returnedBy: {
+            select: { id: true, fullName: true },
+          },
+          transferredFrom: {
+            select: { id: true, member: { select: { id: true, fullName: true } } },
           },
         },
       }),
@@ -80,13 +112,16 @@ router.get('/active', async (req: Request, res: Response): Promise<void> => {
       orderBy: { loanDate: 'desc' },
       include: {
         equipment: {
-          select: { id: true, name: true, serialNumber: true },
+          select: { id: true, name: true, serialNumber: true, equipmentType: true },
         },
         member: {
-          select: { id: true, fullName: true },
+          select: { id: true, fullName: true, memberNumber: true, role: true },
         },
         issuedBy: {
           select: { id: true, fullName: true },
+        },
+        transferredFrom: {
+          select: { id: true, member: { select: { id: true, fullName: true } } },
         },
       },
     });
@@ -108,13 +143,19 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       include: {
         equipment: true,
         member: {
-          select: { id: true, fullName: true, memberNumber: true, phone: true },
+          select: { id: true, fullName: true, memberNumber: true, phone: true, role: true },
         },
         issuedBy: {
           select: { id: true, fullName: true },
         },
         returnedBy: {
           select: { id: true, fullName: true },
+        },
+        transferredFrom: {
+          select: { id: true, member: { select: { id: true, fullName: true } } },
+        },
+        transferredTo: {
+          select: { id: true, member: { select: { id: true, fullName: true } } },
         },
       },
     });
@@ -312,6 +353,142 @@ router.patch('/:id/return', async (req: Request, res: Response): Promise<void> =
     }
     console.error('Erro ao devolver equipamento:', error);
     res.status(500).json({ success: false, error: 'Erro ao devolver equipamento' });
+  }
+});
+
+// =====================================================
+// POST /api/loans/:id/transfer — Transfer active loan to another member
+//
+// Atomicamente: encerra o loan atual com status=TRANSFERRED + cria novo loan
+// ACTIVE para outro membro com transferredFromLoanId apontando para o anterior.
+// Equipment.isAvailable continua false (segue em uso, so trocou de mao).
+// =====================================================
+const transferLoanSchema = z.object({
+  newMemberId: z.string().uuid('ID do novo membro invalido'),
+  conditionAtTransfer: z
+    .enum(['EXCELLENT', 'GOOD', 'FAIR', 'NEEDS_REPAIR', 'DECOMMISSIONED'])
+    .optional(),
+  notes: z.string().optional().nullable(),
+});
+
+router.post('/:id/transfer', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = transferLoanSchema.parse(req.body);
+
+    const existing = await prisma.equipmentLoan.findUnique({
+      where: { id: req.params.id },
+      include: {
+        equipment: { select: { id: true, name: true } },
+        member: { select: { id: true, fullName: true } },
+      },
+    });
+
+    if (!existing) {
+      res.status(404).json({ success: false, error: 'Emprestimo nao encontrado' });
+      return;
+    }
+
+    if (existing.status !== 'ACTIVE') {
+      res.status(400).json({
+        success: false,
+        error: 'Emprestimo nao esta ativo, nao pode ser transferido',
+      });
+      return;
+    }
+
+    if (existing.memberId === data.newMemberId) {
+      res
+        .status(400)
+        .json({ success: false, error: 'Selecione um membro diferente do atual' });
+      return;
+    }
+
+    const newMember = await prisma.user.findUnique({
+      where: { id: data.newMemberId },
+      select: { id: true, fullName: true, isActive: true, role: true },
+    });
+
+    if (!newMember || !newMember.isActive) {
+      res.status(400).json({
+        success: false,
+        error: 'Novo membro nao encontrado ou inativo',
+      });
+      return;
+    }
+
+    const conditionToUse = data.conditionAtTransfer ?? existing.conditionAtLoan;
+
+    const result = await prisma.$transaction(async (tx) => {
+      // 1) Encerra o loan atual com status=TRANSFERRED
+      const closedLoan = await tx.equipmentLoan.update({
+        where: { id: existing.id },
+        data: {
+          status: 'TRANSFERRED',
+          actualReturn: new Date(),
+          returnedById: req.user!.id,
+          conditionAtReturn: conditionToUse ?? undefined,
+        },
+      });
+
+      // 2) Cria novo loan ACTIVE para o novo membro
+      const newLoan = await tx.equipmentLoan.create({
+        data: {
+          equipmentId: existing.equipmentId,
+          memberId: data.newMemberId,
+          issuedById: req.user!.id,
+          status: 'ACTIVE',
+          conditionAtLoan: conditionToUse ?? undefined,
+          notes: data.notes || null,
+          transferredFromLoanId: existing.id,
+        },
+        include: {
+          equipment: {
+            select: { id: true, name: true, serialNumber: true, equipmentType: true },
+          },
+          member: {
+            select: { id: true, fullName: true, memberNumber: true, role: true },
+          },
+          issuedBy: {
+            select: { id: true, fullName: true },
+          },
+          transferredFrom: {
+            select: { id: true, member: { select: { id: true, fullName: true } } },
+          },
+        },
+      });
+
+      return { previous: closedLoan, current: newLoan };
+    });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'LOAN_TRANSFERRED',
+      entityType: 'Loan',
+      entityId: result.current.id,
+      userId: data.newMemberId,
+      previousData: {
+        fromMemberId: existing.memberId,
+        fromMemberName: existing.member.fullName,
+        fromLoanId: existing.id,
+      },
+      newData: {
+        toMemberId: data.newMemberId,
+        toMemberName: newMember.fullName,
+        toLoanId: result.current.id,
+        conditionAtTransfer: conditionToUse ?? null,
+      },
+      description: `Emprestimo de ${existing.equipment.name} transferido de ${existing.member.fullName} para ${newMember.fullName}`,
+      ipAddress: req.ip as string | undefined,
+    });
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ success: false, error: 'Dados invalidos', details: error.errors });
+      return;
+    }
+    console.error('Erro ao transferir emprestimo:', error);
+    res.status(500).json({ success: false, error: 'Erro ao transferir emprestimo' });
   }
 });
 

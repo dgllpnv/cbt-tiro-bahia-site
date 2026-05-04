@@ -67,6 +67,16 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Visitantes nao tem acesso ao portal — apenas admin/associate logam.
+    // passwordHash null tambem indica conta sem credenciais (visitantes).
+    if (user.role === 'VISITOR' || !user.passwordHash) {
+      res.status(401).json({
+        success: false,
+        error: 'Credenciais invalidas',
+      });
+      return;
+    }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 

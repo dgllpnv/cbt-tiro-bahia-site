@@ -2,6 +2,16 @@ import api from './api';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
 
+export interface EquipmentActiveLoanRef {
+  id: string;
+  member: {
+    id: string;
+    fullName: string;
+    memberNumber?: string | null;
+    role?: 'ADMIN' | 'ASSOCIATE' | 'VISITOR';
+  };
+}
+
 export interface Equipment {
   id: string;
   name: string;
@@ -19,6 +29,8 @@ export interface Equipment {
   imageUrl: string | null;
   acquisitionDate: string | null;
   createdAt: string;
+  // Presente quando lista chamada com includeActiveLoans=true
+  loans?: EquipmentActiveLoanRef[];
 }
 
 export interface CreateEquipmentData {
@@ -40,10 +52,29 @@ export interface CreateEquipmentData {
 interface ListEquipmentParams {
   equipmentType?: string;
   isAvailable?: string;
+  isActive?: string;
   condition?: string;
   search?: string;
+  includeActiveLoans?: string;
   page?: number;
   limit?: number;
+}
+
+export interface EquipmentDashboard {
+  period: { from: string; to: string };
+  totals: {
+    activeLoans: number;
+    overdueLoans: number;
+    totalEquipment: number;
+    inUse: number;
+    available: number;
+    needsRepair: number;
+  };
+  utilizationPct: number;
+  byType: Array<{ equipmentType: string; total: number; inUse: number; available: number }>;
+  byCondition: Array<{ condition: string; count: number }>;
+  topUsed: Array<{ equipment: { id: string; name: string; equipmentType: string }; loanCount: number }>;
+  recentMovements: any[];
 }
 
 // ── Service Functions ───────────────────────────────────────────────────────
@@ -67,6 +98,42 @@ export async function getEquipmentById(id: string) {
     return { success: false, error: response.data.error };
   } catch (error: any) {
     return { success: false, error: error.response?.data?.error || 'Erro ao buscar equipamento' };
+  }
+}
+
+export async function getEquipmentHistory(
+  id: string,
+  params?: { from?: string; to?: string; memberId?: string },
+) {
+  try {
+    const response = await api.get(`/api/equipment/${id}/history`, { params });
+    if (response.data.success) {
+      return {
+        success: true,
+        data: response.data.data as { equipment: { id: string; name: string }; loans: any[] },
+      };
+    }
+    return { success: false, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Erro ao buscar historico do equipamento',
+    };
+  }
+}
+
+export async function getEquipmentDashboard(params?: { from?: string; to?: string }) {
+  try {
+    const response = await api.get('/api/equipment/dashboard', { params });
+    if (response.data.success) {
+      return { success: true, data: response.data.data as EquipmentDashboard };
+    }
+    return { success: false, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Erro ao carregar dashboard de equipamentos',
+    };
   }
 }
 

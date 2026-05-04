@@ -65,7 +65,13 @@ import { listLoans, issueLoan } from '@/services/loansService';
 import { getTodayVisits, createVisit, checkoutVisit } from '@/services/visitsService';
 import { createAnnuityPayment } from '@/services/annuitiesService';
 import { listLanes, type Lane as ApiLane } from '@/services/lanesService';
+import { getVisitorById, type Visitor } from '@/services/visitorsService';
 import TransactionDetailsDialog from '@/components/admin/TransactionDetailsDialog';
+import ConvertVisitorDialog from '@/components/admin/ConvertVisitorDialog';
+import LoanIssueDialog from '@/components/admin/LoanIssueDialog';
+import LoanTransferDialog from '@/components/admin/LoanTransferDialog';
+import LoanReturnDialog from '@/components/admin/LoanReturnDialog';
+import { getLoanById, type EquipmentLoan } from '@/services/loansService';
 
 // ── Display Types (mapped from API responses) ──────────────────────────────
 
@@ -191,9 +197,13 @@ const TransactionsPage = () => {
   const [visitPurpose, setVisitPurpose] = useState('Treino');
   const [visitNotes, setVisitNotes] = useState('');
 
-  // ── Loan Form ──────────────────────────────────────────────────────────
+  // ── Loan Form (mantidos para compat — agora dialog usa LoanIssueDialog) ──
   const [loanMemberId, setLoanMemberId] = useState('');
   const [loanEquipmentId, setLoanEquipmentId] = useState('');
+
+  // Transfer/Return loan dialogs ativados na aba de empréstimos
+  const [loanTransferTarget, setLoanTransferTarget] = useState<EquipmentLoan | null>(null);
+  const [loanReturnTarget, setLoanReturnTarget] = useState<EquipmentLoan | null>(null);
 
   // ── Details dialogs (botao Eye em cada aba) ────────────────────────────
   const [detailTxId, setDetailTxId] = useState<string | null>(null);
@@ -202,9 +212,14 @@ const TransactionsPage = () => {
 
   // ── Annuity Form ───────────────────────────────────────────────────────
   const [annuityMemberId, setAnnuityMemberId] = useState('');
+  const [annuityIsVisitor, setAnnuityIsVisitor] = useState(false);
   const [annuityAmount, setAnnuityAmount] = useState('');
   const [annuityPaymentMethod, setAnnuityPaymentMethod] = useState('PIX');
   const [annuityYear, setAnnuityYear] = useState(new Date().getFullYear().toString());
+
+  // ── Conversao de visitante (acionada via Nova Anuidade) ────────────────
+  const [convertVisitor, setConvertVisitor] = useState<Visitor | null>(null);
+  const [isLoadingVisitor, setIsLoadingVisitor] = useState(false);
 
   // ── Fetch Data ─────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -442,7 +457,32 @@ const TransactionsPage = () => {
   };
 
   const handleSubmitAnnuity = async () => {
-    if (!annuityMemberId.trim() || !annuityAmount) {
+    if (!annuityMemberId.trim()) {
+      toast({ title: 'Selecione um membro', variant: 'destructive' });
+      return;
+    }
+
+    // Visitante: anuidade so e possivel via conversao em associado.
+    // Fecha esse dialog e abre o ConvertVisitorDialog (que coleta dados que faltam + anuidade).
+    if (annuityIsVisitor) {
+      setIsLoadingVisitor(true);
+      const res = await getVisitorById(annuityMemberId);
+      setIsLoadingVisitor(false);
+
+      if (res.success && res.data) {
+        setAnnuityDialogOpen(false);
+        setConvertVisitor(res.data);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar visitante',
+          description: res.error || 'Tente novamente.',
+        });
+      }
+      return;
+    }
+
+    if (!annuityAmount) {
       toast({ title: 'Preencha todos os campos obrigatorios', variant: 'destructive' });
       return;
     }
@@ -510,6 +550,7 @@ const TransactionsPage = () => {
 
   const resetAnnuityForm = () => {
     setAnnuityMemberId('');
+    setAnnuityIsVisitor(false);
     setAnnuityAmount('');
     setAnnuityPaymentMethod('PIX');
     setAnnuityYear(new Date().getFullYear().toString());
@@ -717,15 +758,45 @@ const TransactionsPage = () => {
                             {loan.dueDate ? formatDate(loan.dueDate) : 'Uso interno'}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDetailLoan(loan)}
-                              title="Ver detalhes"
-                              className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              {loan.status === 'ACTIVE' && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={async () => {
+                                      const res = await getLoanById(loan.id);
+                                      if (res.success && res.data) setLoanTransferTarget(res.data);
+                                    }}
+                                    title="Transferir"
+                                    className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                                  >
+                                    <UserCheck className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={async () => {
+                                      const res = await getLoanById(loan.id);
+                                      if (res.success && res.data) setLoanReturnTarget(res.data);
+                                    }}
+                                    title="Devolver"
+                                    className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                                  >
+                                    <Receipt className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDetailLoan(loan)}
+                                title="Ver detalhes"
+                                className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -843,7 +914,13 @@ const TransactionsPage = () => {
 
           <div className="space-y-5 py-2">
             {/* Member */}
-            <MemberSearch value={saleMemberId} onChange={setSaleMemberId} />
+            <MemberSearch
+              value={saleMemberId}
+              onChange={setSaleMemberId}
+              includeVisitors
+              placeholder="Buscar associado ou visitante..."
+              label="Associado / Visitante *"
+            />
 
             {/* Type */}
             <div className="space-y-2">
@@ -1012,7 +1089,13 @@ const TransactionsPage = () => {
           </DialogHeader>
 
           <div className="space-y-5 py-2">
-            <MemberSearch value={visitMemberId} onChange={setVisitMemberId} />
+            <MemberSearch
+              value={visitMemberId}
+              onChange={setVisitMemberId}
+              includeVisitors
+              placeholder="Buscar associado ou visitante..."
+              label="Associado / Visitante *"
+            />
 
             <div className="space-y-2">
               <Label className="text-gray-300 font-tactical text-sm">Baia (opcional)</Label>
@@ -1086,53 +1169,33 @@ const TransactionsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ── Novo Emprestimo Dialog ──────────────────────────────────────── */}
-      <Dialog open={loanDialogOpen} onOpenChange={setLoanDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
-              <Package className="h-5 w-5 text-orange-400" />
-              Novo Emprestimo
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
-              Registre o emprestimo de um equipamento para um membro.
-            </DialogDescription>
-          </DialogHeader>
+      {/* ── Novo Emprestimo (componente reutilizavel) ───────────────────── */}
+      <LoanIssueDialog
+        open={loanDialogOpen}
+        onOpenChange={setLoanDialogOpen}
+        onCreated={() => fetchData()}
+      />
 
-          <div className="space-y-5 py-2">
-            <MemberSearch value={loanMemberId} onChange={setLoanMemberId} />
+      {/* ── Transferir / Devolver emprestimo ativo ─────────────────────── */}
+      <LoanTransferDialog
+        open={!!loanTransferTarget}
+        onOpenChange={(o) => !o && setLoanTransferTarget(null)}
+        activeLoan={loanTransferTarget}
+        onTransferred={() => {
+          setLoanTransferTarget(null);
+          fetchData();
+        }}
+      />
 
-            <EquipmentSearch
-              value={loanEquipmentId}
-              onChange={setLoanEquipmentId}
-              label="Equipamento *"
-              placeholder="Buscar arma, coldre, equipamento..."
-            />
-
-            <p className="text-gray-500 font-tactical text-xs">
-              Uso da arma dentro do clube — devolucao no fim do dia, sem prazo.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setLoanDialogOpen(false)}
-              disabled={isSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmitLoan}
-              disabled={isSaving}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-tactical min-w-[160px]"
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Emprestimo'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <LoanReturnDialog
+        open={!!loanReturnTarget}
+        onOpenChange={(o) => !o && setLoanReturnTarget(null)}
+        activeLoan={loanReturnTarget}
+        onReturned={() => {
+          setLoanReturnTarget(null);
+          fetchData();
+        }}
+      />
 
       {/* ── Nova Anuidade Dialog ────────────────────────────────────────── */}
       <Dialog open={annuityDialogOpen} onOpenChange={setAnnuityDialogOpen}>
@@ -1148,57 +1211,82 @@ const TransactionsPage = () => {
           </DialogHeader>
 
           <div className="space-y-5 py-2">
-            <MemberSearch value={annuityMemberId} onChange={setAnnuityMemberId} />
+            <MemberSearch
+              value={annuityMemberId}
+              onChange={(id, member) => {
+                setAnnuityMemberId(id);
+                setAnnuityIsVisitor(!!member?.isVisitor);
+              }}
+              includeVisitors
+              placeholder="Buscar associado ou visitante..."
+              label="Associado / Visitante *"
+            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Valor *</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={annuityAmount}
-                  onChange={(e) => setAnnuityAmount(e.target.value)}
-                  placeholder="0,00"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
-                />
+            {annuityIsVisitor ? (
+              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-start gap-3">
+                <UserCheck className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm font-tactical text-blue-100 space-y-1">
+                  <p className="font-semibold">Visitante selecionado.</p>
+                  <p className="text-blue-200/80">
+                    Para pagar anuidade, o visitante precisa virar associado. Ao continuar, abriremos
+                    a tela de conversao para completar o cadastro (e-mail, senha, n. de associado) e
+                    registrar o pagamento da anuidade na mesma operacao.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Ano de Referencia</Label>
-                <Input
-                  type="number"
-                  min={2020}
-                  max={2030}
-                  value={annuityYear}
-                  onChange={(e) => setAnnuityYear(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
-                />
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-gray-300 font-tactical text-sm">Valor *</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={annuityAmount}
+                      onChange={(e) => setAnnuityAmount(e.target.value)}
+                      placeholder="0,00"
+                      className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-300 font-tactical text-sm">Ano de Referencia</Label>
+                    <Input
+                      type="number"
+                      min={2020}
+                      max={2030}
+                      value={annuityYear}
+                      onChange={(e) => setAnnuityYear(e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Forma de Pagamento</Label>
-              <Select value={annuityPaymentMethod} onValueChange={setAnnuityPaymentMethod}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="PIX">PIX</SelectItem>
-                  <SelectItem value="CREDIT_CARD">Cartao de Credito</SelectItem>
-                  <SelectItem value="DEBIT_CARD">Cartao de Debito</SelectItem>
-                  <SelectItem value="CASH">Dinheiro</SelectItem>
-                  <SelectItem value="BANK_TRANSFER">Transferencia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-300 font-tactical text-sm">Forma de Pagamento</Label>
+                  <Select value={annuityPaymentMethod} onValueChange={setAnnuityPaymentMethod}>
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectItem value="PIX">PIX</SelectItem>
+                      <SelectItem value="CREDIT_CARD">Cartao de Credito</SelectItem>
+                      <SelectItem value="DEBIT_CARD">Cartao de Debito</SelectItem>
+                      <SelectItem value="CASH">Dinheiro</SelectItem>
+                      <SelectItem value="BANK_TRANSFER">Transferencia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {annuityAmount && (
-              <div className="flex items-center justify-between p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
-                <span className="text-gray-300 font-tactical text-sm">Valor da Anuidade</span>
-                <span className="text-blue-400 font-military text-lg font-bold">
-                  {formatCurrency(parseFloat(annuityAmount) || 0)}
-                </span>
-              </div>
+                {annuityAmount && (
+                  <div className="flex items-center justify-between p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                    <span className="text-gray-300 font-tactical text-sm">Valor da Anuidade</span>
+                    <span className="text-blue-400 font-military text-lg font-bold">
+                      {formatCurrency(parseFloat(annuityAmount) || 0)}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -1206,21 +1294,46 @@ const TransactionsPage = () => {
             <Button
               variant="outline"
               onClick={() => setAnnuityDialogOpen(false)}
-              disabled={isSaving}
+              disabled={isSaving || isLoadingVisitor}
               className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmitAnnuity}
-              disabled={isSaving}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-tactical min-w-[150px]"
+              disabled={isSaving || isLoadingVisitor}
+              className={`text-white font-tactical min-w-[180px] ${annuityIsVisitor ? 'bg-cbt-orange hover:bg-cbt-orange/90' : 'bg-blue-600 hover:bg-blue-700'}`}
             >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Anuidade'}
+              {isSaving || isLoadingVisitor ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : annuityIsVisitor ? (
+                <>
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Continuar Conversao
+                </>
+              ) : (
+                'Registrar Anuidade'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Conversao de visitante (acionada via Nova Anuidade) ───────────── */}
+      {convertVisitor && (
+        <ConvertVisitorDialog
+          visitor={convertVisitor}
+          open={!!convertVisitor}
+          onOpenChange={(o) => {
+            if (!o) setConvertVisitor(null);
+          }}
+          onConverted={() => {
+            setConvertVisitor(null);
+            resetAnnuityForm();
+            fetchData();
+          }}
+        />
+      )}
 
       {/* ── Detalhes da venda (botao olho) ────────────────────────────────── */}
       <TransactionDetailsDialog

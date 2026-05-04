@@ -34,6 +34,12 @@ import NewsManagementPage from "./pages/admin/NewsManagementPage";
 import EventsManagementPage from "./pages/admin/EventsManagementPage";
 import MemberCreatePage from "./pages/admin/MemberCreatePage";
 import MemberDetailPage from "./pages/admin/MemberDetailPage";
+import VisitorsPage from "./pages/admin/VisitorsPage";
+import VisitorCreatePage from "./pages/admin/VisitorCreatePage";
+import VisitorDetailPage from "./pages/admin/VisitorDetailPage";
+import EquipmentsPage from "./pages/admin/EquipmentsPage";
+import EquipmentCreatePage from "./pages/admin/EquipmentCreatePage";
+import EquipmentDetailPage from "./pages/admin/EquipmentDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +88,12 @@ const App = () => (
               <Route path="associados" element={<MembersPage />} />
               <Route path="associados/novo" element={<MemberCreatePage />} />
               <Route path="associados/:id" element={<MemberDetailPage />} />
+              <Route path="visitantes" element={<VisitorsPage />} />
+              <Route path="visitantes/novo" element={<VisitorCreatePage />} />
+              <Route path="visitantes/:id" element={<VisitorDetailPage />} />
+              <Route path="equipamentos" element={<EquipmentsPage />} />
+              <Route path="equipamentos/novo" element={<EquipmentCreatePage />} />
+              <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
               <Route path="financeiro" element={<FinancialPage />} />
               <Route path="cadastros" element={<SettingsPage />} />
               <Route path="estoque" element={<InventoryPage />} />

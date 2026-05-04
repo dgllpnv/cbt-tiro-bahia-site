@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, User, Users, Crosshair, Loader2, Plus, Receipt, ShoppingCart } from 'lucide-react';
+import { Search, User, Users, UserCheck, Crosshair, Loader2, Plus, Receipt, ShoppingCart, Package } from 'lucide-react';
 import { GiBullets } from 'react-icons/gi';
 
 import api from '@/services/api';
@@ -11,6 +11,7 @@ import {
 } from '@/services/visitsService';
 import { listLanes } from '@/services/lanesService';
 import { getDraftByVisit, type Transaction } from '@/services/transactionsService';
+import { returnLoan as returnLoanApi } from '@/services/loansService';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,8 @@ import {
 import ShotEntryDialog from '@/components/admin/ShotEntryDialog';
 import OpenTabDialog from '@/components/admin/OpenTabDialog';
 import CloseTabDialog from '@/components/admin/CloseTabDialog';
+import LoanIssueDialog from '@/components/admin/LoanIssueDialog';
+import MemberLoanedEquipmentList from '@/components/admin/MemberLoanedEquipmentList';
 import { getCaliberColor } from '@/lib/ammunitionVisuals';
 import { getFirearmCategory, getFirearmCategoryVisual } from '@/lib/firearmsCatalog';
 import { formatCurrency } from '@/lib/formatters';
@@ -60,8 +63,9 @@ function totalShotsFor(visit: Visit): number {
 interface SearchHit {
   id: string;
   fullName: string;
-  memberNumber: string;
+  memberNumber: string | null;
   cpf?: string;
+  isVisitor?: boolean;
 }
 
 interface CheckInSearchProps {
@@ -99,14 +103,39 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await api.get('/api/users', {
-          params: { search: text.trim(), limit: 8, status: 'ACTIVE' },
-        });
-        if (res.data?.success) {
-          const data: SearchHit[] = Array.isArray(res.data.data) ? res.data.data : [];
-          setResults(data.filter((m) => !excludeIds.has(m.id)));
-          setOpen(true);
-        }
+        // Busca associados e visitantes em paralelo — o painel registra qualquer um
+        // dos dois no clube (visitantes podem comprar, fechar conta, etc.).
+        const [usersRes, visitorsRes] = await Promise.all([
+          api
+            .get('/api/users', { params: { search: text.trim(), limit: 6, status: 'ACTIVE' } })
+            .catch(() => ({ data: { success: false, data: [] } })),
+          api
+            .get('/api/visitors', { params: { search: text.trim(), limit: 6, status: 'ACTIVE' } })
+            .catch(() => ({ data: { success: false, data: [] } })),
+        ]);
+
+        const users: SearchHit[] = usersRes.data?.success
+          ? (usersRes.data.data || []).map((u: any) => ({
+              id: u.id,
+              fullName: u.fullName,
+              memberNumber: u.memberNumber,
+              cpf: u.cpf,
+              isVisitor: false,
+            }))
+          : [];
+
+        const visitors: SearchHit[] = visitorsRes.data?.success
+          ? (visitorsRes.data.data || []).map((v: any) => ({
+              id: v.id,
+              fullName: v.fullName,
+              memberNumber: null,
+              cpf: v.cpf,
+              isVisitor: true,
+            }))
+          : [];
+
+        setResults([...users, ...visitors].filter((m) => !excludeIds.has(m.id)));
+        setOpen(true);
       } catch {
         setResults([]);
       } finally {
@@ -147,12 +176,23 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
               onClick={() => handlePick(m)}
               className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-gray-700 transition-colors border-b border-gray-700/50 last:border-0"
             >
-              <div className="h-9 w-9 rounded-full bg-cbt-orange/20 text-cbt-orange flex items-center justify-center font-tactical text-xs font-bold">
+              <div
+                className={`h-9 w-9 rounded-full flex items-center justify-center font-tactical text-xs font-bold ${m.isVisitor ? 'bg-blue-500/20 text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
+              >
                 {getInitials(m.fullName)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-white font-tactical text-sm truncate">{m.fullName}</p>
-                <p className="text-gray-500 font-tactical text-xs">Nº {m.memberNumber}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-white font-tactical text-sm truncate">{m.fullName}</p>
+                  {m.isVisitor && (
+                    <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+                      Visitante
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-500 font-tactical text-xs">
+                  {m.isVisitor ? `CPF ${m.cpf || '—'}` : `Nº ${m.memberNumber || '—'}`}
+                </p>
               </div>
               <span className="text-cbt-orange text-xs font-tactical">Registrar →</span>
             </button>
@@ -162,7 +202,7 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
 
       {open && query.trim().length >= 2 && !loading && results.length === 0 && (
         <div className="absolute z-30 left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 text-center">
-          <p className="text-gray-500 font-tactical text-sm">Nenhum associado encontrado</p>
+          <p className="text-gray-500 font-tactical text-sm">Nenhum associado ou visitante encontrado</p>
         </div>
       )}
     </div>
@@ -182,6 +222,8 @@ interface PresentCardProps {
   tabSummary: TabSummary | null;
   onNewSale: (visit: Visit) => void;
   onRegisterShot: (visit: Visit) => void;
+  onIssueLoan: (visit: Visit) => void;
+  onReturnLoan: (loanId: string, visit: Visit) => void;
   onCheckOut: (visit: Visit) => void;
 }
 
@@ -191,26 +233,43 @@ const PresentCard = ({
   tabSummary,
   onNewSale,
   onRegisterShot,
+  onIssueLoan,
+  onReturnLoan,
   onCheckOut,
 }: PresentCardProps) => {
   const totalShots = totalShotsFor(visit);
   const hasTab = (tabSummary?.itemCount ?? 0) > 0;
+  const isVisitor = visit.member.role === 'VISITOR';
   return (
-    <div className="bg-gray-900/70 border border-gray-800 rounded-lg p-4 flex flex-col gap-3 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20 transition-all">
+    <div
+      className={`bg-gray-900/70 border rounded-lg p-4 flex flex-col gap-3 transition-all ${isVisitor ? 'border-blue-500/30 hover:border-blue-500/60 hover:ring-1 hover:ring-blue-500/20' : 'border-gray-800 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20'}`}
+    >
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="h-12 w-12 rounded-full bg-cbt-orange/20 text-cbt-orange flex items-center justify-center font-tactical text-sm font-bold flex-shrink-0">
+        <div
+          className={`h-12 w-12 rounded-full flex items-center justify-center font-tactical text-sm font-bold flex-shrink-0 ${isVisitor ? 'bg-blue-500/20 text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
+        >
           {getInitials(visit.member.fullName)}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-white font-tactical text-sm font-semibold truncate">
-            {visit.member.fullName}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-white font-tactical text-sm font-semibold truncate">
+              {visit.member.fullName}
+            </p>
+            {isVisitor && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+                <UserCheck className="h-2.5 w-2.5" />
+                Visitante
+              </span>
+            )}
+          </div>
           <p className="text-gray-500 font-tactical text-xs">
-            Nº {visit.member.memberNumber ?? '—'} · entrou {formatTime(visit.checkInTime)}
+            {isVisitor ? 'Visitante' : `Nº ${visit.member.memberNumber ?? '—'}`} · entrou {formatTime(visit.checkInTime)}
           </p>
           <p className="text-gray-300 font-tactical text-xs mt-0.5">
-            <span className="text-cbt-orange">{formatDuration(visit.checkInTime, now)}</span>
+            <span className={isVisitor ? 'text-blue-300' : 'text-cbt-orange'}>
+              {formatDuration(visit.checkInTime, now)}
+            </span>
             {visit.lane && <span className="text-gray-500"> · {visit.lane.name}</span>}
           </p>
         </div>
@@ -259,8 +318,8 @@ const PresentCard = ({
         )}
       </div>
 
-      {/* Actions */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* Actions — 4 botoes (Venda | Tiro | Empréstimo | Fechar) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Button
           type="button"
           variant="outline"
@@ -285,6 +344,16 @@ const PresentCard = ({
           type="button"
           variant="outline"
           size="sm"
+          onClick={() => onIssueLoan(visit)}
+          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-300 font-tactical h-9"
+        >
+          <Package className="h-3.5 w-3.5 mr-1" />
+          Empréstimo
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
           onClick={() => onCheckOut(visit)}
           className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
         >
@@ -292,6 +361,20 @@ const PresentCard = ({
           Fechar
         </Button>
       </div>
+
+      {/* Equipamentos em uso pelo membro presente */}
+      {visit.member.loansReceived && visit.member.loansReceived.length > 0 && (
+        <div className="mt-1">
+          <p className="text-[10px] font-tactical uppercase tracking-wider text-gray-500 mb-1">
+            Equipamentos em uso
+          </p>
+          <MemberLoanedEquipmentList
+            loans={visit.member.loansReceived}
+            onReturn={(loanId) => onReturnLoan(loanId, visit)}
+            compact
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -322,6 +405,9 @@ const PresentMembersPanel = () => {
 
   // CloseTabDialog state — finalizar comanda
   const [closeTab, setCloseTab] = useState<{ visit: Visit; draft: Transaction } | null>(null);
+
+  // LoanIssueDialog state — emprestimo de equipamento
+  const [loanIssueVisit, setLoanIssueVisit] = useState<Visit | null>(null);
 
   // Tick clock for live duration
   useEffect(() => {
@@ -453,6 +539,79 @@ const PresentMembersPanel = () => {
     setOpenTab({ visit });
   };
 
+  const handleIssueLoan = (visit: Visit) => {
+    setLoanIssueVisit(visit);
+  };
+
+  // Devolucao instantanea pelo X — sem dialog, mantem condicao do emprestimo.
+  // Toast com botao "Desfazer" reabre o emprestimo se admin errou.
+  const handleReturnLoan = async (loanId: string, visit: Visit) => {
+    const loanRef = visit.member.loansReceived?.find((l) => l.id === loanId);
+    if (!loanRef) return;
+
+    const conditionToReturn = loanRef.conditionAtLoan || 'GOOD';
+
+    // Optimistic update — remove o chip da lista
+    setPresent((prev) =>
+      prev.map((v) =>
+        v.id === visit.id
+          ? {
+              ...v,
+              member: {
+                ...v.member,
+                loansReceived: v.member.loansReceived?.filter((l) => l.id !== loanId) ?? [],
+              },
+            }
+          : v,
+      ),
+    );
+
+    const result = await returnLoanApi(loanId, { conditionAtReturn: conditionToReturn });
+
+    if (!result.success) {
+      // Reverte: refetch
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao devolver equipamento',
+        description: result.error || 'Tente novamente.',
+      });
+      fetchPresent(true);
+      return;
+    }
+
+    toast({
+      title: `${loanRef.equipment.name} devolvido`,
+      description: `Devolução registrada como ${conditionToReturn}.`,
+      action: (
+        <ToastAction
+          altText="Desfazer"
+          onClick={async () => {
+            // Reabre emitindo novo emprestimo do mesmo equipamento para o mesmo membro
+            const { issueLoan } = await import('@/services/loansService');
+            const undo = await issueLoan({
+              memberId: visit.member.id,
+              equipmentId: loanRef.equipment.id,
+            });
+            if (undo.success) {
+              toast({ title: 'Devolução desfeita' });
+            } else {
+              toast({
+                variant: 'destructive',
+                title: 'Não foi possível desfazer',
+                description: undo.error || 'O equipamento pode ter sido emprestado a outra pessoa.',
+              });
+            }
+            fetchPresent(true);
+          }}
+        >
+          Desfazer
+        </ToastAction>
+      ),
+    });
+
+    fetchPresent(true);
+  };
+
   const handleTabFinalized = async (visit: Visit) => {
     // Após finalize, libera a baia (checkout) e atualiza estado.
     setTabs((prev) => {
@@ -526,6 +685,8 @@ const PresentMembersPanel = () => {
               onRegisterShot={(visit) =>
                 setShotDialog({ visitId: visit.id, memberName: visit.member.fullName })
               }
+              onIssueLoan={handleIssueLoan}
+              onReturnLoan={handleReturnLoan}
               onCheckOut={handleCheckoutClick}
             />
           ))}
@@ -599,6 +760,20 @@ const PresentMembersPanel = () => {
           memberId={openTab.visit.member.id}
           visitId={openTab.visit.id}
           memberName={openTab.visit.member.fullName}
+        />
+      )}
+
+      {/* Emprestimo de equipamento ao membro presente */}
+      {loanIssueVisit && (
+        <LoanIssueDialog
+          open={!!loanIssueVisit}
+          onOpenChange={(o) => !o && setLoanIssueVisit(null)}
+          preselectedMemberId={loanIssueVisit.member.id}
+          preselectedMemberName={loanIssueVisit.member.fullName}
+          onCreated={() => {
+            setLoanIssueVisit(null);
+            fetchPresent(true);
+          }}
         />
       )}
 

@@ -20,8 +20,13 @@ import {
   Upload,
   X,
   IdCard,
+  ArrowRight,
+  Receipt,
 } from 'lucide-react';
 import MemberProfileTab from '@/components/admin/MemberProfileTab';
+import LoanTransferDialog from '@/components/admin/LoanTransferDialog';
+import LoanReturnDialog from '@/components/admin/LoanReturnDialog';
+import { getLoanById, type EquipmentLoan } from '@/services/loansService';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -196,6 +201,8 @@ const MemberDetailPage = () => {
   // ── Loans State ──────────────────────────────────────────────────────────
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loansLoading, setLoansLoading] = useState(false);
+  const [loanTransferTarget, setLoanTransferTarget] = useState<EquipmentLoan | null>(null);
+  const [loanReturnTarget, setLoanReturnTarget] = useState<EquipmentLoan | null>(null);
 
   // ── Fetch Member ─────────────────────────────────────────────────────────
   const fetchMember = useCallback(async () => {
@@ -1288,6 +1295,7 @@ const MemberDetailPage = () => {
                     <TableHead className="text-gray-400 font-tactical">Devolucao Prevista</TableHead>
                     <TableHead className="text-gray-400 font-tactical">Devolucao Real</TableHead>
                     <TableHead className="text-gray-400 font-tactical">Status</TableHead>
+                    <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1306,6 +1314,36 @@ const MemberDetailPage = () => {
                         {loan.actualReturn ? formatDate(loan.actualReturn) : '--'}
                       </TableCell>
                       <TableCell>{getLoanStatusBadge(loan.status)}</TableCell>
+                      <TableCell className="text-right">
+                        {loan.status === 'ACTIVE' && (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                              title="Transferir"
+                              onClick={async () => {
+                                const res = await getLoanById(loan.id);
+                                if (res.success && res.data) setLoanTransferTarget(res.data);
+                              }}
+                            >
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                              title="Devolver"
+                              onClick={async () => {
+                                const res = await getLoanById(loan.id);
+                                if (res.success && res.data) setLoanReturnTarget(res.data);
+                              }}
+                            >
+                              <Receipt className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1314,6 +1352,26 @@ const MemberDetailPage = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ══════════════════════ LOAN TRANSFER / RETURN ══════════════════════ */}
+      <LoanTransferDialog
+        open={!!loanTransferTarget}
+        onOpenChange={(o) => !o && setLoanTransferTarget(null)}
+        activeLoan={loanTransferTarget}
+        onTransferred={() => {
+          setLoanTransferTarget(null);
+          fetchLoans();
+        }}
+      />
+      <LoanReturnDialog
+        open={!!loanReturnTarget}
+        onOpenChange={(o) => !o && setLoanReturnTarget(null)}
+        activeLoan={loanReturnTarget}
+        onReturned={() => {
+          setLoanReturnTarget(null);
+          fetchLoans();
+        }}
+      />
 
       {/* ══════════════════════ PASSWORD DIALOG ══════════════════════ */}
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>

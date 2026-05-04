@@ -19,6 +19,7 @@ datasource db {
 enum Role {
   ADMIN
   ASSOCIATE
+  VISITOR
 }
 
 enum UserStatus {
@@ -50,6 +51,7 @@ enum LoanStatus {
   RETURNED
   OVERDUE
   LOST
+  TRANSFERRED
 }
 
 enum EquipmentType {
@@ -112,6 +114,7 @@ enum AuditAction {
   STOCK_ADJUSTMENT
   LOAN_ISSUED
   LOAN_RETURNED
+  LOAN_TRANSFERRED
   PAYMENT_RECEIVED
 }
 
@@ -152,9 +155,12 @@ enum LaneStatus {
 
 model User {
   id              String     @id @default(uuid())
-  email           String     @unique
+  // Visitantes (role = VISITOR) não logam, então email/passwordHash/memberNumber
+  // são nullable. Postgres trata múltiplos NULL como distintos em UNIQUE,
+  // preservando a unicidade quando preenchidos.
+  email           String?    @unique
   cpf             String     @unique
-  passwordHash    String     @db.Text
+  passwordHash    String?    @db.Text
   role            Role       @default(ASSOCIATE)
   status          UserStatus @default(ACTIVE)
 
@@ -169,7 +175,7 @@ model User {
   photoUrl        String?    @db.Text
 
   // Dados do clube
-  memberNumber    String     @unique
+  memberNumber    String?    @unique
   cr              String?
   crExpiry        DateTime?  @db.Date
   crLevel         Int?       @default(1) // Nivel 1, 2 ou 3
@@ -369,11 +375,20 @@ model EquipmentLoan {
   conditionAtLoan   EquipmentCondition?
   conditionAtReturn EquipmentCondition?
   notes             String?            @db.Text
+
+  // Cadeia de transferencia: quando um loan e encerrado por transferencia (status=TRANSFERRED),
+  // o novo loan ACTIVE aponta para o anterior via transferredFromLoanId.
+  // @unique impede ramificacao (cada loan transfere para no maximo um proximo).
+  transferredFromLoanId String?       @unique
+  transferredFrom       EquipmentLoan? @relation("LoanTransferChain", fields: [transferredFromLoanId], references: [id])
+  transferredTo         EquipmentLoan? @relation("LoanTransferChain")
+
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
   @@index([memberId])
   @@index([equipmentId, status])
+  @@index([equipmentId, loanDate])
   @@index([status])
 }
 

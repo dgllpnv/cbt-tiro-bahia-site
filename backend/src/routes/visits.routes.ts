@@ -79,7 +79,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         take: limit,
         include: {
           member: {
-            select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+            select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
           },
           lane: {
             select: { id: true, number: true, name: true, status: true },
@@ -130,7 +130,28 @@ router.get('/today', requireRole('ADMIN'), async (req: Request, res: Response): 
       orderBy: { checkInTime: 'desc' },
       include: {
         member: {
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+          select: {
+            id: true,
+            fullName: true,
+            memberNumber: true,
+            photoUrl: true,
+            role: true,
+            // Equipamentos atualmente emprestados ao membro — alimenta a lista
+            // "Equipamentos em uso" no PresentCard do dashboard.
+            loansReceived: {
+              where: { status: 'ACTIVE' },
+              orderBy: { loanDate: 'desc' },
+              select: {
+                id: true,
+                loanDate: true,
+                expectedReturn: true,
+                conditionAtLoan: true,
+                equipment: {
+                  select: { id: true, name: true, equipmentType: true, serialNumber: true },
+                },
+              },
+            },
+          },
         },
         lane: {
           select: { id: true, number: true, name: true, status: true },
@@ -164,7 +185,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       where: { id },
       include: {
         member: {
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+          select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
         },
         lane: {
           select: { id: true, number: true, name: true, status: true },
@@ -283,7 +304,7 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
         },
         include: {
           member: {
-            select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+            select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
           },
           lane: {
             select: { id: true, number: true, name: true, status: true },
@@ -368,7 +389,7 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
       data: updateData,
       include: {
         member: {
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+          select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
         },
         lane: {
           select: { id: true, number: true, name: true, status: true },
@@ -439,7 +460,7 @@ router.patch('/:id/checkout', requireRole('ADMIN'), async (req: Request, res: Re
         data: { checkOutTime: new Date() },
         include: {
           member: {
-            select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+            select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
           },
           lane: {
             select: { id: true, number: true, name: true, status: true },

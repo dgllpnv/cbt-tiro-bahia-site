@@ -11,18 +11,22 @@ export interface EquipmentLoan {
   loanDate: string;
   expectedReturn: string | null;
   actualReturn: string | null;
-  status: string;
-  conditionAtLoan: string;
+  status: 'ACTIVE' | 'RETURNED' | 'OVERDUE' | 'LOST' | 'TRANSFERRED' | string;
+  conditionAtLoan: string | null;
   conditionAtReturn: string | null;
   notes: string | null;
+  transferredFromLoanId?: string | null;
   equipment: {
     id: string;
     name: string;
     serialNumber: string | null;
+    equipmentType?: string;
   };
   member: {
     id: string;
     fullName: string;
+    memberNumber?: string | null;
+    role?: 'ADMIN' | 'ASSOCIATE' | 'VISITOR';
   };
   issuedBy: {
     id: string;
@@ -31,6 +35,10 @@ export interface EquipmentLoan {
   returnedBy?: {
     id: string;
     fullName: string;
+  } | null;
+  transferredFrom?: {
+    id: string;
+    member: { id: string; fullName: string };
   } | null;
 }
 
@@ -46,10 +54,20 @@ export interface ReturnLoanData {
   notes?: string | null;
 }
 
+export interface TransferLoanData {
+  newMemberId: string;
+  conditionAtTransfer?: string;
+  notes?: string | null;
+}
+
 interface ListLoansParams {
   status?: string;
   memberId?: string;
   equipmentId?: string;
+  equipmentType?: string;
+  startDate?: string;
+  endDate?: string;
+  q?: string;
   page?: number;
   limit?: number;
 }
@@ -105,5 +123,20 @@ export async function returnLoan(id: string, data: ReturnLoanData) {
     return { success: false, error: response.data.error };
   } catch (error: any) {
     return { success: false, error: error.response?.data?.error || 'Erro ao devolver equipamento' };
+  }
+}
+
+export async function transferLoan(id: string, data: TransferLoanData) {
+  try {
+    const response = await api.post(`/api/loans/${id}/transfer`, data);
+    if (response.data.success) {
+      return {
+        success: true,
+        data: response.data.data as { previous: EquipmentLoan; current: EquipmentLoan },
+      };
+    }
+    return { success: false, error: response.data.error };
+  } catch (error: any) {
+    return { success: false, error: error.response?.data?.error || 'Erro ao transferir emprestimo' };
   }
 }

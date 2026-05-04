@@ -20,8 +20,22 @@ export interface Visit {
   member: {
     id: string;
     fullName: string;
-    memberNumber: number | null;
+    memberNumber: string | null;
     photoUrl: string | null;
+    role?: 'ADMIN' | 'ASSOCIATE' | 'VISITOR';
+    // Empréstimos atualmente ativos do membro (vem populado em GET /api/visits/today)
+    loansReceived?: Array<{
+      id: string;
+      loanDate: string;
+      expectedReturn: string | null;
+      conditionAtLoan: string | null;
+      equipment: {
+        id: string;
+        name: string;
+        equipmentType: string;
+        serialNumber: string | null;
+      };
+    }>;
   };
   lane: {
     id: string;

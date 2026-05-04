@@ -334,13 +334,6 @@ const SettingsPage = () => {
             Produtos ({products.length})
           </TabsTrigger>
           <TabsTrigger
-            value="equipment"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
-          >
-            <Crosshair size={16} className="mr-2" />
-            Equipamentos ({equipment.length})
-          </TabsTrigger>
-          <TabsTrigger
             value="club"
             className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
           >
@@ -433,90 +426,6 @@ const SettingsPage = () => {
                                 type: 'product',
                                 id: p.id,
                                 name: p.name,
-                              })
-                            }
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* EQUIPAMENTOS */}
-        <TabsContent value="equipment" className="mt-4">
-          <div className="flex justify-end mb-4">
-            <Button
-              onClick={openNewEquipment}
-              className="bg-cbt-orange text-black font-tactical hover:bg-cbt-orange/90"
-            >
-              <Plus size={16} className="mr-2" />
-              Novo Equipamento
-            </Button>
-          </div>
-          {equipment.length === 0 ? (
-            <EmptyState
-              title="Nenhum equipamento cadastrado"
-              description="Cadastre equipamentos para empréstimo"
-            />
-          ) : (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Nome</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">N. Série</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Condição</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Disponível</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {equipment.map((e: any) => (
-                    <TableRow key={e.id} className="border-gray-800">
-                      <TableCell className="text-white font-tactical">{e.name}</TableCell>
-                      <TableCell className="text-gray-400 font-tactical">
-                        {equipmentTypeLabels[e.equipmentType] || e.equipmentType}
-                      </TableCell>
-                      <TableCell className="text-gray-400 font-tactical">
-                        {e.serialNumber || '-'}
-                      </TableCell>
-                      <TableCell className="text-gray-400 font-tactical">
-                        {equipmentConditionLabels[e.condition] || e.condition}
-                      </TableCell>
-                      <TableCell
-                        className={`font-tactical ${e.isAvailable ? 'text-green-400' : 'text-red-400'}`}
-                      >
-                        {e.isAvailable ? 'Sim' : 'Não'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-cbt-orange"
-                            title="Editar"
-                            onClick={() => openEditEquipment(e)}
-                          >
-                            <Pencil size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-red-400"
-                            title="Remover"
-                            onClick={() =>
-                              setDeleteConfirm({
-                                open: true,
-                                type: 'equipment',
-                                id: e.id,
-                                name: e.name,
                               })
                             }
                           >

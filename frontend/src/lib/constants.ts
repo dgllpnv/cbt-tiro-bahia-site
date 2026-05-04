@@ -44,6 +44,7 @@ export const loanStatusLabels: Record<string, string> = {
   RETURNED: 'Devolvido',
   OVERDUE: 'Atrasado',
   LOST: 'Perdido',
+  TRANSFERRED: 'Transferido',
 };
 
 export const expenseCategoryLabels: Record<string, string> = {

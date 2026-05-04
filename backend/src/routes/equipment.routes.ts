@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -66,6 +67,8 @@ const updateConditionSchema = z.object({
 
 // =====================================================
 // GET / — List equipment
+// Query params: equipmentType, isAvailable, isActive, condition, search,
+//               includeActiveLoans (=true para incluir loan ativo + member)
 // =====================================================
 
 router.get('/', async (req: Request, res: Response): Promise<void> => {
@@ -74,7 +77,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const skip = (page - 1) * limit;
 
-    const { equipmentType, isAvailable, isActive, condition, search } = req.query;
+    const { equipmentType, isAvailable, isActive, condition, search, includeActiveLoans } = req.query;
 
     const where: any = {};
 
@@ -106,12 +109,27 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       ];
     }
 
+    const include = includeActiveLoans === 'true'
+      ? {
+          loans: {
+            where: { status: 'ACTIVE' as const },
+            take: 1,
+            include: {
+              member: {
+                select: { id: true, fullName: true, memberNumber: true, role: true },
+              },
+            },
+          },
+        }
+      : undefined;
+
     const [equipment, total] = await Promise.all([
       prisma.equipment.findMany({
         where,
         orderBy: { name: 'asc' },
         skip,
         take: limit,
+        include,
       }),
       prisma.equipment.count({ where }),
     ]);
@@ -137,7 +155,144 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 // =====================================================
-// GET /:id — Get equipment by ID (with loan history)
+// GET /dashboard — KPIs e agregados de equipamentos
+// Query: from, to (default ultimos 30 dias)
+// IMPORTANTE: precisa vir ANTES de GET /:id para nao colidir
+// =====================================================
+
+router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const now = new Date();
+    const defaultFrom = new Date(now);
+    defaultFrom.setDate(defaultFrom.getDate() - 30);
+
+    const from = req.query.from ? new Date(req.query.from as string) : defaultFrom;
+    const to = req.query.to ? new Date(req.query.to as string) : now;
+
+    const [
+      activeLoans,
+      overdueLoans,
+      totalEquipment,
+      inUse,
+      available,
+      needsRepair,
+      byTypeRaw,
+      byConditionRaw,
+      topUsedRaw,
+      recentMovements,
+    ] = await Promise.all([
+      prisma.equipmentLoan.count({ where: { status: 'ACTIVE' } }),
+      prisma.equipmentLoan.count({
+        where: { status: 'ACTIVE', expectedReturn: { lt: now, not: null } },
+      }),
+      prisma.equipment.count({ where: { isActive: true } }),
+      prisma.equipment.count({ where: { isActive: true, isAvailable: false } }),
+      prisma.equipment.count({ where: { isActive: true, isAvailable: true } }),
+      prisma.equipment.count({
+        where: { isActive: true, condition: { in: ['NEEDS_REPAIR', 'DECOMMISSIONED'] } },
+      }),
+      prisma.equipment.groupBy({
+        by: ['equipmentType'],
+        where: { isActive: true },
+        _count: { _all: true },
+      }),
+      prisma.equipment.groupBy({
+        by: ['condition'],
+        where: { isActive: true },
+        _count: { _all: true },
+      }),
+      prisma.equipmentLoan.groupBy({
+        by: ['equipmentId'],
+        where: { loanDate: { gte: from, lte: to } },
+        _count: { _all: true },
+        orderBy: { _count: { equipmentId: 'desc' } },
+        take: 10,
+      }),
+      prisma.equipmentLoan.findMany({
+        orderBy: { loanDate: 'desc' },
+        take: 20,
+        include: {
+          equipment: { select: { id: true, name: true, equipmentType: true } },
+          member: { select: { id: true, fullName: true, memberNumber: true, role: true } },
+          issuedBy: { select: { id: true, fullName: true } },
+        },
+      }),
+    ]);
+
+    // Para byType com inUse/available, fazer queries adicionais por tipo
+    const byTypeWithStatus = await Promise.all(
+      byTypeRaw.map(async (t) => {
+        const [typeInUse, typeAvailable] = await Promise.all([
+          prisma.equipment.count({
+            where: { isActive: true, isAvailable: false, equipmentType: t.equipmentType },
+          }),
+          prisma.equipment.count({
+            where: { isActive: true, isAvailable: true, equipmentType: t.equipmentType },
+          }),
+        ]);
+        return {
+          equipmentType: t.equipmentType,
+          total: t._count._all,
+          inUse: typeInUse,
+          available: typeAvailable,
+        };
+      }),
+    );
+
+    // Hidrata topUsed com nome e tipo do equipamento
+    const topUsedIds = topUsedRaw.map((t) => t.equipmentId);
+    const topEquipment = topUsedIds.length
+      ? await prisma.equipment.findMany({
+          where: { id: { in: topUsedIds } },
+          select: { id: true, name: true, equipmentType: true },
+        })
+      : [];
+    const topEquipmentMap = new Map(topEquipment.map((e) => [e.id, e]));
+    const topUsed = topUsedRaw
+      .map((t) => {
+        const eq = topEquipmentMap.get(t.equipmentId);
+        return eq
+          ? {
+              equipment: eq,
+              loanCount: t._count._all,
+            }
+          : null;
+      })
+      .filter(Boolean);
+
+    const totalForUtilization = inUse + available;
+    const utilizationPct = totalForUtilization > 0 ? (inUse / totalForUtilization) * 100 : 0;
+
+    res.json({
+      success: true,
+      data: {
+        period: { from, to },
+        totals: {
+          activeLoans,
+          overdueLoans,
+          totalEquipment,
+          inUse,
+          available,
+          needsRepair,
+        },
+        utilizationPct,
+        byType: byTypeWithStatus,
+        byCondition: byConditionRaw.map((c) => ({
+          condition: c.condition,
+          count: c._count._all,
+        })),
+        topUsed,
+        recentMovements,
+      },
+    });
+  } catch (error) {
+    console.error('[EQUIPMENT] Erro no dashboard:', error);
+    res.status(500).json({ success: false, error: 'Erro ao carregar dashboard de equipamentos' });
+  }
+});
+
+// =====================================================
+// GET /:id — Get equipment by ID (with loan history limitado a 10)
 // =====================================================
 
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
@@ -152,13 +307,16 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
           take: 10,
           include: {
             member: {
-              select: { id: true, fullName: true, memberNumber: true },
+              select: { id: true, fullName: true, memberNumber: true, role: true },
             },
             issuedBy: {
               select: { id: true, fullName: true },
             },
             returnedBy: {
               select: { id: true, fullName: true },
+            },
+            transferredFrom: {
+              select: { id: true, member: { select: { id: true, fullName: true } } },
             },
           },
         },
@@ -174,6 +332,56 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('[EQUIPMENT] Erro ao buscar equipamento:', error);
     res.status(500).json({ success: false, error: 'Erro ao buscar equipamento' });
+  }
+});
+
+// =====================================================
+// GET /:id/history — Historico completo de loans do equipamento
+// Query: from, to, memberId
+// =====================================================
+
+router.get('/:id/history', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const equipment = await prisma.equipment.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
+    if (!equipment) {
+      res.status(404).json({ success: false, error: 'Equipamento nao encontrado' });
+      return;
+    }
+
+    const where: any = { equipmentId: id };
+
+    if (req.query.from || req.query.to) {
+      where.loanDate = {};
+      if (req.query.from) where.loanDate.gte = new Date(req.query.from as string);
+      if (req.query.to) where.loanDate.lte = new Date(req.query.to as string);
+    }
+
+    if (req.query.memberId) {
+      where.memberId = req.query.memberId as string;
+    }
+
+    const loans = await prisma.equipmentLoan.findMany({
+      where,
+      orderBy: { loanDate: 'desc' },
+      include: {
+        member: { select: { id: true, fullName: true, memberNumber: true, role: true } },
+        issuedBy: { select: { id: true, fullName: true } },
+        returnedBy: { select: { id: true, fullName: true } },
+        transferredFrom: {
+          select: { id: true, member: { select: { id: true, fullName: true } } },
+        },
+      },
+    });
+
+    res.json({ success: true, data: { equipment, loans } });
+  } catch (error) {
+    console.error('[EQUIPMENT] Erro ao buscar historico:', error);
+    res.status(500).json({ success: false, error: 'Erro ao buscar historico do equipamento' });
   }
 });
 
@@ -228,7 +436,20 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    console.log(`[EQUIPMENT] Equipamento criado: ${data.name} por ${req.user!.email}`);
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'Equipment',
+      entityId: equipment.id,
+      newData: {
+        name: equipment.name,
+        equipmentType: equipment.equipmentType,
+        serialNumber: equipment.serialNumber,
+        condition: equipment.condition,
+      },
+      description: `Equipamento ${equipment.name} cadastrado por ${req.user!.email}`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.status(201).json({ success: true, data: equipment });
   } catch (error) {
@@ -295,7 +516,26 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
       data: updateData,
     });
 
-    console.log(`[EQUIPMENT] Equipamento ${id} atualizado por ${req.user!.email}`);
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'UPDATE',
+      entityType: 'Equipment',
+      entityId: id,
+      previousData: {
+        name: existing.name,
+        condition: existing.condition,
+        serialNumber: existing.serialNumber,
+        isAvailable: existing.isAvailable,
+      },
+      newData: {
+        name: equipment.name,
+        condition: equipment.condition,
+        serialNumber: equipment.serialNumber,
+        isAvailable: equipment.isAvailable,
+      },
+      description: `Equipamento ${equipment.name} atualizado por ${req.user!.email}`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, data: equipment });
   } catch (error) {
@@ -343,7 +583,16 @@ router.patch('/:id/condition', async (req: Request, res: Response): Promise<void
       data: { condition },
     });
 
-    console.log(`[EQUIPMENT] Condicao do equipamento ${existing.name} alterada de ${existing.condition} para ${condition} por ${req.user!.email}`);
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'STATUS_CHANGE',
+      entityType: 'Equipment',
+      entityId: id,
+      previousData: { condition: existing.condition },
+      newData: { condition },
+      description: `Condicao de ${existing.name} alterada de ${existing.condition} para ${condition}`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, data: equipment });
   } catch (error) {
@@ -362,7 +611,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
 
     const existing = await prisma.equipment.findUnique({
       where: { id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isActive: true, isAvailable: true },
     });
 
     if (!existing) {
@@ -378,7 +627,16 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    console.log(`[EQUIPMENT] Equipamento ${existing.name} desativado (soft delete) por ${req.user!.email}`);
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'DELETE',
+      entityType: 'Equipment',
+      entityId: id,
+      previousData: { isActive: existing.isActive, isAvailable: existing.isAvailable },
+      newData: { isActive: false, isAvailable: false },
+      description: `Equipamento ${existing.name} desativado (soft delete) por ${req.user!.email}`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, data: equipment });
   } catch (error) {
