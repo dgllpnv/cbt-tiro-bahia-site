@@ -23,6 +23,7 @@ import lanesRoutes from './routes/lanes.routes.js';
 import userStatsRoutes from './routes/userStats.routes.js';
 import clubSettingsRoutes from './routes/clubSettings.routes.js';
 import visitorsRoutes from './routes/visitors.routes.js';
+import faceProfilesRoutes from './routes/faceProfiles.routes.js';
 
 // =====================================================
 // EXPRESS APP SETUP
@@ -123,6 +124,7 @@ app.use('/api/lanes', lanesRoutes);
 app.use('/api/users', userStatsRoutes);
 app.use('/api/club-settings', clubSettingsRoutes);
 app.use('/api/visitors', visitorsRoutes);
+app.use('/api/face-profiles', faceProfilesRoutes);
 
 // =====================================================
 // 404 HANDLER

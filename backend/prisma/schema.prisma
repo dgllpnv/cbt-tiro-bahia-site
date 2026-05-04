@@ -116,6 +116,15 @@ enum AuditAction {
   LOAN_RETURNED
   LOAN_TRANSFERRED
   PAYMENT_RECEIVED
+  FACE_REGISTERED
+  FACE_VERIFIED
+  FACE_DELETED
+}
+
+enum FaceCaptureSource {
+  CHECK_IN
+  CHECK_OUT
+  MANUAL
 }
 
 enum CaliberCategory {
@@ -213,6 +222,8 @@ model User {
   documentsIssuedBy  MemberDocument[]  @relation("DocumentGeneratedBy")
   laneAssignments   Lane[]             @relation("LaneCurrentMember")
   visitsRegistered  Visit[]            @relation("VisitRegisteredBy")
+  faceProfiles      FaceProfile[]      @relation("FaceMember")
+  faceProfilesCaptured FaceProfile[]   @relation("FaceCapturedBy")
 
   @@index([clubId])
   @@index([status])
@@ -277,6 +288,7 @@ model Visit {
   details         VisitDetail[]
   transactions    Transaction[]
   habitualityRecords HabitualityRecord[]
+  faceProfiles    FaceProfile[]
 
   @@index([memberId, visitDate])
   @@index([clubId, visitDate])
@@ -668,4 +680,33 @@ model Lane {
 
   @@unique([clubId, number])
   @@index([status])
+}
+
+// =====================================================
+// FaceProfile — Reconhecimento facial (descriptor + thumbnail)
+//
+// Cada captura gera um registro. Multiplos perfis por membro permitem
+// robustez em condicoes diferentes de iluminacao/pose. Soft delete via
+// isActive=false preserva auditoria. Foto bruta NUNCA e armazenada —
+// apenas o descriptor 1024-d (irreversivel) + thumbnail comprimido.
+// =====================================================
+
+model FaceProfile {
+  id            String            @id @default(uuid())
+  clubId        String            @default("cbt-bahia")
+  memberId      String
+  member        User              @relation("FaceMember", fields: [memberId], references: [id], onDelete: Cascade)
+  descriptor    Json              // array de 1024 floats (Human descriptor)
+  thumbnail     String?           @db.Text // PNG/JPEG base64 ~200x200, opcional
+  source        FaceCaptureSource @default(MANUAL)
+  visitId       String?
+  visit         Visit?            @relation(fields: [visitId], references: [id])
+  capturedById  String
+  capturedBy    User              @relation("FaceCapturedBy", fields: [capturedById], references: [id])
+  notes         String?           @db.Text
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+
+  @@index([memberId, isActive])
+  @@index([clubId, createdAt])
 }

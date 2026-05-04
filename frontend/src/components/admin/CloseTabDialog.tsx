@@ -30,6 +30,17 @@ interface CloseTabDialogProps {
   draft: Transaction | null;
   /** Chamado apos finalize bem-sucedido. Espera-se que o pai libere a baia / refresque. */
   onFinalized: (finalized: Transaction) => void | Promise<void>;
+  /**
+   * Se fornecido + draft tem visitId, ao inves de chamar onFinalized direto,
+   * delega ao pai para mostrar prompt "Registrar Facial?". O pai fica responsavel
+   * por liberar a baia depois (via captura ou pulando).
+   */
+  onRequestFaceRegister?: (params: {
+    memberId: string;
+    memberName: string;
+    visitId: string;
+    finalized: Transaction;
+  }) => void;
 }
 
 const PAYMENT_METHODS = ['PIX', 'Dinheiro', 'Cartao de Credito', 'Cartao de Debito', 'Transferencia'];
@@ -45,7 +56,13 @@ const TRANSACTION_TYPES: Record<string, string> = {
   OTHER_SALE: 'Outra Venda',
 };
 
-const CloseTabDialog = ({ open, onOpenChange, draft, onFinalized }: CloseTabDialogProps) => {
+const CloseTabDialog = ({
+  open,
+  onOpenChange,
+  draft,
+  onFinalized,
+  onRequestFaceRegister,
+}: CloseTabDialogProps) => {
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('PIX');
   const [type, setType] = useState('OTHER_SALE');
@@ -99,8 +116,21 @@ const CloseTabDialog = ({ open, onOpenChange, draft, onFinalized }: CloseTabDial
         title: 'Conta fechada',
         description: `Total: ${formatCurrency(total)} via ${paymentMethod}`,
       });
-      await onFinalized(res.data);
-      onOpenChange(false);
+
+      // Se ha callback de face register e a transacao tem visitId+memberId,
+      // delega ao pai (que mostrara o prompt e cuidara de liberar a baia).
+      if (onRequestFaceRegister && draft.visitId && draft.memberId) {
+        onRequestFaceRegister({
+          memberId: draft.memberId,
+          memberName: draft.member.fullName,
+          visitId: draft.visitId,
+          finalized: res.data,
+        });
+        onOpenChange(false);
+      } else {
+        await onFinalized(res.data);
+        onOpenChange(false);
+      }
     } else {
       toast({
         variant: 'destructive',

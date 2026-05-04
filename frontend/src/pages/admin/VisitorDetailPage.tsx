@@ -31,6 +31,7 @@ import api from '@/services/api';
 import { formatCpf, formatPhone, formatCurrency, formatDate, formatDateTime } from '@/lib/formatters';
 import { transactionTypeLabels } from '@/lib/constants';
 import ConvertVisitorDialog from '@/components/admin/ConvertVisitorDialog';
+import MemberFaceProfilesSection from '@/components/admin/MemberFaceProfilesSection';
 
 function applyCpfMask(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -437,6 +438,10 @@ const VisitorDetailPage = () => {
               </Button>
             </div>
           </form>
+
+          <div className="mt-6">
+            <MemberFaceProfilesSection memberId={visitor.id} memberName={visitor.fullName} />
+          </div>
         </TabsContent>
 
         {/* TAB: VISITAS */}

@@ -90,7 +90,19 @@ const PortalHomePage = () => {
         ]);
 
         if (dashRes.status === 'fulfilled') {
-          setDashboard(dashRes.value.data);
+          // Backend retorna { success: true, data: { annuityStatus, myVisits, totalShots, ... } }
+          // Mapeia para o shape esperado pelo frontend.
+          const body = dashRes.value.data;
+          const payload = body?.data ?? body;
+          setDashboard({
+            annuityValidUntil:
+              payload?.annuityStatus?.validUntil ??
+              payload?.annuityValidUntil ??
+              user?.annuityValidUntil ??
+              null,
+            visitsThisYear: payload?.myVisits ?? payload?.visitsThisYear ?? 0,
+            shotsRegistered: payload?.totalShots ?? payload?.shotsRegistered ?? 0,
+          });
         } else {
           // Fallback from user data
           setDashboard({

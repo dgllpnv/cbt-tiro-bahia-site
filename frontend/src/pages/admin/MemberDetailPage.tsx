@@ -26,6 +26,7 @@ import {
 import MemberProfileTab from '@/components/admin/MemberProfileTab';
 import LoanTransferDialog from '@/components/admin/LoanTransferDialog';
 import LoanReturnDialog from '@/components/admin/LoanReturnDialog';
+import MemberFaceProfilesSection from '@/components/admin/MemberFaceProfilesSection';
 import { getLoanById, type EquipmentLoan } from '@/services/loansService';
 
 import PageHeader from '@/components/shared/PageHeader';
@@ -976,6 +977,10 @@ const MemberDetailPage = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mt-6">
+            <MemberFaceProfilesSection memberId={member.id} memberName={member.fullName} />
           </div>
         </TabsContent>
 

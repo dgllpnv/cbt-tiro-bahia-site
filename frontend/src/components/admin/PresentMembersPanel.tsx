@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, User, Users, UserCheck, Crosshair, Loader2, Plus, Receipt, ShoppingCart, Package } from 'lucide-react';
+import { Search, User, Users, UserCheck, Crosshair, Loader2, Plus, Receipt, ShoppingCart, Package, ScanFace } from 'lucide-react';
 import { GiBullets } from 'react-icons/gi';
 
 import api from '@/services/api';
@@ -12,6 +12,7 @@ import {
 import { listLanes } from '@/services/lanesService';
 import { getDraftByVisit, type Transaction } from '@/services/transactionsService';
 import { returnLoan as returnLoanApi } from '@/services/loansService';
+import { verifyFaceForCheckout } from '@/services/faceProfilesService';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,10 @@ import OpenTabDialog from '@/components/admin/OpenTabDialog';
 import CloseTabDialog from '@/components/admin/CloseTabDialog';
 import LoanIssueDialog from '@/components/admin/LoanIssueDialog';
 import MemberLoanedEquipmentList from '@/components/admin/MemberLoanedEquipmentList';
+import FaceVerifyDialog from '@/components/admin/FaceVerifyDialog';
+import FaceCheckoutDialog, { type FaceCheckoutTarget } from '@/components/admin/FaceCheckoutDialog';
+import FaceRegisterPromptDialog from '@/components/admin/FaceRegisterPromptDialog';
+import { warmup as warmupFace } from '@/lib/faceCapture';
 import { getCaliberColor } from '@/lib/ammunitionVisuals';
 import { getFirearmCategory, getFirearmCategoryVisual } from '@/lib/firearmsCatalog';
 import { formatCurrency } from '@/lib/formatters';
@@ -404,10 +409,28 @@ const PresentMembersPanel = () => {
   const [openTab, setOpenTab] = useState<{ visit: Visit } | null>(null);
 
   // CloseTabDialog state — finalizar comanda
-  const [closeTab, setCloseTab] = useState<{ visit: Visit; draft: Transaction } | null>(null);
+  const [closeTab, setCloseTab] = useState<{
+    visit: Visit;
+    draft: Transaction;
+    /** Quando true, o pagamento confirma e libera baia direto, sem perguntar
+     *  "Verificar Facial?" depois (admin ja verificou no botao Facial). */
+    skipFaceVerify?: boolean;
+  } | null>(null);
 
   // LoanIssueDialog state — emprestimo de equipamento
   const [loanIssueVisit, setLoanIssueVisit] = useState<Visit | null>(null);
+
+  // Face Recognition state
+  const [faceVerifyOpen, setFaceVerifyOpen] = useState(false);
+  const [faceCheckoutPrompt, setFaceCheckoutPrompt] = useState<Visit | null>(null);
+  const [faceCheckoutTarget, setFaceCheckoutTarget] = useState<FaceCheckoutTarget | null>(null);
+  // Quando o admin acabar de verificar/registrar a face no checkout, queremos disparar o checkout em seguida.
+  const faceCaptureFollowUpRef = useRef<(() => void) | null>(null);
+
+  // Pre-carrega modelos da Human em background quando o painel monta
+  useEffect(() => {
+    warmupFace().catch(() => {});
+  }, []);
 
   // Tick clock for live duration
   useEffect(() => {
@@ -531,7 +554,8 @@ const PresentMembersPanel = () => {
       // Sem comanda e sem tiros — prompt confirmando saída sem registro
       setCheckoutPrompt(visit);
     } else {
-      performCheckOut(visit);
+      // Sem comanda mas com tiros: pergunta se registra facial (que valida habitualidade)
+      setFaceCheckoutPrompt(visit);
     }
   };
 
@@ -624,6 +648,53 @@ const PresentMembersPanel = () => {
     fetchPresent(true);
   };
 
+  /**
+   * Acionado quando o admin clica "Fechar conta" no FaceVerifyDialog (membro
+   * ja identificado E ja presente no clube). Cria habitualidade automaticamente
+   * usando o descriptor recem-verificado e dispara o fluxo de checkout
+   * apropriado, pulando a segunda verificacao facial.
+   */
+  const handleFacialMatchedCheckout = async (member: { id: string }, descriptor: number[]) => {
+    const visit = present.find((v) => v.member.id === member.id);
+    if (!visit) {
+      toast({
+        variant: 'destructive',
+        title: 'Visita nao encontrada',
+        description: 'Nao foi possivel localizar a visita ativa do membro.',
+      });
+      return;
+    }
+
+    // Cria habitualidade automaticamente (idempotente — backend dedupe)
+    const verifyRes = await verifyFaceForCheckout({
+      descriptor,
+      memberId: member.id,
+      visitId: visit.id,
+    });
+    if (verifyRes.success && verifyRes.data.matched && verifyRes.data.habituality.created > 0) {
+      toast({
+        title: 'Habitualidade registrada',
+        description: `${verifyRes.data.habituality.created} registro(s) (${verifyRes.data.habituality.calibers.join(', ')}).`,
+      });
+    }
+
+    // Dispara checkout pulando o prompt de Verificar Facial (ja verificado)
+    const tab = tabs[visit.id];
+    if (tab && tab.itemCount > 0) {
+      // Cenario 1: tem comanda — admin ainda precisa confirmar pagamento,
+      // mas pula a segunda pergunta de Verificar Facial
+      setCloseTab({ visit, draft: tab.draft, skipFaceVerify: true });
+      return;
+    }
+    if ((visit.details?.length ?? 0) === 0) {
+      // Cenario 2: sem tiros — prompt de saida sem registro
+      setCheckoutPrompt(visit);
+      return;
+    }
+    // Cenario 3: tiros sem comanda — habitualidade ja foi criada, libera baia
+    performCheckOut(visit);
+  };
+
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
       {/* Header */}
@@ -652,8 +723,19 @@ const PresentMembersPanel = () => {
       </div>
 
       {/* Search / quick check-in */}
-      <div className="mb-4">
-        <CheckInSearch onPick={handleCheckIn} excludeIds={excludeIds} disabled={busy} />
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <CheckInSearch onPick={handleCheckIn} excludeIds={excludeIds} disabled={busy} />
+        </div>
+        <Button
+          type="button"
+          onClick={() => setFaceVerifyOpen(true)}
+          disabled={busy}
+          className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical h-12 gap-2 px-4 flex-shrink-0"
+        >
+          <ScanFace className="h-4 w-4" />
+          <span className="hidden sm:inline">Facial</span>
+        </Button>
       </div>
 
       {/* Grid of cards */}
@@ -777,11 +859,108 @@ const PresentMembersPanel = () => {
         />
       )}
 
+      {/* Identificacao facial — check-in OU checkout via Facial */}
+      <FaceVerifyDialog
+        open={faceVerifyOpen}
+        onOpenChange={setFaceVerifyOpen}
+        presentMemberIds={excludeIds}
+        onMatched={async (member) => {
+          setFaceVerifyOpen(false);
+          if (excludeIds.has(member.id)) {
+            // Edge-case: tinha mudado de status entre /verify e clique
+            toast({
+              variant: 'destructive',
+              title: `${member.fullName} já está no clube.`,
+            });
+            return;
+          }
+          await handleCheckIn(member.id, member.fullName);
+        }}
+        onMatchedAlreadyPresent={async (member, descriptor) => {
+          setFaceVerifyOpen(false);
+          await handleFacialMatchedCheckout(member, descriptor);
+        }}
+      />
+
+      {/* Pergunta "Registrar Facial?" no checkout (cenario 3 ou apos pagamento) */}
+      {faceCheckoutPrompt && (
+        <FaceRegisterPromptDialog
+          open={!!faceCheckoutPrompt}
+          onOpenChange={(o) => !o && setFaceCheckoutPrompt(null)}
+          memberName={faceCheckoutPrompt.member.fullName}
+          onSkip={() => {
+            const fn = faceCaptureFollowUpRef.current;
+            faceCaptureFollowUpRef.current = null;
+            setFaceCheckoutPrompt(null);
+            // Se nao ha follow-up explicito (cenario 3), default = performCheckOut
+            const v = faceCheckoutPrompt;
+            if (fn) {
+              fn();
+            } else if (v) {
+              performCheckOut(v);
+            }
+          }}
+          onConfirm={() => {
+            const v = faceCheckoutPrompt;
+            setFaceCheckoutPrompt(null);
+            if (!v) return;
+            // Se nao ha follow-up pre-configurado (cenario 3), seta default
+            if (!faceCaptureFollowUpRef.current) {
+              faceCaptureFollowUpRef.current = () => performCheckOut(v);
+            }
+            setFaceCheckoutTarget({
+              memberId: v.member.id,
+              memberName: v.member.fullName,
+              visitId: v.id,
+            });
+          }}
+        />
+      )}
+
+      {/* Verificacao facial no checkout — compara com perfil cadastrado */}
+      <FaceCheckoutDialog
+        open={!!faceCheckoutTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            // Fechou sem confirmar: ainda dispara o checkout pendente (pagamento ja confirmado)
+            const fn = faceCaptureFollowUpRef.current;
+            faceCaptureFollowUpRef.current = null;
+            setFaceCheckoutTarget(null);
+            if (fn) fn();
+          }
+        }}
+        target={faceCheckoutTarget}
+        onConfirmed={() => {
+          // Match ou registro inicial bem-sucedido: dispara checkout pendente
+          const fn = faceCaptureFollowUpRef.current;
+          faceCaptureFollowUpRef.current = null;
+          if (fn) fn();
+        }}
+      />
+
+
       {/* Fechar conta — resumo + desconto + pagamento */}
       <CloseTabDialog
         open={!!closeTab}
         onOpenChange={(o) => !o && setCloseTab(null)}
         draft={closeTab?.draft ?? null}
+        // Quando o admin entrou via "Fechar conta" do FaceVerifyDialog (skipFaceVerify),
+        // pula o prompt de verificar facial pos-pagamento (ja foi feito).
+        onRequestFaceRegister={
+          closeTab?.skipFaceVerify
+            ? undefined
+            : ({ memberId, memberName, visitId }) => {
+                const visit = closeTab?.visit;
+                setCloseTab(null);
+                if (!visit) return;
+                faceCaptureFollowUpRef.current = () => handleTabFinalized(visit);
+                setFaceCheckoutPrompt({
+                  ...visit,
+                  member: { ...visit.member, id: memberId, fullName: memberName },
+                  id: visitId,
+                } as Visit);
+              }
+        }
         onFinalized={async () => {
           if (closeTab) await handleTabFinalized(closeTab.visit);
         }}
