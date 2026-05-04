@@ -120,23 +120,23 @@ const AnnuityPage = () => {
       <div className={`border rounded-lg p-6 mb-6 ${annuity.borderClass} ${annuity.bgClass}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`h-14 w-14 rounded-full flex items-center justify-center border ${annuity.borderClass} bg-gray-900/50`}>
+            <div className={`h-14 w-14 rounded-full flex items-center justify-center border ${annuity.borderClass} bg-card/50`}>
               <CalendarCheck className={`h-7 w-7 ${annuity.textClass}`} />
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-military font-bold text-white tracking-wide">
+                <h2 className="text-xl font-military font-bold text-foreground tracking-wide">
                   Status da Anuidade
                 </h2>
                 <Badge variant="outline" className={`text-xs font-tactical font-bold ${annuity.badgeClass}`}>
                   {annuity.label}
                 </Badge>
               </div>
-              <p className="text-gray-400 font-tactical text-sm">
+              <p className="text-muted-foreground font-tactical text-sm">
                 {user?.annuityValidUntil ? (
                   <>
                     Valida ate{' '}
-                    <span className="text-white font-semibold">
+                    <span className="text-foreground font-semibold">
                       {formatDate(user.annuityValidUntil)}
                     </span>
                   </>
@@ -152,14 +152,14 @@ const AnnuityPage = () => {
                 <p className={`text-3xl font-military font-bold ${annuity.textClass}`}>
                   {daysRemaining}
                 </p>
-                <p className="text-xs font-tactical text-gray-400">dias restantes</p>
+                <p className="text-xs font-tactical text-muted-foreground">dias restantes</p>
               </>
             ) : user?.annuityValidUntil ? (
               <>
                 <p className="text-3xl font-military font-bold text-red-400">
                   {Math.abs(daysRemaining)}
                 </p>
-                <p className="text-xs font-tactical text-gray-400">dias vencida</p>
+                <p className="text-xs font-tactical text-muted-foreground">dias vencida</p>
               </>
             ) : null}
           </div>
@@ -170,54 +170,54 @@ const AnnuityPage = () => {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Receipt className="h-5 w-5 text-cbt-orange" />
-          <h3 className="text-lg font-military font-bold text-white tracking-wide">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide">
             Historico de Pagamentos
           </h3>
         </div>
 
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
           {isLoading ? (
             <LoadingSpinner message="Carregando historico..." />
           ) : payments.length === 0 ? (
             <EmptyState
-              icon={<DollarSign className="w-8 h-8 text-gray-500" />}
+              icon={<DollarSign className="w-8 h-8 text-muted-foreground/80" />}
               title="Nenhum pagamento registrado"
               description="Nenhum historico de pagamento de anuidade foi encontrado."
             />
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-800 hover:bg-transparent">
-                  <TableHead className="text-gray-400 font-tactical text-xs uppercase">Data Pagamento</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-xs uppercase">Valor</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-xs uppercase">Ano Ref.</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-xs uppercase">Vigencia</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-xs uppercase">Metodo</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground font-tactical text-xs uppercase">Data Pagamento</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-xs uppercase">Valor</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-xs uppercase">Ano Ref.</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-xs uppercase">Vigencia</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-xs uppercase">Metodo</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => (
-                  <TableRow key={payment.id} className="border-gray-800 hover:bg-gray-800/30">
-                    <TableCell className="text-white font-tactical text-sm">
+                  <TableRow key={payment.id} className="border-border hover:bg-muted/30">
+                    <TableCell className="text-foreground font-tactical text-sm">
                       {formatDate(payment.paymentDate)}
                     </TableCell>
                     <TableCell className="text-green-400 font-tactical text-sm font-semibold">
                       {formatCurrency(payment.amount)}
                     </TableCell>
-                    <TableCell className="text-white font-tactical text-sm">
+                    <TableCell className="text-foreground font-tactical text-sm">
                       {payment.referenceYear}
                     </TableCell>
-                    <TableCell className="text-gray-300 font-tactical text-sm">
+                    <TableCell className="text-foreground/85 font-tactical text-sm">
                       {formatDate(payment.validFrom)} — {formatDate(payment.validUntil)}
                     </TableCell>
                     <TableCell>
                       {payment.paymentMethod ? (
-                        <Badge variant="outline" className="bg-gray-800/50 text-gray-300 border-gray-700 text-[10px] font-tactical">
+                        <Badge variant="outline" className="bg-muted/50 text-foreground/85 border-border text-[10px] font-tactical">
                           <CreditCard className="h-3 w-3 mr-1" />
                           {payment.paymentMethod}
                         </Badge>
                       ) : (
-                        <span className="text-gray-500 text-sm">---</span>
+                        <span className="text-muted-foreground/80 text-sm">---</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -229,16 +229,16 @@ const AnnuityPage = () => {
       </div>
 
       {/* ── Info card ────────────────────────────────────────────────────── */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+      <div className="bg-card/50 border border-border rounded-lg p-5">
         <div className="flex items-start gap-3">
           <div className="h-9 w-9 rounded-full bg-cbt-orange/10 flex items-center justify-center flex-shrink-0">
             <Info className="h-4 w-4 text-cbt-orange" />
           </div>
           <div>
-            <h4 className="text-sm font-military font-bold text-white tracking-wide mb-1">
+            <h4 className="text-sm font-military font-bold text-foreground tracking-wide mb-1">
               Como renovar sua anuidade
             </h4>
-            <p className="text-sm font-tactical text-gray-400 leading-relaxed">
+            <p className="text-sm font-tactical text-muted-foreground leading-relaxed">
               Para renovar sua anuidade, entre em contato com a administracao do clube presencialmente
               ou atraves dos canais oficiais de atendimento. O pagamento pode ser realizado via
               transferencia bancaria, PIX ou diretamente na secretaria.

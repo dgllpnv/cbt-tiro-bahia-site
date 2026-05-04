@@ -55,10 +55,10 @@ const InfoRow = ({
   value: React.ReactNode;
 }) => (
   <div className="flex items-start gap-2 text-sm">
-    <Icon className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+    <Icon className="h-4 w-4 text-muted-foreground/80 mt-0.5 flex-shrink-0" />
     <div className="flex-1 min-w-0">
-      <p className="text-gray-500 font-tactical text-xs uppercase tracking-wider">{label}</p>
-      <div className="text-white font-tactical break-words">{value}</div>
+      <p className="text-muted-foreground/80 font-tactical text-xs uppercase tracking-wider">{label}</p>
+      <div className="text-foreground font-tactical break-words">{value}</div>
     </div>
   </div>
 );
@@ -108,13 +108,13 @@ const TransactionDetailsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <Receipt className="h-5 w-5 text-cbt-orange" />
             Detalhes do lancamento
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             Resumo completo da conta fechada.
           </DialogDescription>
         </DialogHeader>
@@ -126,7 +126,7 @@ const TransactionDetailsDialog = ({
         ) : tx ? (
           <div className="space-y-4 py-2">
             {/* Header info grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 bg-gray-800/40 border border-gray-700 rounded-md p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 bg-muted/40 border border-border rounded-md p-4">
               <InfoRow
                 icon={User}
                 label="Associado"
@@ -134,7 +134,7 @@ const TransactionDetailsDialog = ({
                   <span>
                     {tx.member.fullName}
                     {tx.member.memberNumber && (
-                      <span className="text-gray-500 ml-2 text-xs">Nº {tx.member.memberNumber}</span>
+                      <span className="text-muted-foreground/80 ml-2 text-xs">Nº {tx.member.memberNumber}</span>
                     )}
                   </span>
                 }
@@ -171,17 +171,17 @@ const TransactionDetailsDialog = ({
             </div>
 
             {/* Items */}
-            <div className="bg-gray-800/40 border border-gray-700 rounded-md overflow-hidden">
-              <div className="px-3 py-2 bg-gray-800/80 text-gray-400 font-tactical text-xs uppercase tracking-wider">
+            <div className="bg-muted/40 border border-border rounded-md overflow-hidden">
+              <div className="px-3 py-2 bg-muted/80 text-muted-foreground font-tactical text-xs uppercase tracking-wider">
                 Itens ({tx.items.length})
               </div>
               {tx.items.length === 0 ? (
-                <p className="px-4 py-6 text-center text-gray-500 font-tactical text-sm">
+                <p className="px-4 py-6 text-center text-muted-foreground/80 font-tactical text-sm">
                   Nenhum item registrado neste lancamento.
                 </p>
               ) : (
                 <table className="w-full text-sm font-tactical">
-                  <thead className="bg-gray-900/40 text-gray-500 text-xs uppercase tracking-wider">
+                  <thead className="bg-card/40 text-muted-foreground/80 text-xs uppercase tracking-wider">
                     <tr>
                       <th className="text-left px-3 py-2">Item</th>
                       <th className="text-right px-3 py-2">Qtde</th>
@@ -193,12 +193,12 @@ const TransactionDetailsDialog = ({
                     {tx.items.map((it) => {
                       const itSub = Number(it.subtotal ?? it.quantity * it.unitPrice);
                       return (
-                        <tr key={it.id} className="text-white">
+                        <tr key={it.id} className="text-foreground">
                           <td className="px-3 py-2 truncate max-w-[260px]" title={it.description}>
                             {it.description}
                           </td>
                           <td className="text-right px-3 py-2">{it.quantity}</td>
-                          <td className="text-right px-3 py-2 text-gray-400">
+                          <td className="text-right px-3 py-2 text-muted-foreground">
                             {formatCurrency(Number(it.unitPrice))}
                           </td>
                           <td className="text-right px-3 py-2">{formatCurrency(itSub)}</td>
@@ -211,33 +211,33 @@ const TransactionDetailsDialog = ({
             </div>
 
             {/* Totals */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-md p-3 space-y-1.5">
+            <div className="bg-muted/30 border border-border rounded-md p-3 space-y-1.5">
               <div className="flex justify-between text-sm font-tactical">
-                <span className="text-gray-400">Subtotal</span>
-                <span className="text-white">{formatCurrency(subtotal)}</span>
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground">{formatCurrency(subtotal)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-sm font-tactical">
-                  <span className="text-gray-400">Desconto</span>
+                  <span className="text-muted-foreground">Desconto</span>
                   <span className="text-red-300">- {formatCurrency(discount)}</span>
                 </div>
               )}
-              <div className="flex justify-between pt-2 border-t border-gray-700">
-                <span className="text-gray-300 font-military text-sm uppercase tracking-wider">Total</span>
+              <div className="flex justify-between pt-2 border-t border-border">
+                <span className="text-foreground/85 font-military text-sm uppercase tracking-wider">Total</span>
                 <span className="text-cbt-orange font-military text-lg">{formatCurrency(total)}</span>
               </div>
             </div>
 
             {/* Notes */}
             {tx.notes && (
-              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-3">
+              <div className="bg-muted/40 border border-border rounded-md p-3">
                 <div className="flex items-start gap-2">
-                  <FileText className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <FileText className="h-4 w-4 text-muted-foreground/80 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-gray-500 font-tactical text-xs uppercase tracking-wider mb-1">
+                    <p className="text-muted-foreground/80 font-tactical text-xs uppercase tracking-wider mb-1">
                       Observacoes
                     </p>
-                    <p className="text-gray-300 font-tactical text-sm whitespace-pre-line">{tx.notes}</p>
+                    <p className="text-foreground/85 font-tactical text-sm whitespace-pre-line">{tx.notes}</p>
                   </div>
                 </div>
               </div>
@@ -250,7 +250,7 @@ const TransactionDetailsDialog = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Fechar
           </Button>

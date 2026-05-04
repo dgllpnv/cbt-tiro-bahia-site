@@ -55,12 +55,12 @@ interface KpiProps {
 }
 
 const Kpi = ({ icon: Icon, label, value, accent }: KpiProps) => (
-  <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+  <div className="bg-card/50 border border-border rounded-lg p-4">
     <div className="flex items-center justify-between mb-2">
-      <p className="text-xs font-tactical uppercase tracking-wider text-gray-500">{label}</p>
+      <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">{label}</p>
       <Icon className="h-4 w-4" style={{ color: accent }} />
     </div>
-    <p className="text-2xl font-military font-bold text-white tracking-wide">{value}</p>
+    <p className="text-2xl font-military font-bold text-foreground tracking-wide">{value}</p>
   </div>
 );
 
@@ -85,7 +85,7 @@ const PodiumCard = ({
 }: PodiumCardProps) => {
   const accents = [
     { bg: 'bg-yellow-500/15', border: 'border-yellow-500/40', text: 'text-yellow-400', label: 'Ouro' },
-    { bg: 'bg-gray-400/15', border: 'border-gray-400/40', text: 'text-gray-300', label: 'Prata' },
+    { bg: 'bg-gray-400/15', border: 'border-gray-400/40', text: 'text-foreground/85', label: 'Prata' },
     { bg: 'bg-amber-700/15', border: 'border-amber-700/50', text: 'text-amber-500', label: 'Bronze' },
   ];
   const a = accents[rank] || accents[2];
@@ -103,16 +103,16 @@ const PodiumCard = ({
           style={iconColor ? { color: iconColor } : undefined}
         />
       </div>
-      <p className="text-white font-military text-lg tracking-wide truncate" title={title}>
+      <p className="text-foreground font-military text-lg tracking-wide truncate" title={title}>
         {title}
       </p>
       {subtitle && (
-        <p className="text-gray-500 font-tactical text-xs truncate">{subtitle}</p>
+        <p className="text-muted-foreground/80 font-tactical text-xs truncate">{subtitle}</p>
       )}
-      <p className="text-gray-300 font-tactical text-sm">
+      <p className="text-foreground/85 font-tactical text-sm">
         {shots.toLocaleString('pt-BR')} disparos
       </p>
-      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
         <div
           className={a.bg.replace('/15', '/80')}
           style={{ width: `${pct}%`, height: '100%' }}
@@ -173,7 +173,7 @@ const MemberProfileTab = ({
   }
   if (!stats) {
     return (
-      <div className="py-8 text-center text-gray-500 font-tactical">
+      <div className="py-8 text-center text-muted-foreground/80 font-tactical">
         Não foi possível carregar as estatísticas.
       </div>
     );
@@ -187,7 +187,7 @@ const MemberProfileTab = ({
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6 flex items-center gap-5 flex-wrap">
+      <div className="bg-card/50 border border-border rounded-lg p-6 flex items-center gap-5 flex-wrap">
         {photoUrl ? (
           <img
             src={photoUrl}
@@ -200,7 +200,7 @@ const MemberProfileTab = ({
           </div>
         )}
         <div className="min-w-0 flex-1 space-y-2">
-          <h2 className="text-2xl font-military font-bold text-white tracking-wide">{fullName}</h2>
+          <h2 className="text-2xl font-military font-bold text-foreground tracking-wide">{fullName}</h2>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-cbt-orange/10 border border-cbt-orange/30 text-cbt-orange font-tactical text-xs flex items-center gap-1.5">
               <Calendar className="h-3 w-3" />
@@ -209,7 +209,7 @@ const MemberProfileTab = ({
                 : 'Tempo de casa indefinido'}
             </span>
             {memberNumber && (
-              <span className="px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300 font-tactical text-xs">
+              <span className="px-3 py-1 rounded-full bg-muted border border-border text-foreground/85 font-tactical text-xs">
                 Nº {memberNumber}
               </span>
             )}
@@ -261,8 +261,8 @@ const MemberProfileTab = ({
 
       {/* Armas Favoritas (preferido) ou Calibres mais usados (fallback) */}
       {topFirearms.length > 0 ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
-          <h3 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+        <div className="bg-card/50 border border-border rounded-lg p-5">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
             <Trophy className="h-4 w-4 text-cbt-orange" />
             Armas Favoritas
           </h3>
@@ -288,12 +288,12 @@ const MemberProfileTab = ({
         </div>
       ) : (
         topCalibers.length > 0 && (
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
-            <h3 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+          <div className="bg-card/50 border border-border rounded-lg p-5">
+            <h3 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-cbt-orange" />
               Calibres mais usados
             </h3>
-            <p className="text-xs font-tactical text-gray-500 mb-3">
+            <p className="text-xs font-tactical text-muted-foreground/80 mb-3">
               Registre tiros com a arma para ver Armas Favoritas aqui.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -315,8 +315,8 @@ const MemberProfileTab = ({
 
       {/* Munição por calibre — bar chart com mini-ícones */}
       {stats.shotsByCaliber.length > 0 && (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
-          <h3 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+        <div className="bg-card/50 border border-border rounded-lg p-5">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-cbt-orange" />
             Munição preferida (por calibre)
           </h3>
@@ -326,15 +326,15 @@ const MemberProfileTab = ({
               return (
                 <li key={c.caliber} className="space-y-1">
                   <div className="flex items-center justify-between text-xs font-tactical">
-                    <span className="inline-flex items-center gap-1.5 text-white">
+                    <span className="inline-flex items-center gap-1.5 text-foreground">
                       <GiBullets className="h-3.5 w-3.5" style={{ color }} />
                       {c.caliber}
                     </span>
-                    <span className="text-gray-400">
+                    <span className="text-muted-foreground">
                       {c.shots.toLocaleString('pt-BR')} disparos · {c.percentage}%
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{ width: `${c.percentage}%`, background: color }}
@@ -349,8 +349,8 @@ const MemberProfileTab = ({
 
       {/* Munição comprada */}
       {stats.ammoSpentByType.length > 0 && (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
-          <h3 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+        <div className="bg-card/50 border border-border rounded-lg p-5">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
             <ShoppingBag className="h-4 w-4 text-cbt-orange" />
             Munição comprada no clube
           </h3>
@@ -360,9 +360,9 @@ const MemberProfileTab = ({
                 key={item.productName}
                 className="flex items-center justify-between py-2 text-sm font-tactical"
               >
-                <div className="min-w-0 flex-1 truncate text-gray-200">{item.productName}</div>
+                <div className="min-w-0 flex-1 truncate text-foreground">{item.productName}</div>
                 <div className="flex items-center gap-4 text-xs">
-                  <span className="text-gray-400">
+                  <span className="text-muted-foreground">
                     {item.totalQuantity.toLocaleString('pt-BR')} un
                   </span>
                   <span className="text-cbt-orange font-semibold">
@@ -376,9 +376,9 @@ const MemberProfileTab = ({
       )}
 
       {/* Últimas visitas */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+      <div className="bg-card/50 border border-border rounded-lg p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-military font-bold text-white tracking-wide flex items-center gap-2">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide flex items-center gap-2">
             <Calendar className="h-4 w-4 text-cbt-orange" />
             Últimas visitas
           </h3>
@@ -393,7 +393,7 @@ const MemberProfileTab = ({
           )}
         </div>
         {stats.recentVisits.length === 0 ? (
-          <p className="text-gray-500 font-tactical text-sm py-3 text-center">
+          <p className="text-muted-foreground/80 font-tactical text-sm py-3 text-center">
             Nenhuma visita registrada ainda.
           </p>
         ) : (
@@ -404,10 +404,10 @@ const MemberProfileTab = ({
                 className="py-2.5 flex items-center justify-between gap-3 text-sm font-tactical"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-white">{formatDate(v.visitDate)}</p>
-                  {v.laneName && <p className="text-gray-500 text-xs">{v.laneName}</p>}
+                  <p className="text-foreground">{formatDate(v.visitDate)}</p>
+                  {v.laneName && <p className="text-muted-foreground/80 text-xs">{v.laneName}</p>}
                 </div>
-                <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span>{durationLabel(v.durationMinutes)}</span>
                   <span className="text-cbt-orange">{v.shotsFired} disparos</span>
                 </div>

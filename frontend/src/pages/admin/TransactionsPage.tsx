@@ -127,15 +127,15 @@ interface ActionCardProps {
 const ActionCard = ({ icon: Icon, label, description, color, bgColor, borderColor, onClick }: ActionCardProps) => (
   <button
     onClick={onClick}
-    className={`text-left w-full group bg-gray-900/50 border ${borderColor} rounded-lg p-5 hover:bg-gray-800/50 transition-all duration-300 hover:scale-[1.01]`}
+    className={`text-left w-full group bg-card/50 border ${borderColor} rounded-lg p-5 hover:bg-muted/50 transition-all duration-300 hover:scale-[1.01]`}
   >
     <div className="flex items-start gap-4">
       <div className={`p-3 rounded-lg ${bgColor} group-hover:scale-110 transition-transform`}>
         <Icon className="h-5 w-5" style={{ color }} />
       </div>
       <div>
-        <p className="text-white font-military text-sm tracking-wide">{label}</p>
-        <p className="text-gray-500 font-tactical text-xs mt-0.5">{description}</p>
+        <p className="text-foreground font-military text-sm tracking-wide">{label}</p>
+        <p className="text-muted-foreground/80 font-tactical text-xs mt-0.5">{description}</p>
       </div>
     </div>
   </button>
@@ -563,7 +563,7 @@ const TransactionsPage = () => {
       PENDING: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
       ACTIVE: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
       OVERDUE: 'bg-red-500/10 text-red-400 border-red-500/20',
-      RETURNED: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+      RETURNED: 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30',
     };
     return config[status] || config['PENDING'];
   };
@@ -632,24 +632,24 @@ const TransactionsPage = () => {
         <LoadingSpinner message="Carregando lancamentos..." />
       ) : (
         <Tabs defaultValue="sales" className="space-y-4">
-          <TabsList className="bg-gray-900/50 border border-gray-800 p-1">
+          <TabsList className="bg-card/50 border border-border p-1">
             <TabsTrigger
               value="sales"
-              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-white data-[state=inactive]:text-gray-400"
+              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
             >
               <Receipt className="h-4 w-4 mr-2" />
               Vendas Recentes
             </TabsTrigger>
             <TabsTrigger
               value="loans"
-              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-white data-[state=inactive]:text-gray-400"
+              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
             >
               <Package className="h-4 w-4 mr-2" />
               Emprestimos Ativos
             </TabsTrigger>
             <TabsTrigger
               value="visits"
-              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-white data-[state=inactive]:text-gray-400"
+              className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground"
             >
               <UserCheck className="h-4 w-4 mr-2" />
               Visitas de Hoje
@@ -658,37 +658,37 @@ const TransactionsPage = () => {
 
           {/* ── Sales Tab ─────────────────────────────────────────────── */}
           <TabsContent value="sales">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
               {transactions.length === 0 ? (
                 <EmptyState
-                  icon={<Receipt className="w-8 h-8 text-gray-500" />}
+                  icon={<Receipt className="w-8 h-8 text-muted-foreground/80" />}
                   title="Nenhuma venda registrada"
                   description="Registre a primeira venda usando o botao acima."
                 />
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-800 hover:bg-transparent">
-                      <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Valor</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Pagamento</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                      <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-muted-foreground font-tactical">Membro</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Valor</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Pagamento</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {transactions.map((tx) => (
-                      <TableRow key={tx.id} className="border-gray-800 hover:bg-gray-800/50">
-                        <TableCell className="text-white font-medium">{tx.memberName}</TableCell>
-                        <TableCell className="text-gray-300 text-xs font-tactical">
+                      <TableRow key={tx.id} className="border-border hover:bg-muted/50">
+                        <TableCell className="text-foreground font-medium">{tx.memberName}</TableCell>
+                        <TableCell className="text-foreground/85 text-xs font-tactical">
                           {saleTypeLabel[tx.type] || tx.type}
                         </TableCell>
                         <TableCell className="text-green-400 font-mono text-sm font-medium">
                           {formatCurrency(tx.total)}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-sm">
+                        <TableCell className="text-foreground/85 text-sm">
                           {tx.paymentMethod ? paymentMethodLabel[tx.paymentMethod] || tx.paymentMethod : '—'}
                         </TableCell>
                         <TableCell>
@@ -696,7 +696,7 @@ const TransactionsPage = () => {
                             {statusLabel[tx.status] || tx.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-400 text-sm font-tactical">
+                        <TableCell className="text-muted-foreground text-sm font-tactical">
                           {formatDate(tx.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -705,7 +705,7 @@ const TransactionsPage = () => {
                             size="icon"
                             onClick={() => setDetailTxId(tx.id)}
                             title="Ver resumo"
-                            className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
+                            className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-cbt-orange/10"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -720,41 +720,41 @@ const TransactionsPage = () => {
 
           {/* ── Loans Tab ─────────────────────────────────────────────── */}
           <TabsContent value="loans">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
               {loans.length === 0 ? (
                 <EmptyState
-                  icon={<Package className="w-8 h-8 text-gray-500" />}
+                  icon={<Package className="w-8 h-8 text-muted-foreground/80" />}
                   title="Nenhum emprestimo ativo"
                   description="Nao ha emprestimos de equipamentos no momento."
                 />
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-800 hover:bg-transparent">
-                      <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Item</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Emprestimo</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Devolucao</TableHead>
-                      <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-muted-foreground font-tactical">Membro</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Item</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Emprestimo</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Devolucao</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loans.map((loan) => {
                       const isOverdue = loan.dueDate ? new Date(loan.dueDate) < new Date() && loan.status === 'ACTIVE' : false;
                       return (
-                        <TableRow key={loan.id} className="border-gray-800 hover:bg-gray-800/50">
-                          <TableCell className="text-white font-medium">{loan.memberName}</TableCell>
-                          <TableCell className="text-gray-300">{loan.itemName}</TableCell>
+                        <TableRow key={loan.id} className="border-border hover:bg-muted/50">
+                          <TableCell className="text-foreground font-medium">{loan.memberName}</TableCell>
+                          <TableCell className="text-foreground/85">{loan.itemName}</TableCell>
                           <TableCell>
                             <Badge className={statusBadge(isOverdue ? 'OVERDUE' : loan.status)}>
                               {isOverdue ? 'Atrasado' : loanStatusLabels[loan.status] || loan.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-gray-400 text-sm font-tactical">
+                          <TableCell className="text-muted-foreground text-sm font-tactical">
                             {formatDate(loan.borrowedAt)}
                           </TableCell>
-                          <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-400' : 'text-gray-400'}`}>
+                          <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
                             {loan.dueDate ? formatDate(loan.dueDate) : 'Uso interno'}
                           </TableCell>
                           <TableCell className="text-right">
@@ -769,7 +769,7 @@ const TransactionsPage = () => {
                                       if (res.success && res.data) setLoanTransferTarget(res.data);
                                     }}
                                     title="Transferir"
-                                    className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                                    className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
                                   >
                                     <UserCheck className="h-4 w-4" />
                                   </Button>
@@ -781,7 +781,7 @@ const TransactionsPage = () => {
                                       if (res.success && res.data) setLoanReturnTarget(res.data);
                                     }}
                                     title="Devolver"
-                                    className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                                    className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
                                   >
                                     <Receipt className="h-4 w-4" />
                                   </Button>
@@ -792,7 +792,7 @@ const TransactionsPage = () => {
                                 size="icon"
                                 onClick={() => setDetailLoan(loan)}
                                 title="Ver detalhes"
-                                className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
+                                className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-cbt-orange/10"
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -809,32 +809,32 @@ const TransactionsPage = () => {
 
           {/* ── Visits Tab ────────────────────────────────────────────── */}
           <TabsContent value="visits">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
               {visits.length === 0 ? (
                 <EmptyState
-                  icon={<CalendarCheck className="w-8 h-8 text-gray-500" />}
+                  icon={<CalendarCheck className="w-8 h-8 text-muted-foreground/80" />}
                   title="Nenhuma visita hoje"
                   description="Nenhum membro realizou check-in hoje."
                 />
               ) : (
                 <div className="divide-y divide-gray-800">
                   {visits.map((visit) => (
-                    <div key={visit.id} className="flex items-center gap-4 p-4 hover:bg-gray-800/30 transition-colors">
+                    <div key={visit.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
                       <div className="p-2.5 rounded-lg bg-violet-500/10 flex-shrink-0">
                         <Crosshair className="h-4 w-4 text-violet-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-white font-medium text-sm">{visit.memberName}</span>
+                          <span className="text-foreground font-medium text-sm">{visit.memberName}</span>
                           <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-xs">
                             {visit.laneName}
                           </Badge>
-                          <Badge className="bg-gray-500/10 text-gray-400 border-gray-500/20 text-xs">
+                          <Badge className="bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30 text-xs">
                             {visit.purpose}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-3 text-xs font-tactical">
-                          <span className="text-gray-500">
+                          <span className="text-muted-foreground/80">
                             Entrada: {formatDateTime(visit.checkIn)}
                           </span>
                           {visit.checkOut ? (
@@ -849,7 +849,7 @@ const TransactionsPage = () => {
                           )}
                         </div>
                         {visit.notes && (
-                          <p className="text-xs text-gray-600 font-tactical mt-1">{visit.notes}</p>
+                          <p className="text-xs text-muted-foreground/60 font-tactical mt-1">{visit.notes}</p>
                         )}
                       </div>
                       {!visit.checkOut && (
@@ -858,7 +858,7 @@ const TransactionsPage = () => {
                           disabled={checkoutLoadingId === visit.id}
                           variant="outline"
                           size="sm"
-                          className="bg-gray-800 border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200 flex-shrink-0"
+                          className="bg-muted border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200 flex-shrink-0"
                         >
                           {checkoutLoadingId === visit.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -875,7 +875,7 @@ const TransactionsPage = () => {
                         size="icon"
                         onClick={() => setDetailVisit(visit)}
                         title="Ver detalhes"
-                        className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10 flex-shrink-0"
+                        className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-cbt-orange/10 flex-shrink-0"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -894,9 +894,9 @@ const TransactionsPage = () => {
 
       {/* ── Nova Venda Dialog ───────────────────────────────────────────── */}
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2 flex-wrap">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2 flex-wrap">
               <ShoppingCart className="h-5 w-5 text-green-400" />
               Nova Venda
               {saleVisitId && (
@@ -905,7 +905,7 @@ const TransactionsPage = () => {
                 </Badge>
               )}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {saleVisitId
                 ? 'Lançamento rápido vinculado à visita atual do associado.'
                 : 'Registre uma nova venda para um membro do clube.'}
@@ -924,12 +924,12 @@ const TransactionsPage = () => {
 
             {/* Type */}
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Tipo de Lancamento</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Tipo de Lancamento</Label>
               <Select value={saleType} onValueChange={setSaleType}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {Object.entries(saleTypeLabel).map(([v, label]) => (
                     <SelectItem key={v} value={v}>{label}</SelectItem>
                   ))}
@@ -940,20 +940,20 @@ const TransactionsPage = () => {
             {/* Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-gray-300 font-tactical text-sm">Itens *</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Itens *</Label>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={addSaleItem}
-                  className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white h-7 text-xs"
+                  className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground h-7 text-xs"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Adicionar Item
                 </Button>
               </div>
               {saleItems.map((item, idx) => (
-                <div key={idx} className="p-3 bg-gray-800/50 border border-gray-700 rounded-lg space-y-3">
+                <div key={idx} className="p-3 bg-muted/50 border border-border rounded-lg space-y-3">
                   <div className="flex items-start gap-2">
                     <div className="flex-1">
                       <ProductSearch
@@ -982,24 +982,24 @@ const TransactionsPage = () => {
                       size="icon"
                       onClick={() => removeSaleItem(idx)}
                       disabled={saleItems.length <= 1}
-                      className="h-9 w-9 text-gray-500 hover:text-red-400 hover:bg-gray-700 flex-shrink-0 mt-7"
+                      className="h-9 w-9 text-muted-foreground/80 hover:text-red-400 hover:bg-secondary flex-shrink-0 mt-7"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                   <div className="flex items-end gap-2">
                     <div className="flex-1 space-y-1.5">
-                      <Label className="text-xs text-gray-500">Descricao</Label>
+                      <Label className="text-xs text-muted-foreground/80">Descricao</Label>
                       <Input
                         type="text"
                         value={item.description}
                         onChange={(e) => updateSaleItem(idx, 'description', e.target.value)}
                         placeholder="Descricao do item"
-                        className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
+                        className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange h-9 text-sm"
                       />
                     </div>
                     <div className="w-32 space-y-1.5">
-                      <Label className="text-xs text-gray-500">Qtd</Label>
+                      <Label className="text-xs text-muted-foreground/80">Qtd</Label>
                       <NumberStepper
                         value={item.quantity}
                         onChange={(v) => updateSaleItem(idx, 'quantity', Math.max(1, Math.round(v)))}
@@ -1008,7 +1008,7 @@ const TransactionsPage = () => {
                       />
                     </div>
                     <div className="w-44 space-y-1.5">
-                      <Label className="text-xs text-gray-500">Preco Unit.</Label>
+                      <Label className="text-xs text-muted-foreground/80">Preco Unit.</Label>
                       <NumberStepper
                         value={item.unitPrice}
                         onChange={(v) => updateSaleItem(idx, 'unitPrice', Math.max(0, v))}
@@ -1019,7 +1019,7 @@ const TransactionsPage = () => {
                       />
                     </div>
                     <div className="w-24 text-right">
-                      <Label className="text-xs text-gray-500 block mb-1.5">Subtotal</Label>
+                      <Label className="text-xs text-muted-foreground/80 block mb-1.5">Subtotal</Label>
                       <span className="text-green-400 font-mono text-sm font-medium">
                         {formatCurrency(item.quantity * item.unitPrice)}
                       </span>
@@ -1031,12 +1031,12 @@ const TransactionsPage = () => {
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Forma de Pagamento</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Forma de Pagamento</Label>
               <Select value={salePaymentMethod} onValueChange={setSalePaymentMethod}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   <SelectItem value="PIX">PIX</SelectItem>
                   <SelectItem value="CREDIT_CARD">Cartao de Credito</SelectItem>
                   <SelectItem value="DEBIT_CARD">Cartao de Debito</SelectItem>
@@ -1048,7 +1048,7 @@ const TransactionsPage = () => {
 
             {/* Total */}
             <div className="flex items-center justify-between p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
-              <span className="text-gray-300 font-tactical text-sm">Total da Venda</span>
+              <span className="text-foreground/85 font-tactical text-sm">Total da Venda</span>
               <span className="text-green-400 font-military text-lg font-bold">
                 {formatCurrency(saleTotal)}
               </span>
@@ -1060,14 +1060,14 @@ const TransactionsPage = () => {
               variant="outline"
               onClick={() => setSaleDialogOpen(false)}
               disabled={isSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmitSale}
               disabled={isSaving}
-              className="bg-green-600 hover:bg-green-700 text-white font-tactical min-w-[140px]"
+              className="bg-green-600 hover:bg-green-700 text-foreground font-tactical min-w-[140px]"
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Venda'}
             </Button>
@@ -1077,13 +1077,13 @@ const TransactionsPage = () => {
 
       {/* ── Nova Visita Dialog ──────────────────────────────────────────── */}
       <Dialog open={visitDialogOpen} onOpenChange={setVisitDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg">
+        <DialogContent className="bg-card border-border text-foreground max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <CalendarCheck className="h-5 w-5 text-violet-400" />
               Nova Visita
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Registre o check-in de um membro no clube.
             </DialogDescription>
           </DialogHeader>
@@ -1098,14 +1098,14 @@ const TransactionsPage = () => {
             />
 
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Baia (opcional)</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Baia (opcional)</Label>
               <Select value={visitLaneId} onValueChange={setVisitLaneId}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue placeholder={availableLanes.length === 0 ? 'Nenhuma baia disponivel' : 'Selecione a baia'} />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {availableLanes.length === 0 ? (
-                    <div className="px-2 py-1.5 text-xs text-gray-500 font-tactical">Nenhuma baia disponivel.</div>
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground/80 font-tactical">Nenhuma baia disponivel.</div>
                   ) : (
                     availableLanes.map((lane) => (
                       <SelectItem key={lane.id} value={lane.id}>
@@ -1116,19 +1116,19 @@ const TransactionsPage = () => {
                 </SelectContent>
               </Select>
               {lanesList.length > 0 && availableLanes.length < lanesList.length && (
-                <p className="text-xs text-gray-500 font-tactical">
+                <p className="text-xs text-muted-foreground/80 font-tactical">
                   {lanesList.length - availableLanes.length} baia(s) em uso ou manutencao.
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Finalidade</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Finalidade</Label>
               <Select value={visitPurpose} onValueChange={setVisitPurpose}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   <SelectItem value="Treino">Treino</SelectItem>
                   <SelectItem value="Avaliacao">Avaliacao</SelectItem>
                   <SelectItem value="Competicao">Competicao</SelectItem>
@@ -1139,12 +1139,12 @@ const TransactionsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Observacoes (opcional)</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Observacoes (opcional)</Label>
               <Textarea
                 value={visitNotes}
                 onChange={(e) => setVisitNotes(e.target.value)}
                 placeholder="Notas adicionais sobre a visita..."
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange min-h-[80px]"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange min-h-[80px]"
               />
             </div>
           </div>
@@ -1154,14 +1154,14 @@ const TransactionsPage = () => {
               variant="outline"
               onClick={() => setVisitDialogOpen(false)}
               disabled={isSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmitVisit}
               disabled={isSaving}
-              className="bg-violet-600 hover:bg-violet-700 text-white font-tactical min-w-[140px]"
+              className="bg-violet-600 hover:bg-violet-700 text-foreground font-tactical min-w-[140px]"
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Visita'}
             </Button>
@@ -1199,13 +1199,13 @@ const TransactionsPage = () => {
 
       {/* ── Nova Anuidade Dialog ────────────────────────────────────────── */}
       <Dialog open={annuityDialogOpen} onOpenChange={setAnnuityDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg">
+        <DialogContent className="bg-card border-border text-foreground max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-blue-400" />
               Nova Anuidade
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Registre o pagamento de anuidade de um membro.
             </DialogDescription>
           </DialogHeader>
@@ -1238,7 +1238,7 @@ const TransactionsPage = () => {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-gray-300 font-tactical text-sm">Valor *</Label>
+                    <Label className="text-foreground/85 font-tactical text-sm">Valor *</Label>
                     <Input
                       type="number"
                       min={0}
@@ -1246,29 +1246,29 @@ const TransactionsPage = () => {
                       value={annuityAmount}
                       onChange={(e) => setAnnuityAmount(e.target.value)}
                       placeholder="0,00"
-                      className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-300 font-tactical text-sm">Ano de Referencia</Label>
+                    <Label className="text-foreground/85 font-tactical text-sm">Ano de Referencia</Label>
                     <Input
                       type="number"
                       min={2020}
                       max={2030}
                       value={annuityYear}
                       onChange={(e) => setAnnuityYear(e.target.value)}
-                      className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
+                      className="bg-muted border-border text-foreground focus:border-cbt-orange"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-300 font-tactical text-sm">Forma de Pagamento</Label>
+                  <Label className="text-foreground/85 font-tactical text-sm">Forma de Pagamento</Label>
                   <Select value={annuityPaymentMethod} onValueChange={setAnnuityPaymentMethod}>
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectTrigger className="bg-muted border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectContent className="bg-muted border-border">
                       <SelectItem value="PIX">PIX</SelectItem>
                       <SelectItem value="CREDIT_CARD">Cartao de Credito</SelectItem>
                       <SelectItem value="DEBIT_CARD">Cartao de Debito</SelectItem>
@@ -1280,7 +1280,7 @@ const TransactionsPage = () => {
 
                 {annuityAmount && (
                   <div className="flex items-center justify-between p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
-                    <span className="text-gray-300 font-tactical text-sm">Valor da Anuidade</span>
+                    <span className="text-foreground/85 font-tactical text-sm">Valor da Anuidade</span>
                     <span className="text-blue-400 font-military text-lg font-bold">
                       {formatCurrency(parseFloat(annuityAmount) || 0)}
                     </span>
@@ -1295,14 +1295,14 @@ const TransactionsPage = () => {
               variant="outline"
               onClick={() => setAnnuityDialogOpen(false)}
               disabled={isSaving || isLoadingVisitor}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmitAnnuity}
               disabled={isSaving || isLoadingVisitor}
-              className={`text-white font-tactical min-w-[180px] ${annuityIsVisitor ? 'bg-cbt-orange hover:bg-cbt-orange/90' : 'bg-blue-600 hover:bg-blue-700'}`}
+              className={`text-foreground font-tactical min-w-[180px] ${annuityIsVisitor ? 'bg-cbt-orange hover:bg-cbt-orange/90' : 'bg-blue-600 hover:bg-blue-700'}`}
             >
               {isSaving || isLoadingVisitor ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1344,29 +1344,29 @@ const TransactionsPage = () => {
 
       {/* ── Detalhes do emprestimo ────────────────────────────────────────── */}
       <Dialog open={!!detailLoan} onOpenChange={(o) => !o && setDetailLoan(null)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <Package className="h-5 w-5 text-orange-400" />
               Detalhes do emprestimo
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Informacoes do emprestimo de equipamento.
             </DialogDescription>
           </DialogHeader>
           {detailLoan && (
             <div className="space-y-3 py-2">
-              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-4 space-y-2.5 font-tactical text-sm">
+              <div className="bg-muted/40 border border-border rounded-md p-4 space-y-2.5 font-tactical text-sm">
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Membro</span>
-                  <span className="text-white text-right">{detailLoan.memberName}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Membro</span>
+                  <span className="text-foreground text-right">{detailLoan.memberName}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Item</span>
-                  <span className="text-white text-right">{detailLoan.itemName}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Item</span>
+                  <span className="text-foreground text-right">{detailLoan.itemName}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Status</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Status</span>
                   <Badge className={statusBadge(
                     detailLoan.dueDate && new Date(detailLoan.dueDate) < new Date() && detailLoan.status === 'ACTIVE'
                       ? 'OVERDUE'
@@ -1378,18 +1378,18 @@ const TransactionsPage = () => {
                   </Badge>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Emprestado em</span>
-                  <span className="text-white text-right">{formatDateTime(detailLoan.borrowedAt)}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Emprestado em</span>
+                  <span className="text-foreground text-right">{formatDateTime(detailLoan.borrowedAt)}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Devolucao prevista</span>
-                  <span className="text-white text-right">
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Devolucao prevista</span>
+                  <span className="text-foreground text-right">
                     {detailLoan.dueDate ? formatDate(detailLoan.dueDate) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Quantidade</span>
-                  <span className="text-white text-right">{detailLoan.quantity}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Quantidade</span>
+                  <span className="text-foreground text-right">{detailLoan.quantity}</span>
                 </div>
               </div>
             </div>
@@ -1398,7 +1398,7 @@ const TransactionsPage = () => {
             <Button
               variant="outline"
               onClick={() => setDetailLoan(null)}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               Fechar
             </Button>
@@ -1408,49 +1408,49 @@ const TransactionsPage = () => {
 
       {/* ── Detalhes da visita ────────────────────────────────────────────── */}
       <Dialog open={!!detailVisit} onOpenChange={(o) => !o && setDetailVisit(null)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <Crosshair className="h-5 w-5 text-violet-400" />
               Detalhes da visita
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Sessao do associado registrada hoje.
             </DialogDescription>
           </DialogHeader>
           {detailVisit && (
             <div className="space-y-3 py-2">
-              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-4 space-y-2.5 font-tactical text-sm">
+              <div className="bg-muted/40 border border-border rounded-md p-4 space-y-2.5 font-tactical text-sm">
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Membro</span>
-                  <span className="text-white text-right">{detailVisit.memberName}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Membro</span>
+                  <span className="text-foreground text-right">{detailVisit.memberName}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Baia</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Baia</span>
                   <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20">
                     {detailVisit.laneName}
                   </Badge>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Proposito</span>
-                  <span className="text-white text-right">{detailVisit.purpose}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Proposito</span>
+                  <span className="text-foreground text-right">{detailVisit.purpose}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Check-in</span>
-                  <span className="text-white text-right">{formatDateTime(detailVisit.checkIn)}</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Check-in</span>
+                  <span className="text-foreground text-right">{formatDateTime(detailVisit.checkIn)}</span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-gray-500 uppercase text-xs tracking-wider">Check-out</span>
+                  <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Check-out</span>
                   <span className={`text-right ${detailVisit.checkOut ? 'text-green-400' : 'text-cbt-orange'}`}>
                     {detailVisit.checkOut ? formatDateTime(detailVisit.checkOut) : 'Em andamento'}
                   </span>
                 </div>
                 {detailVisit.notes && (
-                  <div className="pt-2 border-t border-gray-700">
-                    <span className="text-gray-500 uppercase text-xs tracking-wider block mb-1">
+                  <div className="pt-2 border-t border-border">
+                    <span className="text-muted-foreground/80 uppercase text-xs tracking-wider block mb-1">
                       Observacoes
                     </span>
-                    <p className="text-gray-300 whitespace-pre-line">{detailVisit.notes}</p>
+                    <p className="text-foreground/85 whitespace-pre-line">{detailVisit.notes}</p>
                   </div>
                 )}
               </div>
@@ -1460,7 +1460,7 @@ const TransactionsPage = () => {
             <Button
               variant="outline"
               onClick={() => setDetailVisit(null)}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               Fechar
             </Button>

@@ -123,16 +123,16 @@ const FaceCaptureDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <ScanFace className="h-5 w-5 text-cbt-orange" />
             Registrar Facial
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             {target ? (
               <>
-                Capturando face de <strong className="text-white">{target.memberName}</strong>.
+                Capturando face de <strong className="text-foreground">{target.memberName}</strong>.
                 {target.source === 'CHECK_OUT' &&
                   ' Ao salvar, será registrada habitualidade automática para os calibres usados na visita.'}
               </>
@@ -162,7 +162,7 @@ const FaceCaptureDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSaving || isCapturing}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -172,7 +172,7 @@ const FaceCaptureDialog = ({
                 type="button"
                 onClick={handleCapture}
                 disabled={isCapturing}
-                className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical min-w-[140px]"
+                className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical min-w-[140px]"
               >
                 {isCapturing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -190,7 +190,7 @@ const FaceCaptureDialog = ({
                   variant="outline"
                   onClick={handleRetake}
                   disabled={isSaving}
-                  className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                  className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Tirar de novo
@@ -199,7 +199,7 @@ const FaceCaptureDialog = ({
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

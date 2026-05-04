@@ -43,7 +43,7 @@ const EquipmentCreatePage = () => {
           <Button
             asChild
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             <Link to="/admin/equipamentos">
               <ArrowLeft className="h-4 w-4 mr-2" />

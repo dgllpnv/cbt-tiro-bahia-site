@@ -316,7 +316,7 @@ const NewsManagementPage = () => {
         actions={
           <Button
             onClick={openCreateDialog}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova Notícia
@@ -325,62 +325,62 @@ const NewsManagementPage = () => {
       />
 
       {/* ── Filters bar ───────────────────────────────────────────────────── */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+      <div className="bg-card/50 border border-border rounded-lg p-4 mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
         <Tabs
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
           className="flex-shrink-0"
         >
-          <TabsList className="bg-gray-800/70 border border-gray-800 p-1">
+          <TabsList className="bg-muted/70 border border-border p-1">
             <TabsTrigger
               value="all"
-              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
             >
               Todas
-              <Badge variant="outline" className="ml-2 bg-gray-800/50 border-gray-700 text-[10px]">
+              <Badge variant="outline" className="ml-2 bg-muted/50 border-border text-[10px]">
                 {counts.all}
               </Badge>
             </TabsTrigger>
             <TabsTrigger
               value="published"
-              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
             >
               Publicadas
-              <Badge variant="outline" className="ml-2 bg-gray-800/50 border-gray-700 text-[10px]">
+              <Badge variant="outline" className="ml-2 bg-muted/50 border-border text-[10px]">
                 {counts.published}
               </Badge>
             </TabsTrigger>
             <TabsTrigger
               value="draft"
-              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+              className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
             >
               Rascunhos
-              <Badge variant="outline" className="ml-2 bg-gray-800/50 border-gray-700 text-[10px]">
+              <Badge variant="outline" className="ml-2 bg-muted/50 border-border text-[10px]">
                 {counts.draft}
               </Badge>
             </TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80 pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por título, resumo ou conteúdo..."
-            className="pl-9 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 font-tactical"
+            className="pl-9 bg-muted border-border text-foreground placeholder:text-muted-foreground/80 font-tactical"
           />
         </div>
       </div>
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+        <div className="bg-card/50 border border-border rounded-lg">
           <LoadingSpinner message="Carregando notícias..." />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+        <div className="bg-card/50 border border-border rounded-lg">
           <EmptyState
-            icon={<Newspaper className="w-8 h-8 text-gray-500" />}
+            icon={<Newspaper className="w-8 h-8 text-muted-foreground/80" />}
             title={newsList.length === 0 ? 'Nenhuma notícia ainda' : 'Nenhum resultado'}
             description={
               newsList.length === 0
@@ -391,7 +391,7 @@ const NewsManagementPage = () => {
               newsList.length === 0 ? (
                 <Button
                   onClick={openCreateDialog}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Notícia
@@ -410,7 +410,7 @@ const NewsManagementPage = () => {
                 onClick={() => setDestaquesOpen((o) => !o)}
                 className="w-full flex items-center justify-between mb-3"
               >
-                <h2 className="text-sm font-military font-bold text-white tracking-wide flex items-center gap-2">
+                <h2 className="text-sm font-military font-bold text-foreground tracking-wide flex items-center gap-2">
                   <Star className="h-4 w-4 text-cbt-orange" />
                   Destaques
                   <Badge className="bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30 ml-1">
@@ -418,9 +418,9 @@ const NewsManagementPage = () => {
                   </Badge>
                 </h2>
                 {destaquesOpen ? (
-                  <ChevronUp className="h-4 w-4 text-gray-500" />
+                  <ChevronUp className="h-4 w-4 text-muted-foreground/80" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground/80" />
                 )}
               </button>
               {destaquesOpen && (
@@ -441,16 +441,16 @@ const NewsManagementPage = () => {
 
           {/* ── Others ─────────────────────────────────────────────────── */}
           <section>
-            <h2 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
-              <Newspaper className="h-4 w-4 text-gray-500" />
+            <h2 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
+              <Newspaper className="h-4 w-4 text-muted-foreground/80" />
               Todas as notícias
-              <Badge variant="outline" className="bg-gray-800 border-gray-700 text-gray-400 ml-1">
+              <Badge variant="outline" className="bg-muted border-border text-muted-foreground ml-1">
                 {others.length}
               </Badge>
             </h2>
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden divide-y divide-gray-800">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden divide-y divide-gray-800">
               {others.length === 0 ? (
-                <div className="px-4 py-8 text-center text-gray-500 font-tactical text-sm">
+                <div className="px-4 py-8 text-center text-muted-foreground/80 font-tactical text-sm">
                   Nenhuma notícia além dos destaques nesta visualização.
                 </div>
               ) : (
@@ -472,12 +472,12 @@ const NewsManagementPage = () => {
 
       {/* ── Create / Edit Dialog ────────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide">
+            <DialogTitle className="text-foreground font-military tracking-wide">
               {editingId ? 'Editar Notícia' : 'Nova Notícia'}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {editingId
                 ? 'Atualize os dados da notícia abaixo.'
                 : 'Preencha os campos para publicar uma nova notícia.'}
@@ -486,34 +486,34 @@ const NewsManagementPage = () => {
 
           <div className="space-y-5 py-2">
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Título *</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Título *</Label>
               <Input
                 value={form.title}
                 onChange={(e) => updateField('title', e.target.value)}
                 placeholder="Título da notícia"
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Conteúdo *</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Conteúdo *</Label>
               <Textarea
                 value={form.content}
                 onChange={(e) => updateField('content', e.target.value)}
                 placeholder="Conteúdo completo da notícia..."
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange min-h-[200px] resize-y"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange min-h-[200px] resize-y"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Resumo (opcional)</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Resumo (opcional)</Label>
               <Textarea
                 value={form.summary}
                 onChange={(e) => updateField('summary', e.target.value)}
                 placeholder="Breve resumo para exibição em cards..."
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange min-h-[80px] resize-y"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange min-h-[80px] resize-y"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Imagem (opcional)</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Imagem (opcional)</Label>
               <input
                 type="file"
                 accept="image/png,image/jpeg"
@@ -548,7 +548,7 @@ const NewsManagementPage = () => {
               />
               {form.imageUrl ? (
                 <div className="space-y-2">
-                  <div className="h-32 rounded-md bg-gray-800 border border-gray-700 overflow-hidden">
+                  <div className="h-32 rounded-md bg-muted border border-border overflow-hidden">
                     <img
                       src={form.imageUrl}
                       alt="Preview"
@@ -564,7 +564,7 @@ const NewsManagementPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => document.getElementById('news-image-upload')?.click()}
-                      className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                      className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
                     >
                       <RefreshCw className="h-3.5 w-3.5 mr-1" />
                       Trocar imagem
@@ -574,7 +574,7 @@ const NewsManagementPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => updateField('imageUrl', '')}
-                      className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical"
+                      className="bg-muted border-border text-foreground/85 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical"
                     >
                       <X className="h-3.5 w-3.5 mr-1" />
                       Remover
@@ -584,10 +584,10 @@ const NewsManagementPage = () => {
               ) : (
                 <label
                   htmlFor="news-image-upload"
-                  className="flex flex-col items-center justify-center gap-2 h-32 rounded-md bg-gray-800/50 border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 hover:border-cbt-orange/40 transition-colors"
+                  className="flex flex-col items-center justify-center gap-2 h-32 rounded-md bg-muted/50 border border-dashed border-border cursor-pointer hover:bg-muted hover:border-cbt-orange/40 transition-colors"
                 >
-                  <Upload className="h-6 w-6 text-gray-500" />
-                  <p className="text-xs font-tactical text-gray-400">
+                  <Upload className="h-6 w-6 text-muted-foreground/80" />
+                  <p className="text-xs font-tactical text-muted-foreground">
                     Clique para enviar uma imagem (PNG ou JPG, até 2 MB)
                   </p>
                 </label>
@@ -602,10 +602,10 @@ const NewsManagementPage = () => {
                   className="data-[state=checked]:bg-cbt-orange"
                 />
                 <div>
-                  <Label className="text-gray-300 font-tactical text-sm cursor-pointer">
+                  <Label className="text-foreground/85 font-tactical text-sm cursor-pointer">
                     Fixar como destaque
                   </Label>
-                  <p className="text-xs text-gray-500 font-tactical">
+                  <p className="text-xs text-muted-foreground/80 font-tactical">
                     Aparece no topo da página
                   </p>
                 </div>
@@ -617,10 +617,10 @@ const NewsManagementPage = () => {
                   className="data-[state=checked]:bg-green-500"
                 />
                 <div>
-                  <Label className="text-gray-300 font-tactical text-sm cursor-pointer">
+                  <Label className="text-foreground/85 font-tactical text-sm cursor-pointer">
                     Publicar
                   </Label>
-                  <p className="text-xs text-gray-500 font-tactical">
+                  <p className="text-xs text-muted-foreground/80 font-tactical">
                     Visível para todos os membros
                   </p>
                 </div>
@@ -633,14 +633,14 @@ const NewsManagementPage = () => {
               variant="outline"
               onClick={() => setDialogOpen(false)}
               disabled={isSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical min-w-[120px]"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical min-w-[120px]"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -677,8 +677,8 @@ interface FeaturedCardProps {
 }
 
 const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps) => (
-  <article className="bg-gray-900/70 border border-cbt-orange/30 rounded-lg overflow-hidden flex flex-col group hover:border-cbt-orange/60 transition-colors">
-    <div className="relative h-32 bg-gray-800 flex items-center justify-center overflow-hidden">
+  <article className="bg-card/70 border border-cbt-orange/30 rounded-lg overflow-hidden flex flex-col group hover:border-cbt-orange/60 transition-colors">
+    <div className="relative h-32 bg-muted flex items-center justify-center overflow-hidden">
       {news.imageUrl ? (
         <img
           src={news.imageUrl}
@@ -691,24 +691,24 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
           <Newspaper className="h-10 w-10 text-cbt-orange/40" />
         </div>
       )}
-      <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-md bg-cbt-orange/90 text-black text-xs font-tactical font-bold uppercase">
+      <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-md bg-cbt-orange/90 text-primary-foreground text-xs font-tactical font-bold uppercase">
         <Pin className="h-3 w-3" />
         Destaque
       </span>
       {!news.isPublished && (
-        <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-yellow-500/90 text-black text-[10px] font-tactical font-bold uppercase">
+        <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-yellow-500/90 text-primary-foreground text-[10px] font-tactical font-bold uppercase">
           Rascunho
         </span>
       )}
     </div>
     <div className="p-4 flex flex-col gap-2 flex-1">
-      <h3 className="text-white font-tactical font-semibold text-sm leading-snug line-clamp-2">
+      <h3 className="text-foreground font-tactical font-semibold text-sm leading-snug line-clamp-2">
         {news.title}
       </h3>
-      <p className="text-gray-400 font-tactical text-xs line-clamp-3 flex-1">
+      <p className="text-muted-foreground font-tactical text-xs line-clamp-3 flex-1">
         {news.summary || plainTextPreview(news.content, 160)}
       </p>
-      <div className="flex items-center justify-between text-[11px] font-tactical text-gray-500 pt-1 border-t border-gray-800">
+      <div className="flex items-center justify-between text-[11px] font-tactical text-muted-foreground/80 pt-1 border-t border-border">
         <span className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />
           {formatDate(news.publishedAt)}
@@ -720,7 +720,7 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
           variant="ghost"
           size="sm"
           onClick={onEdit}
-          className="h-8 px-2 text-gray-400 hover:text-cbt-orange hover:bg-gray-700 font-tactical text-xs"
+          className="h-8 px-2 text-muted-foreground hover:text-cbt-orange hover:bg-secondary font-tactical text-xs"
         >
           <Pencil className="h-3.5 w-3.5 mr-1" />
           Editar
@@ -729,7 +729,7 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
           variant="ghost"
           size="sm"
           onClick={onTogglePin}
-          className="h-8 px-2 text-gray-400 hover:text-cbt-orange hover:bg-gray-700 font-tactical text-xs"
+          className="h-8 px-2 text-muted-foreground hover:text-cbt-orange hover:bg-secondary font-tactical text-xs"
         >
           <Pin className="h-3.5 w-3.5 mr-1" />
           Desafixar
@@ -738,7 +738,7 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
           variant="ghost"
           size="sm"
           onClick={onDelete}
-          className="h-8 px-2 text-gray-400 hover:text-red-400 hover:bg-gray-700 font-tactical text-xs ml-auto"
+          className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-secondary font-tactical text-xs ml-auto"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -758,9 +758,9 @@ interface NewsRowProps {
 }
 
 const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsRowProps) => (
-  <div className="group flex items-center gap-4 px-4 py-3 hover:bg-gray-800/40 transition-colors">
+  <div className="group flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors">
     {/* Thumbnail */}
-    <div className="hidden sm:flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-gray-800 border border-gray-700 overflow-hidden">
+    <div className="hidden sm:flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-muted border border-border overflow-hidden">
       {news.imageUrl ? (
         <img
           src={news.imageUrl}
@@ -769,7 +769,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
           onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
         />
       ) : (
-        <ImageIcon className="h-5 w-5 text-gray-600" />
+        <ImageIcon className="h-5 w-5 text-muted-foreground/60" />
       )}
     </div>
 
@@ -777,7 +777,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-2 mb-1">
         {news.isPinned && <Pin className="h-3.5 w-3.5 text-cbt-orange flex-shrink-0" />}
-        <h3 className="text-white font-tactical text-sm truncate">{news.title}</h3>
+        <h3 className="text-foreground font-tactical text-sm truncate">{news.title}</h3>
         {!news.isPublished && (
           <Badge className="bg-yellow-500/15 text-yellow-400 border-yellow-500/30 text-[10px] font-tactical h-5">
             <EyeOff className="h-2.5 w-2.5 mr-1" />
@@ -785,10 +785,10 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
           </Badge>
         )}
       </div>
-      <p className="text-gray-500 font-tactical text-xs line-clamp-1 max-w-2xl">
+      <p className="text-muted-foreground/80 font-tactical text-xs line-clamp-1 max-w-2xl">
         {news.summary || plainTextPreview(news.content, 120)}
       </p>
-      <div className="flex items-center gap-3 mt-1 text-[11px] font-tactical text-gray-600">
+      <div className="flex items-center gap-3 mt-1 text-[11px] font-tactical text-muted-foreground/60">
         {news.author && (
           <span className="inline-flex items-center gap-1.5">
             <span className="h-4 w-4 rounded-full bg-cbt-orange/20 text-cbt-orange flex items-center justify-center text-[8px] font-bold">
@@ -809,7 +809,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onTogglePin}
         title={news.isPinned ? 'Desafixar' : 'Fixar como destaque'}
-        className={`h-8 w-8 ${news.isPinned ? 'text-cbt-orange' : 'text-gray-400'} hover:text-cbt-orange hover:bg-gray-700`}
+        className={`h-8 w-8 ${news.isPinned ? 'text-cbt-orange' : 'text-muted-foreground'} hover:text-cbt-orange hover:bg-secondary`}
       >
         <Pin className="h-4 w-4" />
       </Button>
@@ -818,7 +818,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onTogglePublish}
         title={news.isPublished ? 'Despublicar' : 'Publicar'}
-        className={`h-8 w-8 ${news.isPublished ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 hover:bg-gray-700`}
+        className={`h-8 w-8 ${news.isPublished ? 'text-green-400' : 'text-muted-foreground'} hover:text-green-400 hover:bg-secondary`}
       >
         {news.isPublished ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
       </Button>
@@ -827,7 +827,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onEdit}
         title="Editar"
-        className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-gray-700"
+        className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-secondary"
       >
         <Pencil className="h-4 w-4" />
       </Button>
@@ -836,7 +836,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onDelete}
         title="Excluir"
-        className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-gray-700"
+        className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-secondary"
       >
         <Trash2 className="h-4 w-4" />
       </Button>

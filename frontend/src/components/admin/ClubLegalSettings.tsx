@@ -173,7 +173,7 @@ const ClubLegalSettings = () => {
           <Input
             value={form.clubName ?? ''}
             onChange={(e) => update('clubName', e.target.value)}
-            className="bg-gray-800 border-gray-700 text-white font-tactical"
+            className="bg-muted border-border text-foreground font-tactical"
           />
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -182,7 +182,7 @@ const ClubLegalSettings = () => {
               value={form.cnpj ?? ''}
               onChange={(e) => update('cnpj', maskCnpj(e.target.value))}
               placeholder="00.000.000/0001-00"
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
           <Field label="CR PJ no Exército" required>
@@ -190,7 +190,7 @@ const ClubLegalSettings = () => {
               value={form.crPj ?? ''}
               onChange={(e) => update('crPj', e.target.value)}
               placeholder="CR-PJ-XXXX"
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
         </div>
@@ -202,7 +202,7 @@ const ClubLegalSettings = () => {
           <Input
             value={form.addressLine ?? ''}
             onChange={(e) => update('addressLine', e.target.value)}
-            className="bg-gray-800 border-gray-700 text-white font-tactical"
+            className="bg-muted border-border text-foreground font-tactical"
           />
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -210,7 +210,7 @@ const ClubLegalSettings = () => {
             <Input
               value={form.city ?? ''}
               onChange={(e) => update('city', e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
           <Field label="UF" required>
@@ -218,7 +218,7 @@ const ClubLegalSettings = () => {
               value={form.state ?? ''}
               onChange={(e) => update('state', e.target.value.toUpperCase().slice(0, 2))}
               maxLength={2}
-              className="bg-gray-800 border-gray-700 text-white font-tactical uppercase"
+              className="bg-muted border-border text-foreground font-tactical uppercase"
             />
           </Field>
           <Field label="CEP">
@@ -226,7 +226,7 @@ const ClubLegalSettings = () => {
               value={form.zipCode ?? ''}
               onChange={(e) => update('zipCode', maskCep(e.target.value))}
               placeholder="00000-000"
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
         </div>
@@ -240,7 +240,7 @@ const ClubLegalSettings = () => {
               value={form.phone ?? ''}
               onChange={(e) => update('phone', maskPhone(e.target.value))}
               placeholder="(71) 0000-0000"
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
           <Field label="E-mail">
@@ -249,7 +249,7 @@ const ClubLegalSettings = () => {
               value={form.email ?? ''}
               onChange={(e) => update('email', e.target.value)}
               placeholder="contato@cbt.com.br"
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
         </div>
@@ -262,7 +262,7 @@ const ClubLegalSettings = () => {
             <Input
               value={form.responsibleName ?? ''}
               onChange={(e) => update('responsibleName', e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
           <Field label="Cargo" required>
@@ -270,7 +270,7 @@ const ClubLegalSettings = () => {
               value={form.responsibleRole ?? ''}
               onChange={(e) => update('responsibleRole', e.target.value)}
               placeholder="Diretor Técnico, Presidente..."
-              className="bg-gray-800 border-gray-700 text-white font-tactical"
+              className="bg-muted border-border text-foreground font-tactical"
             />
           </Field>
         </div>
@@ -279,7 +279,7 @@ const ClubLegalSettings = () => {
             value={form.responsibleCpf ?? ''}
             onChange={(e) => update('responsibleCpf', maskCpf(e.target.value))}
             placeholder="000.000.000-00"
-            className="bg-gray-800 border-gray-700 text-white font-tactical"
+            className="bg-muted border-border text-foreground font-tactical"
           />
         </Field>
       </Section>
@@ -289,7 +289,7 @@ const ClubLegalSettings = () => {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-cbt-orange hover:bg-cbt-orange/90 text-black font-tactical font-bold min-w-[180px]"
+          className="bg-cbt-orange hover:bg-cbt-orange/90 text-primary-foreground font-tactical font-bold min-w-[180px]"
         >
           {saving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -307,8 +307,8 @@ const ClubLegalSettings = () => {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="space-y-3">
-    <h3 className="text-xs font-tactical text-gray-400 uppercase tracking-[0.18em]">{title}</h3>
-    <div className="space-y-3 bg-gray-900/40 border border-gray-800 rounded-lg p-4">{children}</div>
+    <h3 className="text-xs font-tactical text-muted-foreground uppercase tracking-[0.18em]">{title}</h3>
+    <div className="space-y-3 bg-card/40 border border-border rounded-lg p-4">{children}</div>
   </div>
 );
 
@@ -322,7 +322,7 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div className="space-y-1.5">
-    <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+    <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
       {label} {required && <span className="text-cbt-orange">*</span>}
     </Label>
     {children}

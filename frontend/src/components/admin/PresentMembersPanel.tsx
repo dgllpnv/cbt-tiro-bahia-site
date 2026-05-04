@@ -158,7 +158,7 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
 
   return (
     <div ref={wrapRef} className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80 pointer-events-none" />
       <input
         type="text"
         value={query}
@@ -166,20 +166,20 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => results.length && setOpen(true)}
         placeholder="Buscar associado para registrar chegada..."
-        className="w-full h-12 pl-10 pr-10 bg-gray-800 border border-gray-700 rounded-lg text-white font-tactical text-sm placeholder:text-gray-500 focus:border-cbt-orange focus:outline-none disabled:opacity-50"
+        className="w-full h-12 pl-10 pr-10 bg-muted border border-border rounded-lg text-foreground font-tactical text-sm placeholder:text-muted-foreground/80 focus:border-cbt-orange focus:outline-none disabled:opacity-50"
       />
       {loading && (
         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cbt-orange animate-spin" />
       )}
 
       {open && results.length > 0 && (
-        <div className="absolute z-30 left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-72 overflow-y-auto">
+        <div className="absolute z-30 left-0 right-0 mt-1 bg-muted border border-border rounded-lg shadow-xl max-h-72 overflow-y-auto">
           {results.map((m) => (
             <button
               key={m.id}
               type="button"
               onClick={() => handlePick(m)}
-              className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-gray-700 transition-colors border-b border-gray-700/50 last:border-0"
+              className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-secondary transition-colors border-b border-border/50 last:border-0"
             >
               <div
                 className={`h-9 w-9 rounded-full flex items-center justify-center font-tactical text-xs font-bold ${m.isVisitor ? 'bg-blue-500/20 text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
@@ -188,14 +188,14 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-white font-tactical text-sm truncate">{m.fullName}</p>
+                  <p className="text-foreground font-tactical text-sm truncate">{m.fullName}</p>
                   {m.isVisitor && (
                     <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
                       Visitante
                     </span>
                   )}
                 </div>
-                <p className="text-gray-500 font-tactical text-xs">
+                <p className="text-muted-foreground/80 font-tactical text-xs">
                   {m.isVisitor ? `CPF ${m.cpf || '—'}` : `Nº ${m.memberNumber || '—'}`}
                 </p>
               </div>
@@ -206,8 +206,8 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
       )}
 
       {open && query.trim().length >= 2 && !loading && results.length === 0 && (
-        <div className="absolute z-30 left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 text-center">
-          <p className="text-gray-500 font-tactical text-sm">Nenhum associado ou visitante encontrado</p>
+        <div className="absolute z-30 left-0 right-0 mt-1 bg-muted border border-border rounded-lg shadow-xl p-4 text-center">
+          <p className="text-muted-foreground/80 font-tactical text-sm">Nenhum associado ou visitante encontrado</p>
         </div>
       )}
     </div>
@@ -247,7 +247,7 @@ const PresentCard = ({
   const isVisitor = visit.member.role === 'VISITOR';
   return (
     <div
-      className={`bg-gray-900/70 border rounded-lg p-4 flex flex-col gap-3 transition-all ${isVisitor ? 'border-blue-500/30 hover:border-blue-500/60 hover:ring-1 hover:ring-blue-500/20' : 'border-gray-800 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20'}`}
+      className={`bg-card/70 border rounded-lg p-4 flex flex-col gap-3 transition-all ${isVisitor ? 'border-blue-500/30 hover:border-blue-500/60 hover:ring-1 hover:ring-blue-500/20' : 'border-border hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20'}`}
     >
       {/* Header */}
       <div className="flex items-start gap-3">
@@ -258,7 +258,7 @@ const PresentCard = ({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-white font-tactical text-sm font-semibold truncate">
+            <p className="text-foreground font-tactical text-sm font-semibold truncate">
               {visit.member.fullName}
             </p>
             {isVisitor && (
@@ -268,14 +268,14 @@ const PresentCard = ({
               </span>
             )}
           </div>
-          <p className="text-gray-500 font-tactical text-xs">
+          <p className="text-muted-foreground/80 font-tactical text-xs">
             {isVisitor ? 'Visitante' : `Nº ${visit.member.memberNumber ?? '—'}`} · entrou {formatTime(visit.checkInTime)}
           </p>
-          <p className="text-gray-300 font-tactical text-xs mt-0.5">
+          <p className="text-foreground/85 font-tactical text-xs mt-0.5">
             <span className={isVisitor ? 'text-blue-300' : 'text-cbt-orange'}>
               {formatDuration(visit.checkInTime, now)}
             </span>
-            {visit.lane && <span className="text-gray-500"> · {visit.lane.name}</span>}
+            {visit.lane && <span className="text-muted-foreground/80"> · {visit.lane.name}</span>}
           </p>
         </div>
         {hasTab && (
@@ -290,9 +290,9 @@ const PresentCard = ({
       </div>
 
       {/* Top-3 shots pills */}
-      <div className="px-2 py-1.5 bg-gray-800/60 rounded-md text-xs font-tactical">
+      <div className="px-2 py-1.5 bg-muted/60 rounded-md text-xs font-tactical">
         {totalShots === 0 ? (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-muted-foreground/80">
             <GiBullets className="h-3.5 w-3.5 flex-shrink-0" />
             <span>Nenhum tiro registrado</span>
           </div>
@@ -306,19 +306,19 @@ const PresentCard = ({
               return (
                 <span
                   key={d.id}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-900/70 border border-gray-700 text-gray-300"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-card/70 border border-border text-foreground/85"
                   title={d.firearmName ? `${d.firearmName} · ${d.caliber}` : d.caliber}
                 >
                   <Icon className="h-3 w-3" style={{ color: iconColor }} />
-                  <span className="text-white">{d.caliber}</span>
+                  <span className="text-foreground">{d.caliber}</span>
                   <span className="text-cbt-orange">{d.shotsFired}</span>
                 </span>
               );
             })}
             {(visit.details?.length ?? 0) > 3 && (
-              <span className="text-gray-500">+{(visit.details!.length) - 3}</span>
+              <span className="text-muted-foreground/80">+{(visit.details!.length) - 3}</span>
             )}
-            <span className="text-gray-500 ml-auto">{totalShots} total</span>
+            <span className="text-muted-foreground/80 ml-auto">{totalShots} total</span>
           </div>
         )}
       </div>
@@ -330,7 +330,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onNewSale(visit)}
-          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-green-500/10 hover:border-green-500/40 hover:text-green-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-green-500/10 hover:border-green-500/40 hover:text-green-300 font-tactical h-9"
         >
           <ShoppingCart className="h-3.5 w-3.5 mr-1" />
           Venda
@@ -340,7 +340,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onRegisterShot(visit)}
-          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-cbt-orange/10 hover:border-cbt-orange/40 hover:text-cbt-orange font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-cbt-orange/10 hover:border-cbt-orange/40 hover:text-cbt-orange font-tactical h-9"
         >
           <Plus className="h-3.5 w-3.5 mr-1" />
           Tiro
@@ -350,7 +350,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onIssueLoan(visit)}
-          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-300 font-tactical h-9"
         >
           <Package className="h-3.5 w-3.5 mr-1" />
           Empréstimo
@@ -360,7 +360,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onCheckOut(visit)}
-          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
         >
           <Receipt className="h-3.5 w-3.5 mr-1" />
           Fechar
@@ -370,7 +370,7 @@ const PresentCard = ({
       {/* Equipamentos em uso pelo membro presente */}
       {visit.member.loansReceived && visit.member.loansReceived.length > 0 && (
         <div className="mt-1">
-          <p className="text-[10px] font-tactical uppercase tracking-wider text-gray-500 mb-1">
+          <p className="text-[10px] font-tactical uppercase tracking-wider text-muted-foreground/80 mb-1">
             Equipamentos em uso
           </p>
           <MemberLoanedEquipmentList
@@ -696,15 +696,15 @@ const PresentMembersPanel = () => {
   };
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+    <div className="bg-card/50 border border-border rounded-lg p-5">
       {/* Header */}
       <div className="flex items-start justify-between mb-4 gap-3 flex-wrap">
         <div>
-          <h2 className="text-lg font-military font-bold text-white tracking-wide flex items-center gap-2">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide flex items-center gap-2">
             <Users className="h-5 w-5 text-cbt-orange" />
             Presentes no Clube
           </h2>
-          <p className="text-xs font-tactical text-gray-500 mt-0.5">
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-0.5">
             Quem está no clube agora — registre chegadas, vendas, tiros e fechamento de conta
           </p>
         </div>
@@ -731,7 +731,7 @@ const PresentMembersPanel = () => {
           type="button"
           onClick={() => setFaceVerifyOpen(true)}
           disabled={busy}
-          className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical h-12 gap-2 px-4 flex-shrink-0"
+          className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical h-12 gap-2 px-4 flex-shrink-0"
         >
           <ScanFace className="h-4 w-4" />
           <span className="hidden sm:inline">Facial</span>
@@ -744,10 +744,10 @@ const PresentMembersPanel = () => {
           <Loader2 className="h-6 w-6 text-cbt-orange animate-spin" />
         </div>
       ) : present.length === 0 ? (
-        <div className="py-10 px-4 bg-gray-900/40 border border-dashed border-gray-700 rounded-lg text-center">
-          <User className="h-10 w-10 text-gray-600 mx-auto mb-2" />
-          <p className="text-white font-military text-sm tracking-wide">Ninguém no clube ainda</p>
-          <p className="text-gray-500 font-tactical text-xs mt-1">
+        <div className="py-10 px-4 bg-card/40 border border-dashed border-border rounded-lg text-center">
+          <User className="h-10 w-10 text-muted-foreground/60 mx-auto mb-2" />
+          <p className="text-foreground font-military text-sm tracking-wide">Ninguém no clube ainda</p>
+          <p className="text-muted-foreground/80 font-tactical text-xs mt-1">
             Use a busca acima para registrar a chegada de um associado.
           </p>
         </div>
@@ -789,10 +789,10 @@ const PresentMembersPanel = () => {
         open={!!checkoutPrompt}
         onOpenChange={(open) => !open && setCheckoutPrompt(null)}
       >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="font-military">Fechar conta sem tiros registrados?</DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {checkoutPrompt?.member.fullName} ainda não tem nenhum tiro registrado nesta visita.
               Quer registrar agora?
             </DialogDescription>
@@ -804,7 +804,7 @@ const PresentMembersPanel = () => {
                 if (checkoutPrompt) performCheckOut(checkoutPrompt);
                 setCheckoutPrompt(null);
               }}
-              className="font-tactical text-gray-300"
+              className="font-tactical text-foreground/85"
             >
               Não, só fechar
             </Button>
@@ -818,7 +818,7 @@ const PresentMembersPanel = () => {
                 }
                 setCheckoutPrompt(null);
               }}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
             >
               <Plus className="h-4 w-4 mr-1" />
               Sim, registrar

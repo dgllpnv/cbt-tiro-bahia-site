@@ -26,7 +26,7 @@ const PortalLayout = () => {
   }, [user, isAuthenticated, location.pathname, navigate]);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background text-foreground">
       <PortalSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content area */}

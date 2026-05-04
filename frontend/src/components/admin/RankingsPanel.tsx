@@ -29,9 +29,9 @@ function getInitials(name: string): string {
 
 function rankAccent(idx: number): { ring: string; text: string; bg: string; label: string } {
   if (idx === 0) return { ring: 'ring-yellow-500/60', text: 'text-yellow-400', bg: 'bg-yellow-500/10', label: '1°' };
-  if (idx === 1) return { ring: 'ring-gray-400/50', text: 'text-gray-300', bg: 'bg-gray-400/10', label: '2°' };
+  if (idx === 1) return { ring: 'ring-gray-400/50', text: 'text-foreground/85', bg: 'bg-gray-400/10', label: '2°' };
   if (idx === 2) return { ring: 'ring-amber-700/60', text: 'text-amber-500', bg: 'bg-amber-700/10', label: '3°' };
-  return { ring: 'ring-gray-700', text: 'text-gray-500', bg: 'bg-gray-800/40', label: `${idx + 1}°` };
+  return { ring: 'ring-gray-700', text: 'text-muted-foreground/80', bg: 'bg-muted/40', label: `${idx + 1}°` };
 }
 
 const FIREARM_CAT_KEYS: FirearmCategory[] = ['PISTOL', 'REVOLVER', 'RIFLE', 'SHOTGUN'];
@@ -49,7 +49,7 @@ const PeriodSelector = ({ period, onChange }: PeriodSelectorProps) => (
         type="button"
         onClick={() => onChange(p)}
         className={`px-2 py-1 rounded-md text-xs font-tactical transition-colors ${
-          period === p ? 'bg-cbt-orange/20 text-cbt-orange' : 'bg-gray-800 text-gray-500 hover:text-gray-300'
+          period === p ? 'bg-cbt-orange/20 text-cbt-orange' : 'bg-muted text-muted-foreground/80 hover:text-foreground/85'
         }`}
       >
         {PERIOD_LABEL[p]}
@@ -86,9 +86,9 @@ const RankingCard = ({
   loading,
   filters,
 }: RankingCardProps) => (
-  <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+  <div className="bg-card/50 border border-border rounded-lg p-5">
     <div className="flex items-center justify-between mb-3 gap-2">
-      <h3 className="text-sm font-military font-bold text-white tracking-wide flex items-center gap-2">
+      <h3 className="text-sm font-military font-bold text-foreground tracking-wide flex items-center gap-2">
         <Icon className="h-4 w-4 text-cbt-orange" />
         {title}
       </h3>
@@ -102,7 +102,7 @@ const RankingCard = ({
         <Loader2 className="h-5 w-5 text-cbt-orange animate-spin" />
       </div>
     ) : entries.length === 0 ? (
-      <div className="py-6 text-center text-xs font-tactical text-gray-500">
+      <div className="py-6 text-center text-xs font-tactical text-muted-foreground/80">
         Sem dados no período
       </div>
     ) : (
@@ -113,7 +113,7 @@ const RankingCard = ({
             <li key={entry.memberId}>
               <Link
                 to={`/admin/associados/${entry.memberId}`}
-                className={`flex items-center gap-3 p-2 rounded-md ${accent.bg} hover:bg-gray-800/60 transition-colors`}
+                className={`flex items-center gap-3 p-2 rounded-md ${accent.bg} hover:bg-muted/60 transition-colors`}
               >
                 <span
                   className={`h-6 w-8 flex items-center justify-center rounded text-xs font-military font-bold ${accent.text}`}
@@ -126,8 +126,8 @@ const RankingCard = ({
                   {getInitials(entry.fullName)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-white font-tactical text-sm truncate">{entry.fullName}</p>
-                  <p className="text-gray-500 font-tactical text-xs truncate">
+                  <p className="text-foreground font-tactical text-sm truncate">{entry.fullName}</p>
+                  <p className="text-muted-foreground/80 font-tactical text-xs truncate">
                     Nº {entry.memberNumber ?? '—'}
                   </p>
                 </div>
@@ -221,7 +221,7 @@ const RankingsPanel = () => {
                 setFirearmName('ALL');
               }}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-xs font-tactical transition-colors ${
-                active ? `${v.bg} ${v.border} ${v.text}` : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                active ? `${v.bg} ${v.border} ${v.text}` : 'bg-muted border-border text-muted-foreground hover:text-foreground'
               }`}
             >
               <Icon className="h-3 w-3" />
@@ -235,7 +235,7 @@ const RankingsPanel = () => {
           <select
             value={firearmName}
             onChange={(e) => setFirearmName(e.target.value)}
-            className="w-full h-8 rounded-md bg-gray-800 border border-gray-700 text-gray-300 px-2 text-xs font-tactical focus:outline-none focus:border-cbt-orange"
+            className="w-full h-8 rounded-md bg-muted border border-border text-foreground/85 px-2 text-xs font-tactical focus:outline-none focus:border-cbt-orange"
           >
             <option value="ALL">Toda categoria</option>
             {firearmsInCat.map((f) => (
@@ -301,7 +301,7 @@ const FilterChip = ({
     className={`px-2 py-1 rounded-md border text-xs font-tactical transition-colors ${
       active
         ? 'bg-cbt-orange/20 border-cbt-orange/60 text-cbt-orange'
-        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+        : 'bg-muted border-border text-muted-foreground hover:text-foreground'
     }`}
   >
     {label}

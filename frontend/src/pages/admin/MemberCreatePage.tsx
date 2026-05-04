@@ -67,12 +67,12 @@ const initialFormData: FormData = {
 // ── Shared styles ────────────────────────────────────────────────────────────
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
 const selectClasses =
-  'w-full rounded-md bg-gray-800 border border-gray-600 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
+  'w-full rounded-md bg-muted border border-input text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -183,7 +183,7 @@ const MemberCreatePage = () => {
           <Button
             asChild
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             <Link to="/admin/associados">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -195,8 +195,8 @@ const MemberCreatePage = () => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* ── Section 1: Dados Pessoais ─────────────────────────────────── */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
             Dados Pessoais
           </h2>
 
@@ -301,8 +301,8 @@ const MemberCreatePage = () => {
         </div>
 
         {/* ── Section 2: Dados do Clube ─────────────────────────────────── */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
             Dados do Clube
           </h2>
 
@@ -395,8 +395,8 @@ const MemberCreatePage = () => {
         </div>
 
         {/* ── Section 3: Endereco ───────────────────────────────────────── */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
             Endereco
           </h2>
 
@@ -465,8 +465,8 @@ const MemberCreatePage = () => {
         </div>
 
         {/* ── Section 4: Anexos ──────────────────────────────────────── */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">Anexos</h2>
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">Anexos</h2>
 
           <input
             type="file"
@@ -496,26 +496,26 @@ const MemberCreatePage = () => {
             }}
           />
 
-          <label htmlFor="file-upload" className="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/40 p-8 cursor-pointer hover:border-cbt-orange/50 transition-colors">
+          <label htmlFor="file-upload" className="flex items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/40 p-8 cursor-pointer hover:border-cbt-orange/50 transition-colors">
             <div className="text-center">
-              <Upload className="mx-auto h-10 w-10 text-gray-500 mb-3" />
-              <p className="text-sm font-tactical text-gray-400">Clique para selecionar arquivos</p>
-              <p className="text-xs font-tactical text-gray-600 mt-1">PDF, JPG, PNG (max 5MB)</p>
+              <Upload className="mx-auto h-10 w-10 text-muted-foreground/80 mb-3" />
+              <p className="text-sm font-tactical text-muted-foreground">Clique para selecionar arquivos</p>
+              <p className="text-xs font-tactical text-muted-foreground/60 mt-1">PDF, JPG, PNG (max 5MB)</p>
             </div>
           </label>
 
           {files.length > 0 && (
             <div className="mt-4 space-y-2">
               {files.map((f, i) => (
-                <div key={i} className="flex items-center justify-between bg-gray-800 border border-gray-700 rounded-lg px-4 py-2">
+                <div key={i} className="flex items-center justify-between bg-muted border border-border rounded-lg px-4 py-2">
                   <div className="flex items-center gap-3">
                     <FileText size={16} className="text-cbt-orange" />
                     <div>
-                      <p className="text-white font-tactical text-sm">{f.name}</p>
-                      <p className="text-gray-500 font-tactical text-xs">{(f.size / 1024).toFixed(0)} KB</p>
+                      <p className="text-foreground font-tactical text-sm">{f.name}</p>
+                      <p className="text-muted-foreground/80 font-tactical text-xs">{(f.size / 1024).toFixed(0)} KB</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-400">
+                  <button type="button" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-400">
                     <X size={14} />
                   </button>
                 </div>
@@ -530,14 +530,14 @@ const MemberCreatePage = () => {
             type="button"
             variant="outline"
             onClick={() => navigate('/admin/associados')}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             {isSubmitting ? (
               <>

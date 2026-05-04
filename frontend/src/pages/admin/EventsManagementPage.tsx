@@ -159,10 +159,10 @@ function getEventTypeBadge(type: string) {
   return TYPE_VISUALS[type as EventTypeKey] ?? {
     label: type,
     hex: '#6b7280',
-    bg: 'bg-gray-500/15',
-    border: 'border-gray-500/30',
-    text: 'text-gray-400',
-    pillBg: 'bg-gray-500/80',
+    bg: 'bg-muted-foreground/20',
+    border: 'border-muted-foreground/40',
+    text: 'text-muted-foreground',
+    pillBg: 'bg-muted-foreground/40/80',
     icon: CalendarIcon,
   };
 }
@@ -531,7 +531,7 @@ const EventsManagementPage = () => {
         actions={
           <Button
             onClick={openCreateDialog}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             <Plus className="h-4 w-4 mr-2" />
             Novo Evento
@@ -540,16 +540,16 @@ const EventsManagementPage = () => {
       />
 
       {/* ── Toolbar (view toggle + type filters) ─────────────────────────── */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="bg-card/50 border border-border rounded-lg p-4 mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         {/* View toggle */}
-        <div className="inline-flex bg-gray-800 border border-gray-700 rounded-md p-1 self-start">
+        <div className="inline-flex bg-muted border border-border rounded-md p-1 self-start">
           <button
             type="button"
             onClick={() => setView('calendar')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-tactical transition-colors ${
               view === 'calendar'
-                ? 'bg-cbt-orange text-black'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-cbt-orange text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -559,7 +559,7 @@ const EventsManagementPage = () => {
             type="button"
             onClick={() => setView('list')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-tactical transition-colors ${
-              view === 'list' ? 'bg-cbt-orange text-black' : 'text-gray-400 hover:text-white'
+              view === 'list' ? 'bg-cbt-orange text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <LayoutList className="h-3.5 w-3.5" />
@@ -597,19 +597,19 @@ const EventsManagementPage = () => {
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+        <div className="bg-card/50 border border-border rounded-lg">
           <LoadingSpinner message="Carregando eventos..." />
         </div>
       ) : events.length === 0 ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+        <div className="bg-card/50 border border-border rounded-lg">
           <EmptyState
-            icon={<CalendarIcon className="w-8 h-8 text-gray-500" />}
+            icon={<CalendarIcon className="w-8 h-8 text-muted-foreground/80" />}
             title="Nenhum evento cadastrado"
             description="Crie o primeiro evento do clube para os associados."
             action={
               <Button
                 onClick={openCreateDialog}
-                className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Evento
@@ -622,7 +622,7 @@ const EventsManagementPage = () => {
           {/* Upcoming row */}
           {upcoming.length > 0 && (
             <section>
-              <h2 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+              <h2 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
                 <Clock className="h-4 w-4 text-cbt-orange" />
                 Próximos eventos
                 <Badge className="bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30 ml-1">
@@ -656,7 +656,7 @@ const EventsManagementPage = () => {
 
       {/* ── Detail Sheet ────────────────────────────────────────────────── */}
       <Sheet open={!!detailEvent} onOpenChange={(open) => !open && setDetailEvent(null)}>
-        <SheetContent className="bg-gray-900 border-l border-gray-800 text-white w-full sm:max-w-md overflow-y-auto">
+        <SheetContent className="bg-card border-l border-border text-foreground w-full sm:max-w-md overflow-y-auto">
           {detailEvent && (
             <>
               <SheetHeader>
@@ -670,14 +670,14 @@ const EventsManagementPage = () => {
                     })()}
                     {getEventTypeBadge(detailEvent.eventType).label}
                   </span>
-                  <Badge className="bg-gray-800 border-gray-700 text-gray-400 text-[10px] font-tactical">
+                  <Badge className="bg-muted border-border text-muted-foreground text-[10px] font-tactical">
                     {relativeUntil(detailEvent.eventDate)}
                   </Badge>
                 </div>
-                <SheetTitle className="text-white font-military tracking-wide text-lg leading-tight text-left">
+                <SheetTitle className="text-foreground font-military tracking-wide text-lg leading-tight text-left">
                   {detailEvent.title}
                 </SheetTitle>
-                <SheetDescription className="text-gray-400 font-tactical text-sm text-left capitalize">
+                <SheetDescription className="text-muted-foreground font-tactical text-sm text-left capitalize">
                   {dateLabelLong(detailEvent.eventDate)}
                 </SheetDescription>
               </SheetHeader>
@@ -703,8 +703,8 @@ const EventsManagementPage = () => {
                 </div>
 
                 {detailEvent.description && (
-                  <div className="bg-gray-800/40 border border-gray-800 rounded-md p-3">
-                    <p className="text-gray-300 font-tactical text-sm leading-relaxed whitespace-pre-line">
+                  <div className="bg-muted/40 border border-border rounded-md p-3">
+                    <p className="text-foreground/85 font-tactical text-sm leading-relaxed whitespace-pre-line">
                       {detailEvent.description}
                     </p>
                   </div>
@@ -722,7 +722,7 @@ const EventsManagementPage = () => {
                   <Button
                     variant="outline"
                     onClick={() => openParticipantsDialog(detailEvent)}
-                    className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700 hover:text-white font-tactical"
+                    className="bg-muted border-border text-foreground hover:bg-secondary hover:text-foreground font-tactical"
                   >
                     <Users className="h-4 w-4 mr-1.5" />
                     Participantes
@@ -730,7 +730,7 @@ const EventsManagementPage = () => {
                   <Button
                     variant="outline"
                     onClick={() => openEditDialog(detailEvent)}
-                    className="bg-gray-800 border-gray-700 text-cbt-orange hover:bg-cbt-orange/10 hover:border-cbt-orange/40 font-tactical"
+                    className="bg-muted border-border text-cbt-orange hover:bg-cbt-orange/10 hover:border-cbt-orange/40 font-tactical"
                   >
                     <Pencil className="h-4 w-4 mr-1.5" />
                     Editar
@@ -752,12 +752,12 @@ const EventsManagementPage = () => {
 
       {/* ── Create / Edit Event Dialog ───────────────────────────────────── */}
       <Dialog open={formDialogOpen} onOpenChange={setFormDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide">
+            <DialogTitle className="text-foreground font-military tracking-wide">
               {editingId ? 'Editar Evento' : 'Novo Evento'}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {editingId
                 ? 'Atualize os dados do evento abaixo.'
                 : 'Preencha os campos para criar um novo evento.'}
@@ -766,87 +766,87 @@ const EventsManagementPage = () => {
 
           <div className="space-y-5 py-2">
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Título *</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Título *</Label>
               <Input
                 value={form.title}
                 onChange={(e) => updateField('title', e.target.value)}
                 placeholder="Título do evento"
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Descrição</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Descrição</Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => updateField('description', e.target.value)}
                 placeholder="Descrição do evento..."
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange min-h-[100px] resize-y"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange min-h-[100px] resize-y"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Tipo *</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Tipo *</Label>
                 <Select value={form.eventType} onValueChange={(val) => updateField('eventType', val)}>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange">
+                  <SelectTrigger className="bg-muted border-border text-foreground focus:border-cbt-orange">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    <SelectItem value="TRAINING" className="text-white focus:bg-gray-700">Treino</SelectItem>
-                    <SelectItem value="COMPETITION" className="text-white focus:bg-gray-700">Competição</SelectItem>
-                    <SelectItem value="COURSE" className="text-white focus:bg-gray-700">Curso</SelectItem>
-                    <SelectItem value="WORKSHOP" className="text-white focus:bg-gray-700">Workshop</SelectItem>
+                  <SelectContent className="bg-muted border-border">
+                    <SelectItem value="TRAINING" className="text-foreground focus:bg-secondary">Treino</SelectItem>
+                    <SelectItem value="COMPETITION" className="text-foreground focus:bg-secondary">Competição</SelectItem>
+                    <SelectItem value="COURSE" className="text-foreground focus:bg-secondary">Curso</SelectItem>
+                    <SelectItem value="WORKSHOP" className="text-foreground focus:bg-secondary">Workshop</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Data *</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Data *</Label>
                 <Input
                   type="date"
                   value={form.eventDate}
                   onChange={(e) => updateField('eventDate', e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
+                  className="bg-muted border-border text-foreground focus:border-cbt-orange"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Hora início</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Hora início</Label>
                 <Input
                   type="time"
                   value={form.startTime}
                   onChange={(e) => updateField('startTime', e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
+                  className="bg-muted border-border text-foreground focus:border-cbt-orange"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Hora fim</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Hora fim</Label>
                 <Input
                   type="time"
                   value={form.endTime}
                   onChange={(e) => updateField('endTime', e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
+                  className="bg-muted border-border text-foreground focus:border-cbt-orange"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Local</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Local</Label>
                 <Input
                   value={form.location}
                   onChange={(e) => updateField('location', e.target.value)}
                   placeholder="Local do evento"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Máx. participantes</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Máx. participantes</Label>
                 <Input
                   type="number"
                   value={form.maxParticipants}
                   onChange={(e) => updateField('maxParticipants', e.target.value)}
                   placeholder="Sem limite"
                   min="0"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
                 />
               </div>
             </div>
@@ -857,10 +857,10 @@ const EventsManagementPage = () => {
                 className="data-[state=checked]:bg-cbt-orange"
               />
               <div>
-                <Label className="text-gray-300 font-tactical text-sm cursor-pointer">
+                <Label className="text-foreground/85 font-tactical text-sm cursor-pointer">
                   Evento público
                 </Label>
-                <p className="text-xs text-gray-500 font-tactical">
+                <p className="text-xs text-muted-foreground/80 font-tactical">
                   Visível para todos os associados
                 </p>
               </div>
@@ -872,14 +872,14 @@ const EventsManagementPage = () => {
               variant="outline"
               onClick={() => setFormDialogOpen(false)}
               disabled={isSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical min-w-[120px]"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical min-w-[120px]"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -895,12 +895,12 @@ const EventsManagementPage = () => {
 
       {/* ── Participants Dialog ───────────────────────────────────────────── */}
       <Dialog open={participantsDialogOpen} onOpenChange={setParticipantsDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide">
+            <DialogTitle className="text-foreground font-military tracking-wide">
               Gerenciar Participantes
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {selectedEvent?.title} — {selectedEvent?.eventDate ? formatDate(selectedEvent.eventDate) : ''}
             </DialogDescription>
           </DialogHeader>
@@ -909,28 +909,28 @@ const EventsManagementPage = () => {
             <LoadingSpinner message="Carregando participantes..." />
           ) : (
             <div className="space-y-6 py-2">
-              <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
-                <h4 className="text-sm font-military font-bold text-white tracking-wide mb-3 flex items-center gap-2">
+              <div className="bg-muted/50 border border-border/50 rounded-lg p-4">
+                <h4 className="text-sm font-military font-bold text-foreground tracking-wide mb-3 flex items-center gap-2">
                   <UserPlus className="h-4 w-4 text-cbt-orange" />
                   Adicionar Participante
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-gray-400 font-tactical text-xs">ID do membro *</Label>
+                    <Label className="text-muted-foreground font-tactical text-xs">ID do membro *</Label>
                     <Input
                       value={newMemberId}
                       onChange={(e) => setNewMemberId(e.target.value)}
                       placeholder="ID ou número de sócio"
-                      className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange h-9 text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-gray-400 font-tactical text-xs">Calibre</Label>
+                    <Label className="text-muted-foreground font-tactical text-xs">Calibre</Label>
                     <Input
                       value={newCaliberUsed}
                       onChange={(e) => setNewCaliberUsed(e.target.value)}
                       placeholder="Ex: .380, 9mm"
-                      className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange h-9 text-sm"
                     />
                   </div>
                   <div className="flex items-end gap-3">
@@ -938,15 +938,15 @@ const EventsManagementPage = () => {
                       <Checkbox
                         checked={newCountsAsHabituality}
                         onCheckedChange={(checked) => setNewCountsAsHabituality(!!checked)}
-                        className="border-gray-600 data-[state=checked]:bg-cbt-orange data-[state=checked]:border-cbt-orange"
+                        className="border-input data-[state=checked]:bg-cbt-orange data-[state=checked]:border-cbt-orange"
                       />
-                      <Label className="text-gray-400 font-tactical text-xs cursor-pointer">
+                      <Label className="text-muted-foreground font-tactical text-xs cursor-pointer">
                         Habitualidade
                       </Label>
                     </div>
                     <Button
                       size="sm"
-                      className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical h-9"
+                      className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical h-9"
                       onClick={handleAddParticipant}
                       disabled={isAddingParticipant}
                     >
@@ -965,14 +965,14 @@ const EventsManagementPage = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-military font-bold text-white tracking-wide flex items-center gap-2">
+                  <h4 className="text-sm font-military font-bold text-foreground tracking-wide flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-cbt-orange" />
                     Participantes e Resultados
                   </h4>
                   {participants.length > 0 && (
                     <Button
                       size="sm"
-                      className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical h-8"
+                      className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical h-8"
                       onClick={handleSaveResults}
                       disabled={isSavingResults}
                     >
@@ -987,16 +987,16 @@ const EventsManagementPage = () => {
                 </div>
 
                 {participants.length === 0 ? (
-                  <div className="bg-gray-800/30 border border-gray-700/50 rounded-lg">
+                  <div className="bg-muted/30 border border-border/50 rounded-lg">
                     <EmptyState
-                      icon={<Users className="w-6 h-6 text-gray-500" />}
+                      icon={<Users className="w-6 h-6 text-muted-foreground/80" />}
                       title="Nenhum participante"
                       description="Adicione participantes usando o formulário acima."
                     />
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-tactical text-gray-500 uppercase tracking-wide">
+                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-tactical text-muted-foreground/80 uppercase tracking-wide">
                       <div className="col-span-4">Participante</div>
                       <div className="col-span-2">Calibre</div>
                       <div className="col-span-3">Colocação</div>
@@ -1005,15 +1005,15 @@ const EventsManagementPage = () => {
                     {participants.map((p) => (
                       <div
                         key={p.id}
-                        className="grid grid-cols-12 gap-2 items-center px-3 py-2 bg-gray-800/50 rounded-md border border-gray-700/30"
+                        className="grid grid-cols-12 gap-2 items-center px-3 py-2 bg-muted/50 rounded-md border border-border/30"
                       >
                         <div className="col-span-4">
-                          <p className="text-sm font-tactical text-white truncate">
+                          <p className="text-sm font-tactical text-foreground truncate">
                             {p.memberName || p.memberId}
                           </p>
                         </div>
                         <div className="col-span-2">
-                          <span className="text-xs font-tactical text-gray-400">
+                          <span className="text-xs font-tactical text-muted-foreground">
                             {p.caliberUsed || '---'}
                           </span>
                         </div>
@@ -1024,7 +1024,7 @@ const EventsManagementPage = () => {
                             value={resultsMap[p.id]?.placement || ''}
                             onChange={(e) => updateResult(p.id, 'placement', e.target.value)}
                             placeholder="#"
-                            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-cbt-orange h-8 text-xs"
+                            className="bg-muted border-border text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange h-8 text-xs"
                           />
                         </div>
                         <div className="col-span-3">
@@ -1034,7 +1034,7 @@ const EventsManagementPage = () => {
                             value={resultsMap[p.id]?.score || ''}
                             onChange={(e) => updateResult(p.id, 'score', e.target.value)}
                             placeholder="Pts"
-                            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-600 focus:border-cbt-orange h-8 text-xs"
+                            className="bg-muted border-border text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange h-8 text-xs"
                           />
                         </div>
                       </div>
@@ -1049,7 +1049,7 @@ const EventsManagementPage = () => {
             <Button
               variant="outline"
               onClick={() => setParticipantsDialogOpen(false)}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
             >
               Fechar
             </Button>
@@ -1099,7 +1099,7 @@ const TypeChip = ({
     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-tactical transition-colors ${
       active
         ? `${colorBg ?? 'bg-cbt-orange/20'} ${colorBorder ?? 'border-cbt-orange/60'} ${colorText ?? 'text-cbt-orange'}`
-        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+        : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
     }`}
   >
     {Icon && <Icon className="h-3.5 w-3.5" />}
@@ -1122,22 +1122,22 @@ const UpcomingCard = ({ event, onClick }: UpcomingCardProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="text-left bg-gray-900/70 border border-gray-800 rounded-lg p-4 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20 transition-all"
+      className="text-left bg-card/70 border border-border rounded-lg p-4 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20 transition-all"
     >
       <div className="flex items-start justify-between mb-2 gap-2">
         <div className={`h-1.5 flex-1 rounded-full ${visual.pillBg}`} style={{ background: visual.hex }} />
       </div>
-      <div className="flex items-center gap-1 text-[10px] font-tactical uppercase tracking-wider text-gray-500 mb-1">
+      <div className="flex items-center gap-1 text-[10px] font-tactical uppercase tracking-wider text-muted-foreground/80 mb-1">
         <Icon className="h-3 w-3" style={{ color: visual.hex }} />
         <span style={{ color: visual.hex }}>{visual.label}</span>
         <span className="ml-auto text-cbt-orange font-bold normal-case">
           {relativeUntil(event.eventDate)}
         </span>
       </div>
-      <p className="text-white font-tactical text-sm font-semibold leading-snug line-clamp-2">
+      <p className="text-foreground font-tactical text-sm font-semibold leading-snug line-clamp-2">
         {event.title}
       </p>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs font-tactical text-gray-500">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs font-tactical text-muted-foreground/80">
         <span className="inline-flex items-center gap-1">
           <CalendarIcon className="h-3 w-3" />
           {formatDate(event.eventDate)}
@@ -1181,26 +1181,26 @@ const CalendarView = ({
   const weekdays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+    <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={onPrev}
-            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h3 className="text-white font-military tracking-wide text-base capitalize min-w-[180px] text-center">
+          <h3 className="text-foreground font-military tracking-wide text-base capitalize min-w-[180px] text-center">
             {format(calendarMonth, 'MMMM yyyy', { locale: ptBR })}
           </h3>
           <Button
             variant="ghost"
             size="icon"
             onClick={onNext}
-            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -1209,18 +1209,18 @@ const CalendarView = ({
           variant="outline"
           size="sm"
           onClick={onToday}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical h-8"
+          className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical h-8"
         >
           Hoje
         </Button>
       </div>
 
       {/* Weekday header */}
-      <div className="grid grid-cols-7 border-b border-gray-800 bg-gray-900/80">
+      <div className="grid grid-cols-7 border-b border-border bg-card/80">
         {weekdays.map((d) => (
           <div
             key={d}
-            className="px-2 py-2 text-[10px] font-tactical uppercase tracking-wider text-gray-500 text-center"
+            className="px-2 py-2 text-[10px] font-tactical uppercase tracking-wider text-muted-foreground/80 text-center"
           >
             {d}
           </div>
@@ -1238,7 +1238,7 @@ const CalendarView = ({
           return (
             <div
               key={key}
-              className={`min-h-[100px] border-r border-b border-gray-800 last:border-r-0 p-1.5 ${
+              className={`min-h-[100px] border-r border-b border-border last:border-r-0 p-1.5 ${
                 inMonth ? '' : 'bg-gray-950/50'
               } ${today ? 'bg-cbt-orange/5' : ''}`}
             >
@@ -1248,12 +1248,12 @@ const CalendarView = ({
                     today
                       ? 'text-cbt-orange font-bold'
                       : inMonth
-                        ? 'text-gray-300'
-                        : 'text-gray-600'
+                        ? 'text-foreground/85'
+                        : 'text-muted-foreground/60'
                   }`}
                 >
                   {today ? (
-                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-cbt-orange text-black">
+                    <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-cbt-orange text-primary-foreground">
                       {format(day, 'd')}
                     </span>
                   ) : (
@@ -1261,7 +1261,7 @@ const CalendarView = ({
                   )}
                 </span>
                 {dayEvents.length > 0 && (
-                  <span className="text-[10px] text-gray-500 font-tactical">
+                  <span className="text-[10px] text-muted-foreground/80 font-tactical">
                     {dayEvents.length}
                   </span>
                 )}
@@ -1275,7 +1275,7 @@ const CalendarView = ({
                       key={e.id}
                       type="button"
                       onClick={() => onPickEvent(e)}
-                      className="w-full text-left rounded-sm px-1.5 py-0.5 text-[10px] font-tactical text-white truncate hover:opacity-90 transition-opacity"
+                      className="w-full text-left rounded-sm px-1.5 py-0.5 text-[10px] font-tactical text-foreground truncate hover:opacity-90 transition-opacity"
                       style={{ background: v.hex }}
                       title={`${e.title}${e.startTime ? ' · ' + timeOnly(e.startTime) : ''}`}
                     >
@@ -1290,7 +1290,7 @@ const CalendarView = ({
                   <button
                     type="button"
                     onClick={() => onPickEvent(dayEvents[3])}
-                    className="w-full text-left text-[10px] font-tactical text-gray-500 hover:text-gray-300 px-1.5"
+                    className="w-full text-left text-[10px] font-tactical text-muted-foreground/80 hover:text-foreground/85 px-1.5"
                   >
                     +{dayEvents.length - 3} mais
                   </button>
@@ -1328,8 +1328,8 @@ const ListView = ({ events, onPick }: ListViewProps) => {
 
   if (events.length === 0) {
     return (
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-8 text-center">
-        <p className="text-gray-500 font-tactical text-sm">
+      <div className="bg-card/50 border border-border rounded-lg p-8 text-center">
+        <p className="text-muted-foreground/80 font-tactical text-sm">
           Nenhum evento corresponde aos filtros selecionados.
         </p>
       </div>
@@ -1342,10 +1342,10 @@ const ListView = ({ events, onPick }: ListViewProps) => {
         const monthLabel = format(parseISO(key + '-01'), "MMMM 'de' yyyy", { locale: ptBR });
         return (
           <section key={key}>
-            <h3 className="text-xs font-military font-bold uppercase tracking-wider text-gray-500 mb-2 capitalize">
+            <h3 className="text-xs font-military font-bold uppercase tracking-wider text-muted-foreground/80 mb-2 capitalize">
               {monthLabel}
             </h3>
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden divide-y divide-gray-800">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden divide-y divide-gray-800">
               {monthEvents.map((e) => {
                 const v = getEventTypeBadge(e.eventType);
                 const Icon = v.icon;
@@ -1357,14 +1357,14 @@ const ListView = ({ events, onPick }: ListViewProps) => {
                     key={e.id}
                     type="button"
                     onClick={() => onPick(e)}
-                    className="w-full grid grid-cols-[60px_1fr_auto] gap-3 items-center px-4 py-3 hover:bg-gray-800/40 transition-colors text-left"
+                    className="w-full grid grid-cols-[60px_1fr_auto] gap-3 items-center px-4 py-3 hover:bg-muted/40 transition-colors text-left"
                   >
                     {/* Date block */}
-                    <div className="flex flex-col items-center justify-center bg-gray-800/60 border border-gray-800 rounded-md py-1.5">
+                    <div className="flex flex-col items-center justify-center bg-muted/60 border border-border rounded-md py-1.5">
                       <span className="text-cbt-orange font-military text-lg leading-none font-bold">
                         {day}
                       </span>
-                      <span className="text-gray-500 font-tactical text-[10px] uppercase">
+                      <span className="text-muted-foreground/80 font-tactical text-[10px] uppercase">
                         {weekday}
                       </span>
                     </div>
@@ -1381,8 +1381,8 @@ const ListView = ({ events, onPick }: ListViewProps) => {
                           {relativeUntil(e.eventDate)}
                         </span>
                       </div>
-                      <p className="text-white font-tactical text-sm truncate">{e.title}</p>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-gray-500 font-tactical">
+                      <p className="text-foreground font-tactical text-sm truncate">{e.title}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-muted-foreground/80 font-tactical">
                         {e.startTime && (
                           <span className="inline-flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -1437,12 +1437,12 @@ const Fact = ({
   label: string;
   children: React.ReactNode;
 }) => (
-  <div className="bg-gray-800/40 border border-gray-800 rounded-md p-2">
-    <div className="flex items-center gap-1 text-gray-500 mb-0.5">
+  <div className="bg-muted/40 border border-border rounded-md p-2">
+    <div className="flex items-center gap-1 text-muted-foreground/80 mb-0.5">
       <Icon className="h-3 w-3" />
       <span className="text-[10px] uppercase tracking-wider">{label}</span>
     </div>
-    <p className="text-white text-sm">{children}</p>
+    <p className="text-foreground text-sm">{children}</p>
   </div>
 );
 
@@ -1460,10 +1460,10 @@ const CapacityBar = ({
   return (
     <div className={compact ? 'space-y-0.5' : 'space-y-1'}>
       <div className={`flex items-center justify-between font-tactical ${compact ? 'text-[10px]' : 'text-xs'}`}>
-        <span className="text-gray-500">Inscrições</span>
-        <span className="text-white tabular-nums">{current}/{max}</span>
+        <span className="text-muted-foreground/80">Inscrições</span>
+        <span className="text-foreground tabular-nums">{current}/{max}</span>
       </div>
-      <div className={`bg-gray-800 rounded-full overflow-hidden ${compact ? 'h-1' : 'h-1.5'}`}>
+      <div className={`bg-muted rounded-full overflow-hidden ${compact ? 'h-1' : 'h-1.5'}`}>
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, background: color }}

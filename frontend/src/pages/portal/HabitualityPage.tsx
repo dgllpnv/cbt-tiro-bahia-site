@@ -209,7 +209,7 @@ const HabitualityPage = () => {
         description="Controle de frequencia de treinos por calibre — minimo de 8 treinos/ano por calibre conforme legislacao vigente"
         actions={
           <Button
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
             onClick={handleOpenDeclaration}
           >
             <FileCheck className="h-4 w-4 mr-2" />
@@ -223,19 +223,19 @@ const HabitualityPage = () => {
         <Button
           variant="outline"
           size="sm"
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+          className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
           onClick={() => setYear((y) => y - 1)}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="flex items-center gap-2 bg-gray-900/50 border border-gray-800 rounded-lg px-4 py-2">
+        <div className="flex items-center gap-2 bg-card/50 border border-border rounded-lg px-4 py-2">
           <Calendar className="h-4 w-4 text-cbt-orange" />
-          <span className="text-white font-military font-bold tracking-wide">{year}</span>
+          <span className="text-foreground font-military font-bold tracking-wide">{year}</span>
         </div>
         <Button
           variant="outline"
           size="sm"
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+          className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
           onClick={() => setYear((y) => Math.min(y + 1, currentYear))}
           disabled={year >= currentYear}
         >
@@ -248,9 +248,9 @@ const HabitualityPage = () => {
         {isLoadingSummary ? (
           <LoadingSpinner message="Carregando habitualidade..." />
         ) : calibers.length === 0 ? (
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+          <div className="bg-card/50 border border-border rounded-lg">
             <EmptyState
-              icon={<Target className="w-8 h-8 text-gray-500" />}
+              icon={<Target className="w-8 h-8 text-muted-foreground/80" />}
               title="Nenhum registro de habitualidade encontrado"
               description={`Nenhuma atividade registrada para o ano de ${year}.`}
             />
@@ -263,12 +263,12 @@ const HabitualityPage = () => {
               return (
                 <div
                   key={cal.caliber}
-                  className="bg-gray-900/50 border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-colors"
+                  className="bg-card/50 border border-border rounded-lg p-5 hover:border-border transition-colors"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-cbt-orange" />
-                      <span className="text-white font-military font-bold tracking-wide">
+                      <span className="text-foreground font-military font-bold tracking-wide">
                         {cal.caliber}
                       </span>
                     </div>
@@ -283,7 +283,7 @@ const HabitualityPage = () => {
                   <div className="mb-2">
                     <Progress
                       value={pct}
-                      className="h-3 bg-gray-800"
+                      className="h-3 bg-muted"
                       style={
                         {
                           '--progress-color': getProgressColor(cal.count),
@@ -297,9 +297,9 @@ const HabitualityPage = () => {
                     `}</style>
                   </div>
 
-                  <p className="text-sm font-tactical text-gray-400">
-                    <span className="text-white font-semibold">{cal.count}</span> de{' '}
-                    <span className="text-white font-semibold">{REQUIRED_TRAININGS}</span> treinos
+                  <p className="text-sm font-tactical text-muted-foreground">
+                    <span className="text-foreground font-semibold">{cal.count}</span> de{' '}
+                    <span className="text-foreground font-semibold">{REQUIRED_TRAININGS}</span> treinos
                     completos
                   </p>
                 </div>
@@ -313,17 +313,17 @@ const HabitualityPage = () => {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Crosshair className="h-5 w-5 text-cbt-orange" />
-          <h3 className="text-lg font-military font-bold text-white tracking-wide">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide">
             Historico de Atividades
           </h3>
         </div>
 
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
           {isLoadingActivities ? (
             <LoadingSpinner message="Carregando atividades..." />
           ) : activities.length === 0 ? (
             <EmptyState
-              icon={<Crosshair className="w-8 h-8 text-gray-500" />}
+              icon={<Crosshair className="w-8 h-8 text-muted-foreground/80" />}
               title="Nenhuma atividade registrada"
               description={`Nenhuma atividade encontrada para ${year}.`}
             />
@@ -334,7 +334,7 @@ const HabitualityPage = () => {
                 return (
                   <div
                     key={activity.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/30 transition-colors"
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors"
                   >
                     <div
                       className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -347,7 +347,7 @@ const HabitualityPage = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-tactical text-white font-medium">
+                        <span className="text-sm font-tactical text-foreground font-medium">
                           {activity.caliber}
                         </span>
                         <Badge
@@ -362,13 +362,13 @@ const HabitualityPage = () => {
                         </Badge>
                       </div>
                       {activity.description && (
-                        <p className="text-xs font-tactical text-gray-500 truncate">
+                        <p className="text-xs font-tactical text-muted-foreground/80 truncate">
                           {activity.description}
                         </p>
                       )}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-tactical text-gray-300">
+                      <p className="text-sm font-tactical text-foreground/85">
                         {formatDate(activity.date)}
                       </p>
                     </div>
@@ -382,13 +382,13 @@ const HabitualityPage = () => {
 
       {/* Diálogo de Solicitação de Declaração de Habitualidade */}
       <Dialog open={declarationOpen} onOpenChange={(o) => !isDownloading && setDeclarationOpen(o)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <FileCheck className="h-5 w-5 text-cbt-orange" />
               Solicitar Declaração de Habitualidade
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Documento no formato Anexo E (Portaria 166-COLOG/2023, alterada pela 260-COLOG/2025).
             </DialogDescription>
           </DialogHeader>
@@ -396,17 +396,17 @@ const HabitualityPage = () => {
           <div className="space-y-4 py-2">
             {/* Selector de ano */}
             <div className="space-y-1.5">
-              <label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Ano de referência
               </label>
               <Select
                 value={String(declarationYear)}
                 onValueChange={(v) => setDeclarationYear(parseInt(v))}
               >
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {declarationYearOptions.map((y) => (
                     <SelectItem key={y} value={String(y)}>
                       {y}
@@ -417,13 +417,13 @@ const HabitualityPage = () => {
             </div>
 
             {/* Resumo */}
-            <div className="bg-gray-800/40 border border-gray-700 rounded-md p-3 space-y-1 font-tactical text-sm">
-              <p className="text-gray-300">
+            <div className="bg-muted/40 border border-border rounded-md p-3 space-y-1 font-tactical text-sm">
+              <p className="text-foreground/85">
                 Você tem{' '}
-                <span className="text-white font-semibold">{declarationYearActivityCount}</span>{' '}
+                <span className="text-foreground font-semibold">{declarationYearActivityCount}</span>{' '}
                 atividade(s) registrada(s) em {declarationYear}.
               </p>
-              <p className="text-gray-500 text-xs">
+              <p className="text-muted-foreground/80 text-xs">
                 Mínimo recomendado: 8 eventos por calibre (Nível 1) — verifique seu nível CR.
               </p>
             </div>
@@ -444,7 +444,7 @@ const HabitualityPage = () => {
             )}
 
             {/* Aviso geral */}
-            <p className="text-xs font-tactical text-gray-500 leading-relaxed">
+            <p className="text-xs font-tactical text-muted-foreground/80 leading-relaxed">
               A declaração é gerada com base nos registros oficiais deste clube. Verifique seus
               dados pessoais e a anuidade antes de baixar.
             </p>
@@ -455,14 +455,14 @@ const HabitualityPage = () => {
               variant="outline"
               onClick={() => setDeclarationOpen(false)}
               disabled={isDownloading}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleDownloadDeclaration}
               disabled={isDownloading || !clubReady}
-              className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold"
+              className="bg-green-600 hover:bg-green-700 text-foreground font-tactical font-bold"
             >
               {isDownloading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -23,13 +23,13 @@ interface LoanTransferDialogProps {
   onTransferred?: () => void;
 }
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
 const selectClasses =
-  'w-full rounded-md bg-gray-800 border border-gray-600 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
+  'w-full rounded-md bg-muted border border-input text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
 
 const LoanTransferDialog = ({ open, onOpenChange, activeLoan, onTransferred }: LoanTransferDialogProps) => {
   const { toast } = useToast();
@@ -84,18 +84,18 @@ const LoanTransferDialog = ({ open, onOpenChange, activeLoan, onTransferred }: L
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg">
+      <DialogContent className="bg-card border-border text-foreground max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <ArrowRight className="h-5 w-5 text-blue-400" />
             Transferir Empréstimo
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             {activeLoan && (
               <>
-                <strong className="text-white">{activeLoan.equipment.name}</strong>
+                <strong className="text-foreground">{activeLoan.equipment.name}</strong>
                 {activeLoan.equipment.serialNumber && ` (Nº ${activeLoan.equipment.serialNumber})`} —
-                atualmente com <strong className="text-white">{activeLoan.member.fullName}</strong>.
+                atualmente com <strong className="text-foreground">{activeLoan.member.fullName}</strong>.
                 Selecione o novo responsável; o empréstimo anterior será encerrado e um novo será aberto.
               </>
             )}
@@ -126,7 +126,7 @@ const LoanTransferDialog = ({ open, onOpenChange, activeLoan, onTransferred }: L
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 font-tactical mt-1">
+            <p className="text-xs text-muted-foreground/80 font-tactical mt-1">
               Permite atualizar a condição do equipamento no momento da transferência.
             </p>
           </div>
@@ -149,7 +149,7 @@ const LoanTransferDialog = ({ open, onOpenChange, activeLoan, onTransferred }: L
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -157,7 +157,7 @@ const LoanTransferDialog = ({ open, onOpenChange, activeLoan, onTransferred }: L
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !newMemberId}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-tactical"
+            className="bg-blue-600 hover:bg-blue-700 text-foreground font-tactical"
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

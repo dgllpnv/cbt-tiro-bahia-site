@@ -173,26 +173,26 @@ const MemberSearch = ({
 
   return (
     <div ref={wrapperRef} className="relative space-y-2">
-      {label && <label className="text-gray-300 font-tactical text-sm">{label}</label>}
+      {label && <label className="text-foreground/85 font-tactical text-sm">{label}</label>}
 
       <div className="relative">
         {selectedName ? (
           <div
-            className={`flex items-center gap-2 h-10 px-3 bg-gray-800 border rounded-md ${selectedIsVisitor ? 'border-blue-500/50' : 'border-cbt-orange/50'}`}
+            className={`flex items-center gap-2 h-10 px-3 bg-muted border rounded-md ${selectedIsVisitor ? 'border-blue-500/50' : 'border-cbt-orange/50'}`}
           >
             {selectedIsVisitor ? (
               <UserCheck size={14} className="text-blue-400 flex-shrink-0" />
             ) : (
               <User size={14} className="text-cbt-orange flex-shrink-0" />
             )}
-            <span className="text-white font-tactical text-sm flex-1 truncate">{selectedName}</span>
-            <button onClick={handleClear} className="text-gray-400 hover:text-white flex-shrink-0">
+            <span className="text-foreground font-tactical text-sm flex-1 truncate">{selectedName}</span>
+            <button onClick={handleClear} className="text-muted-foreground hover:text-foreground flex-shrink-0">
               <X size={14} />
             </button>
           </div>
         ) : (
           <>
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80" />
             <input
               type="text"
               value={query}
@@ -201,7 +201,7 @@ const MemberSearch = ({
                 if (results.length > 0) setIsOpen(true);
               }}
               placeholder={placeholder}
-              className="w-full h-10 pl-9 pr-3 bg-gray-800 border border-gray-700 rounded-md text-white font-tactical text-sm placeholder:text-gray-500 focus:border-cbt-orange focus:outline-none"
+              className="w-full h-10 pl-9 pr-3 bg-muted border border-border rounded-md text-foreground font-tactical text-sm placeholder:text-muted-foreground/80 focus:border-cbt-orange focus:outline-none"
             />
             {isLoading && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -212,32 +212,32 @@ const MemberSearch = ({
         )}
 
         {isOpen && results.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-xl max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-muted border border-border rounded-md shadow-xl max-h-60 overflow-y-auto">
             {results.map((member) => (
               <button
                 key={member.id}
                 onClick={() => handleSelect(member)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-700 transition-colors border-b border-gray-700/50 last:border-0"
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-secondary transition-colors border-b border-border/50 last:border-0"
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${member.isVisitor ? 'bg-blue-500/20' : 'bg-gray-700'}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${member.isVisitor ? 'bg-blue-500/20' : 'bg-secondary'}`}
                 >
                   {member.isVisitor ? (
                     <UserCheck size={14} className="text-blue-400" />
                   ) : (
-                    <User size={14} className="text-gray-400" />
+                    <User size={14} className="text-muted-foreground" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-tactical text-sm truncate">{member.fullName}</p>
+                    <p className="text-foreground font-tactical text-sm truncate">{member.fullName}</p>
                     {member.isVisitor && (
                       <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
                         Visitante
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-500 font-tactical text-xs">
+                  <p className="text-muted-foreground/80 font-tactical text-xs">
                     {member.isVisitor
                       ? `CPF ${member.cpf || '—'}`
                       : `Nº ${member.memberNumber || '—'}`}
@@ -249,8 +249,8 @@ const MemberSearch = ({
         )}
 
         {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
-          <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-xl p-4 text-center">
-            <p className="text-gray-500 font-tactical text-sm">
+          <div className="absolute z-50 w-full mt-1 bg-muted border border-border rounded-md shadow-xl p-4 text-center">
+            <p className="text-muted-foreground/80 font-tactical text-sm">
               {includeVisitors ? 'Nenhum associado ou visitante encontrado' : 'Nenhum associado encontrado'}
             </p>
           </div>

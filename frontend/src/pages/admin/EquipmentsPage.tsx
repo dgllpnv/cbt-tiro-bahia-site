@@ -84,12 +84,12 @@ const KpiCard = ({
   borderColor: string;
 }) => (
   <div
-    className={`relative overflow-hidden bg-gray-900/50 border ${borderColor} rounded-lg p-4 hover:border-opacity-80 transition-all`}
+    className={`relative overflow-hidden bg-card/50 border ${borderColor} rounded-lg p-4 hover:border-opacity-80 transition-all`}
   >
     <div className="flex items-start justify-between gap-2">
       <div className="space-y-1 min-w-0">
-        <p className="text-xs font-tactical uppercase tracking-wider text-gray-500 truncate">{label}</p>
-        <p className="text-2xl font-military font-bold text-white tracking-wide">{value}</p>
+        <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80 truncate">{label}</p>
+        <p className="text-2xl font-military font-bold text-foreground tracking-wide">{value}</p>
       </div>
       <div className={`p-2 rounded-lg ${bgColor} flex-shrink-0`}>
         <Icon className="h-4 w-4" style={{ color }} />
@@ -249,7 +249,7 @@ const EquipmentsPage = () => {
         title="Equipamentos"
         description="Cadastro, empréstimos e movimentações de equipamentos do clube"
         actions={
-          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
             <Link to="/admin/equipamentos/novo">
               <Plus className="h-4 w-4 mr-2" />
               Novo Equipamento
@@ -303,7 +303,7 @@ const EquipmentsPage = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-4">
+      <div className="bg-card/50 border border-border rounded-lg p-4 mb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="lg:col-span-2">
             <SearchInput
@@ -315,7 +315,7 @@ const EquipmentsPage = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full rounded-md bg-gray-800 border border-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange font-tactical"
+            className="w-full rounded-md bg-muted border border-border text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange font-tactical"
           >
             <option value="">Todos os tipos</option>
             {Object.entries(equipmentTypeLabels).map(([value, label]) => (
@@ -325,7 +325,7 @@ const EquipmentsPage = () => {
           <select
             value={conditionFilter}
             onChange={(e) => setConditionFilter(e.target.value)}
-            className="w-full rounded-md bg-gray-800 border border-gray-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange font-tactical"
+            className="w-full rounded-md bg-muted border border-border text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange font-tactical"
           >
             <option value="">Todas as condições</option>
             {Object.entries(equipmentConditionLabels).map(([value, label]) => (
@@ -344,7 +344,7 @@ const EquipmentsPage = () => {
                 className={`px-3 py-1.5 rounded-md text-xs font-tactical transition-colors ${
                   isActive
                     ? 'bg-cbt-orange/20 border border-cbt-orange/40 text-cbt-orange'
-                    : 'bg-gray-800 border border-gray-700 text-gray-400 hover:text-white'
+                    : 'bg-muted border border-border text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {labels[opt]}
@@ -355,12 +355,12 @@ const EquipmentsPage = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <LoadingSpinner message="Carregando equipamentos..." />
         ) : items.length === 0 ? (
           <EmptyState
-            icon={<Package className="w-8 h-8 text-gray-500" />}
+            icon={<Package className="w-8 h-8 text-muted-foreground/80" />}
             title="Nenhum equipamento encontrado"
             description={
               search || typeFilter || conditionFilter || availabilityFilter !== 'all'
@@ -373,14 +373,14 @@ const EquipmentsPage = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical w-12"></TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Nome</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Série</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Condição</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Em poder de</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Ações</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical w-12"></TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Nome</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Série</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Condição</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Em poder de</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -389,27 +389,27 @@ const EquipmentsPage = () => {
                     const activeLoan = activeLoanByEquip[eq.id];
                     const holder = activeLoan?.member;
                     return (
-                      <TableRow key={eq.id} className="border-gray-800 hover:bg-gray-800/50">
+                      <TableRow key={eq.id} className="border-border hover:bg-muted/50">
                         <TableCell>
-                          <div className="w-9 h-9 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center">
+                          <div className="w-9 h-9 rounded-lg bg-muted border border-border flex items-center justify-center">
                             <Icon className="h-4 w-4 text-cbt-orange" />
                           </div>
                         </TableCell>
-                        <TableCell className="text-white font-medium">
+                        <TableCell className="text-foreground font-medium">
                           {eq.name}
                           {eq.caliber && (
-                            <span className="text-gray-500 font-tactical text-xs ml-2">
+                            <span className="text-muted-foreground/80 font-tactical text-xs ml-2">
                               ({eq.caliber})
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-sm">
+                        <TableCell className="text-foreground/85 text-sm">
                           {equipmentTypeLabels[eq.equipmentType] || eq.equipmentType}
                         </TableCell>
-                        <TableCell className="text-gray-300 font-mono text-xs">
+                        <TableCell className="text-foreground/85 font-mono text-xs">
                           {eq.serialNumber || '—'}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-sm">
+                        <TableCell className="text-foreground/85 text-sm">
                           {equipmentConditionLabels[eq.condition] || eq.condition}
                         </TableCell>
                         <TableCell>
@@ -435,7 +435,7 @@ const EquipmentsPage = () => {
                               Disponível
                             </span>
                           ) : (
-                            <span className="text-gray-500 font-tactical text-xs">—</span>
+                            <span className="text-muted-foreground/80 font-tactical text-xs">—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -445,7 +445,7 @@ const EquipmentsPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                                  className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
                                   title="Transferir"
                                   onClick={() => setTransferLoan(activeLoan)}
                                 >
@@ -454,7 +454,7 @@ const EquipmentsPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
                                   title="Devolver"
                                   onClick={() => setReturnLoan(activeLoan)}
                                 >
@@ -466,7 +466,7 @@ const EquipmentsPage = () => {
                               variant="ghost"
                               size="icon"
                               asChild
-                              className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary"
                               title="Detalhes"
                             >
                               <Link to={`/admin/equipamentos/${eq.id}`}>
@@ -477,7 +477,7 @@ const EquipmentsPage = () => {
                               variant="ghost"
                               size="icon"
                               asChild
-                              className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-gray-700"
+                              className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-secondary"
                               title="Editar"
                             >
                               <Link to={`/admin/equipamentos/${eq.id}`}>
@@ -494,8 +494,8 @@ const EquipmentsPage = () => {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-                <p className="text-sm text-gray-400 font-tactical">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-sm text-muted-foreground font-tactical">
                   Mostrando {(page - 1) * ITEMS_PER_PAGE + 1} a{' '}
                   {Math.min(page * ITEMS_PER_PAGE, pagination.total)} de {pagination.total}
                 </p>
@@ -505,12 +505,12 @@ const EquipmentsPage = () => {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-gray-400 font-tactical px-2">
+                  <span className="text-sm text-muted-foreground font-tactical px-2">
                     {page} / {pagination.totalPages}
                   </span>
                   <Button
@@ -518,7 +518,7 @@ const EquipmentsPage = () => {
                     size="sm"
                     disabled={page >= pagination.totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     Próximo
                     <ChevronRight className="h-4 w-4 ml-1" />

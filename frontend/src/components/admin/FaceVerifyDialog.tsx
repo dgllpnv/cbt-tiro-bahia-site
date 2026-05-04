@@ -164,13 +164,13 @@ const FaceVerifyDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <ScanFace className="h-5 w-5 text-cbt-orange" />
             Identificação Facial
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             Posicione o rosto da pessoa em frente à câmera. Identificação automática.
           </DialogDescription>
         </DialogHeader>
@@ -219,10 +219,10 @@ const FaceVerifyDialog = ({
                       </span>
                     )}
                   </p>
-                  <p className="text-white font-military text-base font-bold truncate">
+                  <p className="text-foreground font-military text-base font-bold truncate">
                     {result.member.fullName}
                   </p>
-                  <p className="text-gray-400 font-tactical text-xs">
+                  <p className="text-muted-foreground font-tactical text-xs">
                     {result.member.role === 'VISITOR'
                       ? 'Visitante'
                       : `Nº ${result.member.memberNumber || '—'}`}
@@ -244,20 +244,20 @@ const FaceVerifyDialog = ({
               </div>
               {result.suggestions.length > 0 && (
                 <div>
-                  <p className="text-xs font-tactical text-gray-400 mb-1">Sugestões:</p>
+                  <p className="text-xs font-tactical text-muted-foreground mb-1">Sugestões:</p>
                   <div className="space-y-1">
                     {result.suggestions.map((s) => (
                       <div
                         key={s.profileId}
-                        className="flex items-center justify-between px-2 py-1 bg-gray-800/50 rounded"
+                        className="flex items-center justify-between px-2 py-1 bg-muted/50 rounded"
                       >
-                        <span className="text-white text-xs font-tactical truncate">
+                        <span className="text-foreground text-xs font-tactical truncate">
                           {s.member.fullName}
                           {s.member.role === 'VISITOR' && (
                             <span className="ml-1 text-blue-300">(visitante)</span>
                           )}
                         </span>
-                        <span className="text-gray-500 text-xs font-mono">
+                        <span className="text-muted-foreground/80 text-xs font-mono">
                           {(s.similarity * 100).toFixed(1)}%
                         </span>
                       </div>
@@ -274,7 +274,7 @@ const FaceVerifyDialog = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -284,7 +284,7 @@ const FaceVerifyDialog = ({
                 type="button"
                 variant="outline"
                 onClick={handleRetry}
-                className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
@@ -295,7 +295,7 @@ const FaceVerifyDialog = ({
                 <Button
                   type="button"
                   onClick={handleConfirm}
-                  className="bg-red-600 hover:bg-red-700 text-white font-tactical"
+                  className="bg-red-600 hover:bg-red-700 text-foreground font-tactical"
                 >
                   <Receipt className="h-4 w-4 mr-2" />
                   Fechar conta
@@ -304,7 +304,7 @@ const FaceVerifyDialog = ({
                 <Button
                   type="button"
                   onClick={handleConfirm}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Confirmar entrada
@@ -328,7 +328,7 @@ const FaceThumbnailById = ({
   accent?: 'green' | 'blue';
 }) => (
   <div
-    className={`w-12 h-12 rounded-full bg-gray-800 border flex items-center justify-center flex-shrink-0 ${
+    className={`w-12 h-12 rounded-full bg-muted border flex items-center justify-center flex-shrink-0 ${
       accent === 'blue' ? 'border-blue-500/30' : 'border-green-500/30'
     }`}
     title={`Profile ${profileId.slice(0, 8)}`}

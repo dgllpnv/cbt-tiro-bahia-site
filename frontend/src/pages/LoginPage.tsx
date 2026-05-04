@@ -49,13 +49,13 @@ const LoginPage = () => {
 
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-gray-900/80 border border-gray-700 rounded-2xl p-8 backdrop-blur-sm tactical-shadow">
+        <div className="bg-card/80 border border-border rounded-2xl p-8 backdrop-blur-sm tactical-shadow">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
               <CbtLogo className="w-full h-full" />
             </div>
-            <h1 className="text-2xl font-military font-bold text-white tracking-wider">
+            <h1 className="text-2xl font-military font-bold text-foreground tracking-wider">
               CLUBE BAIANO DE TIRO
             </h1>
             <p className="text-cbt-orange font-tactical text-sm mt-1 tracking-widest">
@@ -66,7 +66,7 @@ const LoginPage = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-tactical text-gray-300 mb-2">
+              <label className="block text-sm font-tactical text-foreground/85 mb-2">
                 CPF ou E-mail
               </label>
               <Input
@@ -74,13 +74,13 @@ const LoginPage = () => {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="Digite seu CPF ou e-mail"
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical"
+                className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical"
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-tactical text-gray-300 mb-2">
+              <label className="block text-sm font-tactical text-foreground/85 mb-2">
                 Senha
               </label>
               <div className="relative">
@@ -89,13 +89,13 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Digite sua senha"
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical pr-12"
+                  className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical pr-12"
                   disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -125,7 +125,7 @@ const LoginPage = () => {
           <div className="mt-6 text-center">
             <a
               href="/"
-              className="text-gray-500 hover:text-cbt-orange font-tactical text-sm transition-colors"
+              className="text-muted-foreground/80 hover:text-cbt-orange font-tactical text-sm transition-colors"
             >
               Voltar ao site
             </a>
@@ -134,7 +134,7 @@ const LoginPage = () => {
 
         {/* Test credentials hint (dev only) */}
         {import.meta.env.DEV && (
-          <div className="mt-4 bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-xs font-tactical text-gray-500">
+          <div className="mt-4 bg-card/50 border border-border rounded-lg p-4 text-xs font-tactical text-muted-foreground/80">
             <p className="text-cbt-orange font-bold mb-2">Credenciais de teste:</p>
             <p>Admin: admin@cbt.com.br / admin123</p>
             <p>Associado: associado@cbt.com.br / associado123</p>

@@ -47,9 +47,9 @@ function stripCpfMask(value: string): string {
 }
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 interface FormState {
   fullName: string;
@@ -245,7 +245,7 @@ const VisitorDetailPage = () => {
             <Button
               asChild
               variant="outline"
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               <Link to="/admin/visitantes">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -254,7 +254,7 @@ const VisitorDetailPage = () => {
             </Button>
             <Button
               onClick={() => setConvertOpen(true)}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
             >
               <UserCheck className="h-4 w-4 mr-2" />
               Converter em Associado
@@ -264,14 +264,14 @@ const VisitorDetailPage = () => {
       />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="bg-gray-900 border border-gray-800">
-          <TabsTrigger value="dados" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-white">
+        <TabsList className="bg-card border border-border">
+          <TabsTrigger value="dados" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground">
             Dados
           </TabsTrigger>
-          <TabsTrigger value="visitas" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-white">
+          <TabsTrigger value="visitas" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground">
             Visitas
           </TabsTrigger>
-          <TabsTrigger value="transacoes" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-white">
+          <TabsTrigger value="transacoes" className="data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground">
             Transacoes
           </TabsTrigger>
         </TabsList>
@@ -279,8 +279,8 @@ const VisitorDetailPage = () => {
         {/* TAB: DADOS */}
         <TabsContent value="dados" className="mt-6">
           <form onSubmit={handleSave} className="space-y-6">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+            <div className="bg-card/50 border border-border rounded-lg p-6">
+              <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
                 Dados Pessoais
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -352,8 +352,8 @@ const VisitorDetailPage = () => {
               </div>
             </div>
 
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+            <div className="bg-card/50 border border-border rounded-lg p-6">
+              <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
                 Endereco
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -414,7 +414,7 @@ const VisitorDetailPage = () => {
                 type="button"
                 variant="outline"
                 onClick={handleDelete}
-                className="bg-gray-800 border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+                className="bg-muted border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Excluir Visitante
@@ -422,7 +422,7 @@ const VisitorDetailPage = () => {
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
               >
                 {isSaving ? (
                   <>
@@ -446,7 +446,7 @@ const VisitorDetailPage = () => {
 
         {/* TAB: VISITAS */}
         <TabsContent value="visitas" className="mt-6">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {!tabsLoaded.visitas ? (
               <LoadingSpinner message="Carregando visitas..." />
             ) : visits.length === 0 ? (
@@ -457,30 +457,30 @@ const VisitorDetailPage = () => {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Check-in</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Check-out</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Baia</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Finalidade</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Check-in</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Check-out</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Baia</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Finalidade</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visits.map((v) => (
-                    <TableRow key={v.id} className="border-gray-800 hover:bg-gray-800/50">
-                      <TableCell className="text-white">{formatDate(v.visitDate)}</TableCell>
-                      <TableCell className="text-gray-300 font-mono text-sm">
+                    <TableRow key={v.id} className="border-border hover:bg-muted/50">
+                      <TableCell className="text-foreground">{formatDate(v.visitDate)}</TableCell>
+                      <TableCell className="text-foreground/85 font-mono text-sm">
                         {v.checkInTime ? formatDateTime(v.checkInTime) : '—'}
                       </TableCell>
-                      <TableCell className="text-gray-300 font-mono text-sm">
+                      <TableCell className="text-foreground/85 font-mono text-sm">
                         {v.checkOutTime ? formatDateTime(v.checkOutTime) : (
                           <span className="text-amber-400">Em andamento</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-foreground/85">
                         {v.lane ? `Baia ${v.lane.number}` : '—'}
                       </TableCell>
-                      <TableCell className="text-gray-300 text-sm">{v.purpose || '—'}</TableCell>
+                      <TableCell className="text-foreground/85 text-sm">{v.purpose || '—'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -491,7 +491,7 @@ const VisitorDetailPage = () => {
 
         {/* TAB: TRANSACOES */}
         <TabsContent value="transacoes" className="mt-6">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {!tabsLoaded.transacoes ? (
               <LoadingSpinner message="Carregando transacoes..." />
             ) : transactions.length === 0 ? (
@@ -502,23 +502,23 @@ const VisitorDetailPage = () => {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Pgto</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Valor</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Pgto</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Valor</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transactions.map((t) => (
-                    <TableRow key={t.id} className="border-gray-800 hover:bg-gray-800/50">
-                      <TableCell className="text-white">{formatDate(t.transactionDate)}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">
+                    <TableRow key={t.id} className="border-border hover:bg-muted/50">
+                      <TableCell className="text-foreground">{formatDate(t.transactionDate)}</TableCell>
+                      <TableCell className="text-foreground/85 text-sm">
                         {transactionTypeLabels[t.type as keyof typeof transactionTypeLabels] || t.type}
                       </TableCell>
-                      <TableCell className="text-gray-300 text-sm">{t.status}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">
+                      <TableCell className="text-foreground/85 text-sm">{t.status}</TableCell>
+                      <TableCell className="text-foreground/85 text-sm">
                         {t.paymentMethod || '—'}
                       </TableCell>
                       <TableCell className="text-right text-green-400 font-mono">

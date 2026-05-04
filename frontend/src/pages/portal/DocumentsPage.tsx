@@ -42,7 +42,7 @@ const getDocumentTypeBadge = (type: string) => {
     MEMBERSHIP_CARD: { label: 'Carteirinha', className: 'bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30' },
     DECLARATION: { label: 'Declaracao', className: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
   };
-  return map[type] || { label: type, className: 'bg-gray-500/15 text-gray-400 border-gray-500/30' };
+  return map[type] || { label: type, className: 'bg-muted-foreground/20 text-muted-foreground border-muted-foreground/40' };
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -135,20 +135,20 @@ const DocumentsPage = () => {
       <PageHeader title="Meus Documentos" description="Declaracoes e documentos emitidos" />
 
       {/* ── Request document section ─────────────────────────────────────── */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5 mb-6">
+      <div className="bg-card/50 border border-border rounded-lg p-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <FilePlus className="h-5 w-5 text-cbt-orange" />
-          <h3 className="text-lg font-military font-bold text-white tracking-wide">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide">
             Solicitar Documento
           </h3>
         </div>
-        <p className="text-sm font-tactical text-gray-400 mb-4">
+        <p className="text-sm font-tactical text-muted-foreground mb-4">
           Selecione o tipo de documento que deseja gerar.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Button
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-blue-500/40 font-tactical justify-start h-auto py-3 px-4"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground hover:border-blue-500/40 font-tactical justify-start h-auto py-3 px-4"
             onClick={handleGenerateFiliation}
             disabled={isGeneratingFiliation}
           >
@@ -159,13 +159,13 @@ const DocumentsPage = () => {
             )}
             <div className="text-left">
               <p className="text-sm font-medium">Declaracao de Filiacao</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">Comprova vinculo com o clube</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">Comprova vinculo com o clube</p>
             </div>
           </Button>
 
           <Button
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-green-500/40 font-tactical justify-start h-auto py-3 px-4"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground hover:border-green-500/40 font-tactical justify-start h-auto py-3 px-4"
             onClick={handleGenerateHabituality}
             disabled={isGeneratingHabituality}
           >
@@ -176,19 +176,19 @@ const DocumentsPage = () => {
             )}
             <div className="text-left">
               <p className="text-sm font-medium">Declaracao de Habitualidade</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">Comprova frequencia de treinos</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">Comprova frequencia de treinos</p>
             </div>
           </Button>
 
           <Button
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-cbt-orange/40 font-tactical justify-start h-auto py-3 px-4"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground hover:border-cbt-orange/40 font-tactical justify-start h-auto py-3 px-4"
             onClick={() => navigate('/portal/carteirinha')}
           >
             <CreditCard className="h-4 w-4 mr-3 text-cbt-orange" />
             <div className="text-left">
               <p className="text-sm font-medium">Carteirinha Digital</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">Visualizar sua carteirinha</p>
+              <p className="text-[10px] text-muted-foreground/80 mt-0.5">Visualizar sua carteirinha</p>
             </div>
           </Button>
         </div>
@@ -198,17 +198,17 @@ const DocumentsPage = () => {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <FileText className="h-5 w-5 text-cbt-orange" />
-          <h3 className="text-lg font-military font-bold text-white tracking-wide">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide">
             Documentos Emitidos
           </h3>
         </div>
 
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
           {isLoading ? (
             <LoadingSpinner message="Carregando documentos..." />
           ) : documents.length === 0 ? (
             <EmptyState
-              icon={<FileText className="w-8 h-8 text-gray-500" />}
+              icon={<FileText className="w-8 h-8 text-muted-foreground/80" />}
               title="Nenhum documento encontrado"
               description="Solicite um documento usando os botoes acima."
             />
@@ -219,7 +219,7 @@ const DocumentsPage = () => {
                 return (
                   <div
                     key={doc.id}
-                    className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-gray-600 transition-colors"
+                    className="bg-muted/50 border border-border/50 rounded-lg p-4 hover:border-input transition-colors"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <Badge
@@ -228,22 +228,22 @@ const DocumentsPage = () => {
                       >
                         {typeBadge.label}
                       </Badge>
-                      <span className="text-[10px] font-tactical text-gray-500">
+                      <span className="text-[10px] font-tactical text-muted-foreground/80">
                         {formatDate(doc.generatedAt)}
                       </span>
                     </div>
-                    <h4 className="text-sm font-military font-bold text-white mb-1 line-clamp-2">
+                    <h4 className="text-sm font-military font-bold text-foreground mb-1 line-clamp-2">
                       {doc.title}
                     </h4>
                     {doc.description && (
-                      <p className="text-xs font-tactical text-gray-400 line-clamp-2 mb-3">
+                      <p className="text-xs font-tactical text-muted-foreground line-clamp-2 mb-3">
                         {doc.description}
                       </p>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical text-xs mt-2"
+                      className="w-full bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical text-xs mt-2"
                       onClick={() => handleDownload(doc)}
                     >
                       <Download className="h-3.5 w-3.5 mr-2" />

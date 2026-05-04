@@ -115,7 +115,7 @@ const VisitorsPage = () => {
         title="Visitantes"
         description="Cadastro e gestao de visitantes do clube"
         actions={
-          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
             <Link to="/admin/visitantes/novo">
               <UserPlus className="h-4 w-4 mr-2" />
               Novo Visitante
@@ -132,12 +132,12 @@ const VisitorsPage = () => {
         />
       </div>
 
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <LoadingSpinner message="Carregando visitantes..." />
         ) : visitors.length === 0 ? (
           <EmptyState
-            icon={<UserCheck className="w-8 h-8 text-gray-500" />}
+            icon={<UserCheck className="w-8 h-8 text-muted-foreground/80" />}
             title="Nenhum visitante encontrado"
             description={
               search
@@ -146,7 +146,7 @@ const VisitorsPage = () => {
             }
             action={
               !search ? (
-                <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+                <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
                   <Link to="/admin/visitantes/novo">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Novo Visitante
@@ -159,25 +159,25 @@ const VisitorsPage = () => {
           <>
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-800 hover:bg-transparent">
-                  <TableHead className="text-gray-400 font-tactical">Nome</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">CPF</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">Telefone</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">E-mail</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground font-tactical">Nome</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">CPF</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">Telefone</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">E-mail</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {visitors.map((visitor) => (
-                  <TableRow key={visitor.id} className="border-gray-800 hover:bg-gray-800/50">
-                    <TableCell className="text-white font-medium">{visitor.fullName}</TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">
+                  <TableRow key={visitor.id} className="border-border hover:bg-muted/50">
+                    <TableCell className="text-foreground font-medium">{visitor.fullName}</TableCell>
+                    <TableCell className="text-foreground/85 font-mono text-sm">
                       {formatCpf(visitor.cpf)}
                     </TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">
+                    <TableCell className="text-foreground/85 font-mono text-sm">
                       {formatPhone(visitor.phone)}
                     </TableCell>
-                    <TableCell className="text-gray-300 text-sm">
+                    <TableCell className="text-foreground/85 text-sm">
                       {visitor.email || '—'}
                     </TableCell>
                     <TableCell className="text-right">
@@ -186,7 +186,7 @@ const VisitorsPage = () => {
                           variant="ghost"
                           size="icon"
                           asChild
-                          className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary"
                           title="Detalhes"
                         >
                           <Link to={`/admin/visitantes/${visitor.id}`}>
@@ -197,7 +197,7 @@ const VisitorsPage = () => {
                           variant="ghost"
                           size="icon"
                           asChild
-                          className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-secondary"
                           title="Editar"
                         >
                           <Link to={`/admin/visitantes/${visitor.id}`}>
@@ -207,7 +207,7 @@ const VisitorsPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-secondary"
                           title="Excluir"
                           onClick={() => handleDelete(visitor)}
                         >
@@ -221,8 +221,8 @@ const VisitorsPage = () => {
             </Table>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-                <p className="text-sm text-gray-400 font-tactical">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-sm text-muted-foreground font-tactical">
                   Mostrando {(page - 1) * ITEMS_PER_PAGE + 1} a{' '}
                   {Math.min(page * ITEMS_PER_PAGE, pagination.total)} de {pagination.total} visitantes
                 </p>
@@ -232,12 +232,12 @@ const VisitorsPage = () => {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-gray-400 font-tactical px-2">
+                  <span className="text-sm text-muted-foreground font-tactical px-2">
                     {page} / {pagination.totalPages}
                   </span>
                   <Button
@@ -245,7 +245,7 @@ const VisitorsPage = () => {
                     size="sm"
                     disabled={page >= pagination.totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     Proximo
                     <ChevronRight className="h-4 w-4 ml-1" />

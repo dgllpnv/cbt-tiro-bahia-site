@@ -77,38 +77,38 @@ const ProductSearch = ({ value, onChange, placeholder = 'Buscar produto...', lab
 
   return (
     <div ref={wrapperRef} className="relative space-y-2">
-      {label && <label className="text-gray-300 font-tactical text-sm">{label}</label>}
+      {label && <label className="text-foreground/85 font-tactical text-sm">{label}</label>}
       <div className="relative">
         {selectedName ? (
-          <div className="flex items-center gap-2 h-10 px-3 bg-gray-800 border border-cbt-orange/50 rounded-md">
+          <div className="flex items-center gap-2 h-10 px-3 bg-muted border border-cbt-orange/50 rounded-md">
             <ShoppingCart size={14} className="text-cbt-orange flex-shrink-0" />
-            <span className="text-white font-tactical text-sm flex-1 truncate">{selectedName}</span>
-            <button onClick={handleClear} className="text-gray-400 hover:text-white flex-shrink-0"><X size={14} /></button>
+            <span className="text-foreground font-tactical text-sm flex-1 truncate">{selectedName}</span>
+            <button onClick={handleClear} className="text-muted-foreground hover:text-foreground flex-shrink-0"><X size={14} /></button>
           </div>
         ) : (
           <>
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80" />
             <input
               type="text" value={query}
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={() => { if (results.length > 0) setIsOpen(true); }}
               placeholder={placeholder}
-              className="w-full h-10 pl-9 pr-3 bg-gray-800 border border-gray-700 rounded-md text-white font-tactical text-sm placeholder:text-gray-500 focus:border-cbt-orange focus:outline-none"
+              className="w-full h-10 pl-9 pr-3 bg-muted border border-border rounded-md text-foreground font-tactical text-sm placeholder:text-muted-foreground/80 focus:border-cbt-orange focus:outline-none"
             />
             {isLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="w-4 h-4 border-2 border-cbt-orange/30 border-t-cbt-orange rounded-full animate-spin" /></div>}
           </>
         )}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-xl max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-muted border border-border rounded-md shadow-xl max-h-60 overflow-y-auto">
             {results.map((prod) => (
               <button key={prod.id} onClick={() => handleSelect(prod)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-700 transition-colors border-b border-gray-700/50 last:border-0">
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-secondary transition-colors border-b border-border/50 last:border-0">
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                   <ShoppingCart size={14} className="text-cbt-orange" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-white font-tactical text-sm truncate">{prod.name}</p>
-                  <p className="text-gray-500 font-tactical text-xs">{categoryLabels[prod.category] || prod.category}{prod.caliber ? ` — ${prod.caliber}` : ''}</p>
+                  <p className="text-foreground font-tactical text-sm truncate">{prod.name}</p>
+                  <p className="text-muted-foreground/80 font-tactical text-xs">{categoryLabels[prod.category] || prod.category}{prod.caliber ? ` — ${prod.caliber}` : ''}</p>
                 </div>
                 <span className="text-cbt-orange font-tactical text-sm font-bold whitespace-nowrap">
                   {formatCurrency(Number(prod.unitPrice))}
@@ -118,8 +118,8 @@ const ProductSearch = ({ value, onChange, placeholder = 'Buscar produto...', lab
           </div>
         )}
         {isOpen && query.length >= 1 && results.length === 0 && !isLoading && (
-          <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-xl p-4 text-center">
-            <p className="text-gray-500 font-tactical text-sm">Nenhum produto encontrado</p>
+          <div className="absolute z-50 w-full mt-1 bg-muted border border-border rounded-md shadow-xl p-4 text-center">
+            <p className="text-muted-foreground/80 font-tactical text-sm">Nenhum produto encontrado</p>
           </div>
         )}
       </div>

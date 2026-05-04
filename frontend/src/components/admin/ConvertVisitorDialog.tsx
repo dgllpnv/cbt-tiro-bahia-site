@@ -27,12 +27,12 @@ interface ConvertVisitorDialogProps {
 }
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
 const selectClasses =
-  'w-full rounded-md bg-gray-800 border border-gray-600 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
+  'w-full rounded-md bg-muted border border-input text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 const ConvertVisitorDialog = ({
   visitor,
@@ -146,14 +146,14 @@ const ConvertVisitorDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
+          <DialogTitle className="text-foreground flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-cbt-orange" />
             Converter em Associado
           </DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Preencha os dados que faltam para que <strong className="text-white">{visitor.fullName}</strong>{' '}
+          <DialogDescription className="text-muted-foreground">
+            Preencha os dados que faltam para que <strong className="text-foreground">{visitor.fullName}</strong>{' '}
             (CPF {visitor.cpf}) vire associado. A anuidade sera lancada como pagamento e aparecera no
             financeiro.
           </DialogDescription>
@@ -162,7 +162,7 @@ const ConvertVisitorDialog = ({
         <form onSubmit={handleSubmit} className="space-y-6 py-2">
           {/* Acesso ao portal */}
           <div className="space-y-3">
-            <h3 className="text-sm font-military font-bold text-white tracking-wide uppercase">
+            <h3 className="text-sm font-military font-bold text-foreground tracking-wide uppercase">
               Acesso ao Portal
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -227,7 +227,7 @@ const ConvertVisitorDialog = ({
 
           {/* CR */}
           <div className="space-y-3">
-            <h3 className="text-sm font-military font-bold text-white tracking-wide uppercase">
+            <h3 className="text-sm font-military font-bold text-foreground tracking-wide uppercase">
               Certificado de Registro (opcional)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -339,7 +339,7 @@ const ConvertVisitorDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -347,7 +347,7 @@ const ConvertVisitorDialog = ({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             {isSubmitting ? (
               <>

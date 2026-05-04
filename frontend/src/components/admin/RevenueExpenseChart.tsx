@@ -54,8 +54,8 @@ const CustomTooltip = ({ active, payload, label, granularity }: TooltipProps) =>
     result: 'Resultado',
   };
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-md px-3 py-2 shadow-lg">
-      <p className="text-[10px] font-tactical text-gray-500 uppercase tracking-wider mb-1.5">
+    <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">
+      <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase tracking-wider mb-1.5">
         {granularity === 'month' ? 'Mês' : 'Dia'} · {labelFmt}
       </p>
       <div className="space-y-1">
@@ -66,9 +66,9 @@ const CustomTooltip = ({ active, payload, label, granularity }: TooltipProps) =>
                 className="inline-block h-2 w-2 rounded-full"
                 style={{ background: p.color }}
               />
-              <span className="text-gray-400">{labelMap[p.dataKey ?? ''] ?? p.name}</span>
+              <span className="text-muted-foreground">{labelMap[p.dataKey ?? ''] ?? p.name}</span>
             </span>
-            <span className="text-white font-semibold">
+            <span className="text-foreground font-semibold">
               {formatCurrency(p.value ?? 0)}
             </span>
           </div>
@@ -86,7 +86,7 @@ const RevenueExpenseChart = ({
   if (!data.length) {
     return (
       <div
-        className="flex items-center justify-center bg-gray-900/40 border border-dashed border-gray-700 rounded-md text-gray-500 font-tactical text-sm"
+        className="flex items-center justify-center bg-card/40 border border-dashed border-border rounded-md text-muted-foreground/80 font-tactical text-sm"
         style={{ height }}
       >
         Sem dados financeiros no período selecionado.

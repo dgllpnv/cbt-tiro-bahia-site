@@ -226,14 +226,14 @@ const FaceCheckoutDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <ScanFace className="h-5 w-5 text-cbt-orange" />
             Verificação Facial
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
-            Posicione <strong className="text-white">{memberName}</strong> em frente à câmera. O
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
+            Posicione <strong className="text-foreground">{memberName}</strong> em frente à câmera. O
             reconhecimento valida a saída e cria os registros de habitualidade automaticamente.
           </DialogDescription>
         </DialogHeader>
@@ -273,17 +273,17 @@ const FaceCheckoutDialog = ({
               <div className="flex items-center gap-2 text-green-300 font-tactical">
                 <CheckCircle2 className="h-5 w-5" />
                 <span className="font-bold">Identidade confirmada</span>
-                <span className="text-gray-500 ml-auto text-xs">
+                <span className="text-muted-foreground/80 ml-auto text-xs">
                   Similaridade {(result.similarity * 100).toFixed(1)}%
                 </span>
               </div>
               {result.habituality.created > 0 ? (
-                <p className="text-xs font-tactical text-gray-300">
+                <p className="text-xs font-tactical text-foreground/85">
                   {result.habituality.created} registro(s) de habitualidade criado(s):{' '}
-                  <span className="text-white">{result.habituality.calibers.join(', ')}</span>
+                  <span className="text-foreground">{result.habituality.calibers.join(', ')}</span>
                 </p>
               ) : (
-                <p className="text-xs font-tactical text-gray-500">
+                <p className="text-xs font-tactical text-muted-foreground/80">
                   Habitualidade já registrada anteriormente para esta visita.
                 </p>
               )}
@@ -296,15 +296,15 @@ const FaceCheckoutDialog = ({
                 <AlertCircle className="h-5 w-5" />
                 <span className="font-bold">Não bateu com o cadastro</span>
                 {result && !result.matched && result.similarity !== null && (
-                  <span className="text-gray-500 ml-auto text-xs">
+                  <span className="text-muted-foreground/80 ml-auto text-xs">
                     Similaridade {(result.similarity * 100).toFixed(1)}%
                   </span>
                 )}
               </div>
-              <p className="text-xs font-tactical text-gray-400">
+              <p className="text-xs font-tactical text-muted-foreground">
                 Confira a iluminação e a posição do rosto, ou tente novamente. Se o problema
                 persistir, atualize o perfil facial em{' '}
-                <span className="text-white">Identidade Facial</span> no detalhe do membro.
+                <span className="text-foreground">Identidade Facial</span> no detalhe do membro.
               </p>
             </div>
           )}
@@ -315,18 +315,18 @@ const FaceCheckoutDialog = ({
                 <AlertCircle className="h-5 w-5" />
                 <span className="font-bold">Membro sem facial cadastrada</span>
               </div>
-              <p className="text-xs font-tactical text-gray-400">
-                Esta é a primeira captura de <strong className="text-white">{memberName}</strong>.
+              <p className="text-xs font-tactical text-muted-foreground">
+                Esta é a primeira captura de <strong className="text-foreground">{memberName}</strong>.
                 Confirme o registro abaixo para validar a habitualidade.
               </p>
               {pendingCapture && (
-                <div className="flex items-center gap-3 bg-gray-900/60 rounded p-2">
+                <div className="flex items-center gap-3 bg-card/60 rounded p-2">
                   <img
                     src={pendingCapture.thumbnail}
                     alt="Pré-visualização"
-                    className="w-16 h-16 rounded object-cover border border-gray-700"
+                    className="w-16 h-16 rounded object-cover border border-border"
                   />
-                  <p className="text-xs font-tactical text-gray-400">
+                  <p className="text-xs font-tactical text-muted-foreground">
                     Pré-visualização da captura. Ao clicar em <strong>Cadastrar agora</strong>, o
                     descriptor é salvo e a habitualidade é gerada para os calibres da visita.
                   </p>
@@ -349,7 +349,7 @@ const FaceCheckoutDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={phase === 'analyzing' || phase === 'saving'}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Pular verificação
           </Button>
@@ -361,7 +361,7 @@ const FaceCheckoutDialog = ({
                 variant="outline"
                 onClick={handleRetry}
                 disabled={phase === 'matched'}
-                className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
@@ -373,7 +373,7 @@ const FaceCheckoutDialog = ({
                   type="button"
                   variant="outline"
                   onClick={handleRetry}
-                  className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                  className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
                 >
                   <Camera className="h-4 w-4 mr-2" />
                   Capturar de novo
@@ -381,7 +381,7 @@ const FaceCheckoutDialog = ({
                 <Button
                   type="button"
                   onClick={handleRegisterNow}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
                   Cadastrar agora

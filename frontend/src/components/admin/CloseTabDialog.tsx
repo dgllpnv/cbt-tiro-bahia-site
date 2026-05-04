@@ -142,23 +142,23 @@ const CloseTabDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !submitting && onOpenChange(o)}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <Receipt className="h-5 w-5 text-red-400" />
             Fechar conta — {draft?.member.fullName ?? ''}
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             Confirme o resumo, aplique desconto se necessario e selecione a forma de pagamento.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           {/* Resumo dos itens */}
-          <div className="bg-gray-800/40 border border-gray-700 rounded-md max-h-56 overflow-y-auto">
+          <div className="bg-muted/40 border border-border rounded-md max-h-56 overflow-y-auto">
             {draft?.items.length ? (
               <table className="w-full text-sm font-tactical">
-                <thead className="bg-gray-800/80 text-gray-400 text-xs uppercase tracking-wider">
+                <thead className="bg-muted/80 text-muted-foreground text-xs uppercase tracking-wider">
                   <tr>
                     <th className="text-left px-3 py-2">Item</th>
                     <th className="text-right px-3 py-2">Qtde</th>
@@ -170,12 +170,12 @@ const CloseTabDialog = ({
                   {draft.items.map((it) => {
                     const itSub = Number(it.subtotal ?? it.quantity * it.unitPrice);
                     return (
-                      <tr key={it.id} className="text-white">
+                      <tr key={it.id} className="text-foreground">
                         <td className="px-3 py-2 truncate max-w-[200px]" title={it.description}>
                           {it.description}
                         </td>
                         <td className="text-right px-3 py-2">{it.quantity}</td>
-                        <td className="text-right px-3 py-2 text-gray-400">
+                        <td className="text-right px-3 py-2 text-muted-foreground">
                           {formatCurrency(Number(it.unitPrice))}
                         </td>
                         <td className="text-right px-3 py-2">{formatCurrency(itSub)}</td>
@@ -185,7 +185,7 @@ const CloseTabDialog = ({
                 </tbody>
               </table>
             ) : (
-              <p className="px-4 py-6 text-center text-gray-500 font-tactical text-sm">
+              <p className="px-4 py-6 text-center text-muted-foreground/80 font-tactical text-sm">
                 Comanda vazia.
               </p>
             )}
@@ -194,14 +194,14 @@ const CloseTabDialog = ({
           {/* Categoria + Pagamento */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Categoria
               </Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white h-9">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {Object.entries(TRANSACTION_TYPES).map(([v, label]) => (
                     <SelectItem key={v} value={v}>
                       {label}
@@ -211,14 +211,14 @@ const CloseTabDialog = ({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Forma de pagamento *
               </Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white h-9">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {PAYMENT_METHODS.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
@@ -230,13 +230,13 @@ const CloseTabDialog = ({
           </div>
 
           {/* Totais */}
-          <div className="bg-gray-800/30 border border-gray-700 rounded-md p-3 space-y-2">
+          <div className="bg-muted/30 border border-border rounded-md p-3 space-y-2">
             <div className="flex justify-between text-sm font-tactical">
-              <span className="text-gray-400">Subtotal</span>
-              <span className="text-white">{formatCurrency(subtotal)}</span>
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">{formatCurrency(subtotal)}</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <Label className="text-gray-400 font-tactical text-sm m-0">Desconto</Label>
+              <Label className="text-muted-foreground font-tactical text-sm m-0">Desconto</Label>
               <div className="w-44">
                 <NumberStepper
                   value={discount}
@@ -250,8 +250,8 @@ const CloseTabDialog = ({
                 />
               </div>
             </div>
-            <div className="flex justify-between pt-2 border-t border-gray-700">
-              <span className="text-gray-300 font-military text-sm uppercase tracking-wider">Total</span>
+            <div className="flex justify-between pt-2 border-t border-border">
+              <span className="text-foreground/85 font-military text-sm uppercase tracking-wider">Total</span>
               <span className="text-cbt-orange font-military text-lg">
                 {formatCurrency(total)}
               </span>
@@ -265,7 +265,7 @@ const CloseTabDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={submitting}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -273,7 +273,7 @@ const CloseTabDialog = ({
             type="button"
             onClick={handleConfirm}
             disabled={submitting || !draft?.items.length}
-            className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold"
+            className="bg-green-600 hover:bg-green-700 text-foreground font-tactical font-bold"
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -333,7 +333,7 @@ const FinancialPage = () => {
               variant="outline"
               onClick={handleExportPdf}
               disabled={exportingPdf || !dashboard}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical h-9"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical h-9"
             >
               {exportingPdf ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -344,7 +344,7 @@ const FinancialPage = () => {
             </Button>
             <Button
               onClick={() => setExpenseDialog(true)}
-              className="bg-cbt-orange text-black font-tactical hover:bg-cbt-orange/90 h-9"
+              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90 h-9"
             >
               <Plus size={16} className="mr-2" />
               Nova Despesa
@@ -434,29 +434,29 @@ const FinancialPage = () => {
               bgColor={
                 (dashboard?.kpis.overdueCount.value ?? 0) > 0
                   ? 'bg-yellow-500/10'
-                  : 'bg-gray-500/10'
+                  : 'bg-muted-foreground/15'
               }
               borderColor={
                 (dashboard?.kpis.overdueCount.value ?? 0) > 0
                   ? 'border-yellow-500/30'
-                  : 'border-gray-500/20'
+                  : 'border-muted-foreground/30'
               }
             />
           </div>
 
           {/* ── Gráfico principal ─────────────────────────────────── */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-6">
+          <div className="bg-card/50 border border-border rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
               <div>
-                <h3 className="text-sm font-military font-bold text-white tracking-wide">
+                <h3 className="text-sm font-military font-bold text-foreground tracking-wide">
                   Evolução: receita × despesa × resultado
                 </h3>
-                <p className="text-xs font-tactical text-gray-500 mt-0.5">
+                <p className="text-xs font-tactical text-muted-foreground/80 mt-0.5">
                   {range.label} ·{' '}
                   {dashboard?.period.granularity === 'month' ? 'por mês' : 'por dia'}
                 </p>
               </div>
-              <div className="flex items-center gap-3 text-[10px] font-tactical text-gray-500">
+              <div className="flex items-center gap-3 text-[10px] font-tactical text-muted-foreground/80">
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
                   Receita
@@ -522,16 +522,16 @@ const FinancialPage = () => {
 
       {/* ── Tabs Vendas / Despesas ───────────────────────────────── */}
       <Tabs defaultValue="transactions">
-        <TabsList className="bg-gray-800 border border-gray-700">
+        <TabsList className="bg-muted border border-border">
           <TabsTrigger
             value="transactions"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
           >
             Vendas
           </TabsTrigger>
           <TabsTrigger
             value="expenses"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
           >
             Despesas
           </TabsTrigger>
@@ -548,10 +548,10 @@ const FinancialPage = () => {
                   setTxPage(1);
                 }}
               >
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white font-tactical h-9">
+                <SelectTrigger className="bg-muted border-border text-foreground font-tactical h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {PAYMENT_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
@@ -562,44 +562,44 @@ const FinancialPage = () => {
             </div>
           </div>
 
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {txLoading ? (
               <div className="py-10 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 text-cbt-orange animate-spin" />
               </div>
             ) : transactions.length === 0 ? (
-              <p className="py-8 text-center text-sm font-tactical text-gray-500">
+              <p className="py-8 text-center text-sm font-tactical text-muted-foreground/80">
                 Nenhuma venda no período {range.label.toLowerCase()}.
               </p>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Desconto</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Valor</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Pgto</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Membro</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Desconto</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Valor</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Pgto</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transactions.map((t: any) => {
                     const discount = Number(t.discount ?? 0);
                     return (
-                      <TableRow key={t.id} className="border-gray-800">
-                        <TableCell className="text-gray-400 font-tactical text-sm">
+                      <TableRow key={t.id} className="border-border">
+                        <TableCell className="text-muted-foreground font-tactical text-sm">
                           {formatDate(t.transactionDate)}
                         </TableCell>
-                        <TableCell className="text-gray-300 font-tactical text-sm">
+                        <TableCell className="text-foreground/85 font-tactical text-sm">
                           {transactionTypeLabels[t.type] || t.type}
                         </TableCell>
-                        <TableCell className="text-white font-tactical text-sm">
+                        <TableCell className="text-foreground font-tactical text-sm">
                           {t.member?.fullName}
                         </TableCell>
                         <TableCell
                           className={`text-right font-tactical text-sm ${
-                            discount > 0 ? 'text-amber-400' : 'text-gray-600'
+                            discount > 0 ? 'text-amber-400' : 'text-muted-foreground/60'
                           }`}
                         >
                           {discount > 0 ? formatCurrency(discount) : '—'}
@@ -607,7 +607,7 @@ const FinancialPage = () => {
                         <TableCell className="text-green-400 font-tactical font-bold text-right">
                           {formatCurrency(Number(t.totalAmount))}
                         </TableCell>
-                        <TableCell className="text-gray-400 font-tactical text-sm">
+                        <TableCell className="text-muted-foreground font-tactical text-sm">
                           {t.paymentMethod || '—'}
                         </TableCell>
                       </TableRow>
@@ -632,7 +632,7 @@ const FinancialPage = () => {
                       className={
                         txPage <= 1
                           ? 'pointer-events-none opacity-40'
-                          : 'text-gray-300 hover:text-white'
+                          : 'text-foreground/85 hover:text-foreground'
                       }
                     />
                   </PaginationItem>
@@ -651,7 +651,7 @@ const FinancialPage = () => {
                       className={
                         txPage >= txTotalPages
                           ? 'pointer-events-none opacity-40'
-                          : 'text-gray-300 hover:text-white'
+                          : 'text-foreground/85 hover:text-foreground'
                       }
                     />
                   </PaginationItem>
@@ -663,42 +663,42 @@ const FinancialPage = () => {
 
         {/* Despesas */}
         <TabsContent value="expenses" className="mt-4">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {expLoading ? (
               <div className="py-10 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 text-cbt-orange animate-spin" />
               </div>
             ) : expenses.length === 0 ? (
-              <p className="py-8 text-center text-sm font-tactical text-gray-500">
+              <p className="py-8 text-center text-sm font-tactical text-muted-foreground/80">
                 Nenhuma despesa no período.
               </p>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Categoria</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Descrição</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Valor</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Fornecedor</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Categoria</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Descrição</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Valor</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Fornecedor</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {expenses.map((e: any) => (
-                    <TableRow key={e.id} className="border-gray-800">
-                      <TableCell className="text-gray-400 font-tactical text-sm">
+                    <TableRow key={e.id} className="border-border">
+                      <TableCell className="text-muted-foreground font-tactical text-sm">
                         {formatDate(e.expenseDate)}
                       </TableCell>
-                      <TableCell className="text-gray-300 font-tactical text-sm">
+                      <TableCell className="text-foreground/85 font-tactical text-sm">
                         {expenseCategoryLabels[e.category] || e.category}
                       </TableCell>
-                      <TableCell className="text-white font-tactical text-sm">
+                      <TableCell className="text-foreground font-tactical text-sm">
                         {e.description}
                       </TableCell>
                       <TableCell className="text-red-400 font-tactical font-bold text-right">
                         {formatCurrency(Number(e.amount))}
                       </TableCell>
-                      <TableCell className="text-gray-400 font-tactical text-sm">
+                      <TableCell className="text-muted-foreground font-tactical text-sm">
                         {e.vendor || '—'}
                       </TableCell>
                     </TableRow>
@@ -722,7 +722,7 @@ const FinancialPage = () => {
                       className={
                         expPage <= 1
                           ? 'pointer-events-none opacity-40'
-                          : 'text-gray-300 hover:text-white'
+                          : 'text-foreground/85 hover:text-foreground'
                       }
                     />
                   </PaginationItem>
@@ -741,7 +741,7 @@ const FinancialPage = () => {
                       className={
                         expPage >= expTotalPages
                           ? 'pointer-events-none opacity-40'
-                          : 'text-gray-300 hover:text-white'
+                          : 'text-foreground/85 hover:text-foreground'
                       }
                     />
                   </PaginationItem>
@@ -754,7 +754,7 @@ const FinancialPage = () => {
 
       {/* ── Diálogo Nova Despesa (preservado, com NumberStepper) ──── */}
       <Dialog open={expenseDialog} onOpenChange={setExpenseDialog}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="font-military">Nova Despesa</DialogTitle>
           </DialogHeader>
@@ -762,7 +762,7 @@ const FinancialPage = () => {
             <select
               value={expenseForm.category}
               onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-              className="w-full h-10 px-3 rounded-md bg-gray-800 border border-gray-600 text-white font-tactical"
+              className="w-full h-10 px-3 rounded-md bg-muted border border-input text-foreground font-tactical"
             >
               <option value="INVENTORY_PURCHASE">Compra de Estoque</option>
               <option value="MAINTENANCE">Manutenção</option>
@@ -777,11 +777,11 @@ const FinancialPage = () => {
               placeholder="Descrição"
               value={expenseForm.description}
               onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-              className="bg-gray-800 border-gray-600 text-white font-tactical"
+              className="bg-muted border-input text-foreground font-tactical"
             />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label className="text-xs text-gray-500 font-tactical">Valor</Label>
+                <Label className="text-xs text-muted-foreground/80 font-tactical">Valor</Label>
                 <NumberStepper
                   value={parseFloat(expenseForm.amount) || 0}
                   onChange={(v) =>
@@ -794,14 +794,14 @@ const FinancialPage = () => {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-gray-500 font-tactical">Data</Label>
+                <Label className="text-xs text-muted-foreground/80 font-tactical">Data</Label>
                 <Input
                   type="date"
                   value={expenseForm.expenseDate}
                   onChange={(e) =>
                     setExpenseForm({ ...expenseForm, expenseDate: e.target.value })
                   }
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
             </div>
@@ -809,7 +809,7 @@ const FinancialPage = () => {
               placeholder="Fornecedor"
               value={expenseForm.vendor}
               onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })}
-              className="bg-gray-800 border-gray-600 text-white font-tactical"
+              className="bg-muted border-input text-foreground font-tactical"
             />
           </div>
           <DialogFooter>
@@ -823,7 +823,7 @@ const FinancialPage = () => {
             <Button
               onClick={handleCreateExpense}
               disabled={saving}
-              className="bg-cbt-orange text-black font-tactical hover:bg-cbt-orange/90"
+              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : 'Registrar'}
             </Button>

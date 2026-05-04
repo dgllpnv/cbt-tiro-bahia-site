@@ -181,27 +181,27 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
 
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(true) : handleClose())}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-military flex items-center gap-2">
             <GiBullets className="h-5 w-5 text-cbt-orange" />
             Registrar tiros
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
-            Para <span className="text-white font-semibold">{memberName}</span>
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
+            Para <span className="text-foreground font-semibold">{memberName}</span>
           </DialogDescription>
         </DialogHeader>
 
         {/* Already-registered list */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-gray-300 font-tactical text-sm">
+            <Label className="text-foreground/85 font-tactical text-sm">
               Já registrados nesta visita {details.length > 0 && `(${details.length})`}
             </Label>
-            {loadingList && <Loader2 className="h-3 w-3 animate-spin text-gray-500" />}
+            {loadingList && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground/80" />}
           </div>
           {details.length === 0 ? (
-            <div className="px-3 py-2 rounded-md bg-gray-800/40 border border-dashed border-gray-700 text-gray-500 font-tactical text-xs text-center">
+            <div className="px-3 py-2 rounded-md bg-muted/40 border border-dashed border-border text-muted-foreground/80 font-tactical text-xs text-center">
               Nenhum tiro registrado nesta visita ainda.
             </div>
           ) : (
@@ -213,24 +213,24 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 return (
                   <li
                     key={d.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-800 rounded-md"
+                    className="flex items-center gap-2 px-3 py-2 bg-muted/60 border border-border rounded-md"
                   >
                     <Icon
                       className="h-4 w-4 flex-shrink-0"
                       style={{ color: visual?.color ?? getCaliberColor(d.caliber) }}
                     />
                     <div className="min-w-0 flex-1 text-xs font-tactical">
-                      <span className="text-white">
+                      <span className="text-foreground">
                         {d.firearmName || 'Arma não informada'}
                       </span>
-                      <span className="text-gray-500"> · {d.caliber} · </span>
+                      <span className="text-muted-foreground/80"> · {d.caliber} · </span>
                       <span className="text-cbt-orange font-semibold">{d.shotsFired} disparos</span>
-                      {d.notes && <span className="text-gray-500"> · {d.notes}</span>}
+                      {d.notes && <span className="text-muted-foreground/80"> · {d.notes}</span>}
                     </div>
                     <button
                       type="button"
                       onClick={() => handleDelete(d)}
-                      className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0"
+                      className="text-muted-foreground/80 hover:text-red-400 transition-colors flex-shrink-0"
                       title="Remover"
                       aria-label="Remover tiro"
                     >
@@ -243,14 +243,14 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
           )}
         </div>
 
-        <div className="border-t border-gray-800 pt-4 space-y-4">
-          <p className="text-xs font-tactical uppercase tracking-wider text-gray-500">
+        <div className="border-t border-border pt-4 space-y-4">
+          <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">
             Adicionar novo tiro
           </p>
 
           {/* Firearm category */}
           <div className="space-y-2">
-            <Label className="text-gray-300 font-tactical text-sm">Categoria de arma</Label>
+            <Label className="text-foreground/85 font-tactical text-sm">Categoria de arma</Label>
             <div className="flex flex-wrap gap-2">
               {FIREARM_CAT_KEYS.map((c) => {
                 const v = FIREARM_CATEGORIES[c];
@@ -264,7 +264,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
                       active
                         ? `${v.bg} ${v.border} ${v.text}`
-                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white'
+                        : 'bg-muted border-border text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -277,7 +277,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
 
           {/* Firearm name */}
           <div className="space-y-2">
-            <Label className="text-gray-300 font-tactical text-sm">Arma</Label>
+            <Label className="text-foreground/85 font-tactical text-sm">Arma</Label>
             <div className="flex flex-wrap gap-2">
               {getFirearmsInCategory(firearmCategory).map((f) => {
                 const active = firearmName === f.name;
@@ -289,7 +289,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                     className={`px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
                       active
                         ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
-                        : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'
+                        : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
                     }`}
                   >
                     {f.name}
@@ -302,7 +302,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 className={`px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
                   firearmName === 'OTHER'
                     ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
-                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'
+                    : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
                 }`}
               >
                 Outra arma…
@@ -313,14 +313,14 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 placeholder="Nome da arma"
                 value={otherFirearmName}
                 onChange={(e) => setOtherFirearmName(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white font-tactical mt-2"
+                className="bg-muted border-input text-foreground font-tactical mt-2"
               />
             )}
           </div>
 
           {/* Caliber */}
           <div className="space-y-2">
-            <Label className="text-gray-300 font-tactical text-sm">Calibre *</Label>
+            <Label className="text-foreground/85 font-tactical text-sm">Calibre *</Label>
             <div className="flex flex-wrap gap-2">
               {COMMON_CALIBERS.map((c) => (
                 <button
@@ -330,7 +330,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
                     caliber === c
                       ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
-                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'
+                      : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
                   }`}
                 >
                   <GiBullets className="h-3 w-3" style={{ color: getCaliberColor(c) }} />
@@ -343,7 +343,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 className={`px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
                   caliber === 'OTHER'
                     ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
-                    : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'
+                    : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
                 }`}
               >
                 Outro…
@@ -354,14 +354,14 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 placeholder="Digite o calibre"
                 value={otherCaliber}
                 onChange={(e) => setOtherCaliber(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white font-tactical mt-2"
+                className="bg-muted border-input text-foreground font-tactical mt-2"
               />
             )}
           </div>
 
           {/* Quantity */}
           <div className="space-y-2">
-            <Label className="text-gray-300 font-tactical text-sm">Quantidade *</Label>
+            <Label className="text-foreground/85 font-tactical text-sm">Quantidade *</Label>
             <NumberStepper
               value={parseInt(shotsFired) || 0}
               onChange={(v) => setShotsFired(String(Math.max(0, Math.round(v))))}
@@ -374,7 +374,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                   key={q}
                   type="button"
                   onClick={() => setShotsFired(String(q))}
-                  className="px-3 py-1.5 text-xs font-tactical bg-gray-800 border border-gray-700 rounded-md text-gray-300 hover:border-cbt-orange hover:text-white transition-colors"
+                  className="px-3 py-1.5 text-xs font-tactical bg-muted border border-border rounded-md text-foreground/85 hover:border-cbt-orange hover:text-foreground transition-colors"
                 >
                   {q}
                 </button>
@@ -384,12 +384,12 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label className="text-gray-300 font-tactical text-sm">Observações (opcional)</Label>
+            <Label className="text-foreground/85 font-tactical text-sm">Observações (opcional)</Label>
             <Textarea
               placeholder="Ex: treino de saque, tiros a 25m..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white font-tactical placeholder:text-gray-500 min-h-[50px]"
+              className="bg-muted border-input text-foreground font-tactical placeholder:text-muted-foreground/80 min-h-[50px]"
             />
           </div>
         </div>
@@ -399,7 +399,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
             type="button"
             onClick={handleAdd}
             disabled={!canSave}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -414,7 +414,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
             type="button"
             variant="outline"
             onClick={handleClose}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Fechar
           </Button>

@@ -38,14 +38,14 @@ const TopFirearmsPanel = () => {
   const topShots = entries[0]?.totalShots ?? 0;
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5">
+    <div className="bg-card/50 border border-border rounded-lg p-5">
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <div>
-          <h3 className="text-sm font-military font-bold text-white tracking-wide flex items-center gap-2">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide flex items-center gap-2">
             <GiCrossedPistols className="h-5 w-5 text-cbt-orange" />
             Armas Mais Usadas no Clube
           </h3>
-          <p className="text-xs font-tactical text-gray-500 mt-0.5">
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-0.5">
             Ranking por total de disparos no período
           </p>
         </div>
@@ -58,7 +58,7 @@ const TopFirearmsPanel = () => {
               className={`px-2.5 py-1 rounded-md text-xs font-tactical transition-colors ${
                 period === p
                   ? 'bg-cbt-orange/20 text-cbt-orange'
-                  : 'bg-gray-800 text-gray-500 hover:text-gray-300'
+                  : 'bg-muted text-muted-foreground/80 hover:text-foreground/85'
               }`}
             >
               {PERIOD_LABEL[p]}
@@ -72,7 +72,7 @@ const TopFirearmsPanel = () => {
           <Loader2 className="h-5 w-5 text-cbt-orange animate-spin" />
         </div>
       ) : entries.length === 0 ? (
-        <div className="py-6 text-center text-xs font-tactical text-gray-500">
+        <div className="py-6 text-center text-xs font-tactical text-muted-foreground/80">
           Nenhum tiro registrado no período. Registre tiros no painel de presentes para ver o ranking aqui.
         </div>
       ) : (
@@ -86,7 +86,7 @@ const TopFirearmsPanel = () => {
             return (
               <li
                 key={e.firearmName}
-                className="relative px-3 py-2 rounded-md bg-gray-900/40 border border-gray-800 overflow-hidden"
+                className="relative px-3 py-2 rounded-md bg-card/40 border border-border overflow-hidden"
               >
                 {/* Background bar */}
                 <div
@@ -94,19 +94,19 @@ const TopFirearmsPanel = () => {
                   style={{ width: `${pct}%`, background: visual?.color ?? '#6b7280' }}
                 />
                 <div className="relative flex items-center gap-3">
-                  <span className="font-military text-xs text-gray-500 w-6">{idx + 1}°</span>
+                  <span className="font-military text-xs text-muted-foreground/80 w-6">{idx + 1}°</span>
                   <Icon className="h-5 w-5 flex-shrink-0" style={{ color: visual?.color ?? '#6b7280' }} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-tactical text-sm truncate">{e.firearmName}</p>
+                    <p className="text-foreground font-tactical text-sm truncate">{e.firearmName}</p>
                     {visual && (
-                      <p className="text-gray-500 font-tactical text-xs">{visual.label}</p>
+                      <p className="text-muted-foreground/80 font-tactical text-xs">{visual.label}</p>
                     )}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-cbt-orange font-tactical text-sm font-semibold tabular-nums">
                       {e.totalShots.toLocaleString('pt-BR')} disparos
                     </p>
-                    <p className="text-gray-500 font-tactical text-xs">
+                    <p className="text-muted-foreground/80 font-tactical text-xs">
                       {e.uses} {e.uses === 1 ? 'sessão' : 'sessões'}
                     </p>
                   </div>

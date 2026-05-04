@@ -16,12 +16,12 @@ interface EquipmentFormProps {
 }
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
 const selectClasses =
-  'w-full rounded-md bg-gray-800 border border-gray-600 text-white px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
+  'w-full rounded-md bg-muted border border-input text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20';
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 interface FormState {
   name: string;
@@ -86,8 +86,8 @@ const EquipmentForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">Identificação</h2>
+      <div className="bg-card/50 border border-border rounded-lg p-6">
+        <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">Identificação</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className={labelClasses}>
@@ -116,8 +116,8 @@ const EquipmentForm = ({
         </div>
       </div>
 
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">Especificações</h2>
+      <div className="bg-card/50 border border-border rounded-lg p-6">
+        <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">Especificações</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="caliber" className={labelClasses}>Calibre</label>
@@ -155,10 +155,10 @@ const EquipmentForm = ({
       </div>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" onClick={onCancel} className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical">
+        <Button type="button" variant="outline" onClick={onCancel} className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical">
           Cancelar
         </Button>
-        <Button type="submit" disabled={isSubmitting} className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+        <Button type="submit" disabled={isSubmitting} className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

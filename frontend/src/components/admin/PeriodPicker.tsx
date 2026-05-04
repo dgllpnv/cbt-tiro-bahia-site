@@ -102,18 +102,18 @@ const PeriodPicker = ({ value, onChange }: PeriodPickerProps) => {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-secondary hover:text-foreground font-tactical h-9"
         >
           <CalIcon className="h-4 w-4 mr-2 text-cbt-orange" />
           {value.label}
-          <span className="text-gray-500 ml-2 hidden sm:inline">
+          <span className="text-muted-foreground/80 ml-2 hidden sm:inline">
             · {formatBr(value.startDate)} – {formatBr(value.endDate)}
           </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="bg-gray-900 border-gray-700 text-white w-72 p-0"
+        className="bg-card border-border text-foreground w-72 p-0"
       >
         <div className="p-2">
           {PRESET_ORDER.map((key) => {
@@ -126,7 +126,7 @@ const PeriodPicker = ({ value, onChange }: PeriodPickerProps) => {
                 className={`w-full text-left px-3 py-2 rounded-md font-tactical text-sm transition-colors ${
                   active
                     ? 'bg-cbt-orange/15 text-cbt-orange'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    : 'text-foreground/85 hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {p.label}
@@ -134,8 +134,8 @@ const PeriodPicker = ({ value, onChange }: PeriodPickerProps) => {
             );
           })}
         </div>
-        <div className="border-t border-gray-800 p-3 space-y-2">
-          <p className="text-xs font-tactical text-gray-500 uppercase tracking-wider">
+        <div className="border-t border-border p-3 space-y-2">
+          <p className="text-xs font-tactical text-muted-foreground/80 uppercase tracking-wider">
             Personalizado
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -143,20 +143,20 @@ const PeriodPicker = ({ value, onChange }: PeriodPickerProps) => {
               type="date"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white font-tactical text-sm h-8"
+              className="bg-muted border-border text-foreground font-tactical text-sm h-8"
             />
             <Input
               type="date"
               value={customEnd}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="bg-gray-800 border-gray-700 text-white font-tactical text-sm h-8"
+              className="bg-muted border-border text-foreground font-tactical text-sm h-8"
             />
           </div>
           <Button
             size="sm"
             onClick={applyCustom}
             disabled={!customStart || !customEnd || customStart > customEnd}
-            className="w-full bg-cbt-orange hover:bg-cbt-orange/90 text-black font-tactical h-8"
+            className="w-full bg-cbt-orange hover:bg-cbt-orange/90 text-primary-foreground font-tactical h-8"
           >
             Aplicar período
           </Button>

@@ -496,7 +496,7 @@ const MemberDetailPage = () => {
         );
       default:
         return (
-          <Badge variant="outline" className="bg-gray-800/50 text-gray-400 border-gray-700 font-tactical text-xs">
+          <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border font-tactical text-xs">
             {loanStatusLabels[status] || status}
           </Badge>
         );
@@ -505,10 +505,10 @@ const MemberDetailPage = () => {
 
   // ── Input class helper ───────────────────────────────────────────────────
   const inputClass =
-    'bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-cbt-orange focus-visible:ring-cbt-orange/30';
-  const labelClass = 'text-sm font-tactical text-gray-400 mb-1 block';
+    'bg-muted border-input text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange focus-visible:ring-cbt-orange/30';
+  const labelClass = 'text-sm font-tactical text-muted-foreground mb-1 block';
   const readOnlyInputClass =
-    'bg-gray-800/50 border-gray-700 text-gray-400 cursor-not-allowed';
+    'bg-muted/50 border-border text-muted-foreground cursor-not-allowed';
 
   // ── Loading State ────────────────────────────────────────────────────────
   if (isLoading) {
@@ -521,7 +521,7 @@ const MemberDetailPage = () => {
         title="Associado nao encontrado"
         description="O associado solicitado nao existe ou foi removido."
         action={
-          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
             <Link to="/admin/associados">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar para associados
@@ -547,7 +547,7 @@ const MemberDetailPage = () => {
             {(() => {
               if (!member.annuityValidUntil) {
                 return (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-gray-700 bg-gray-800/60 text-gray-400 text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-border bg-muted/60 text-muted-foreground text-xs">
                     <Calendar className="h-3 w-3" />
                     Sem anuidade registrada
                   </span>
@@ -589,7 +589,7 @@ const MemberDetailPage = () => {
             <Button
               variant="outline"
               asChild
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               <Link to="/admin/associados">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -602,31 +602,31 @@ const MemberDetailPage = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-gray-900/70 border border-gray-800 p-1 mb-6">
+        <TabsList className="bg-card/70 border border-border p-1 mb-6">
           <TabsTrigger
             value="perfil"
-            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
             <IdCard className="h-4 w-4 mr-2" />
             Perfil
           </TabsTrigger>
           <TabsTrigger
             value="dados"
-            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
             <FileText className="h-4 w-4 mr-2" />
             Editar dados
           </TabsTrigger>
           <TabsTrigger
             value="visitas"
-            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
             <Crosshair className="h-4 w-4 mr-2" />
             Visitas
           </TabsTrigger>
           <TabsTrigger
             value="emprestimos"
-            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
             <Package className="h-4 w-4 mr-2" />
             Emprestimos
@@ -651,8 +651,8 @@ const MemberDetailPage = () => {
         <TabsContent value="dados">
           <div className="space-y-6">
             {/* Personal Info Form */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-lg font-military font-bold text-white mb-4 tracking-wide">
+            <div className="bg-card/50 border border-border rounded-lg p-6">
+              <h2 className="text-lg font-military font-bold text-foreground mb-4 tracking-wide">
                 Informacoes Pessoais
               </h2>
 
@@ -766,7 +766,7 @@ const MemberDetailPage = () => {
               </div>
 
               {/* Address Section */}
-              <h3 className="text-md font-military font-bold text-white mt-6 mb-3 tracking-wide">
+              <h3 className="text-md font-military font-bold text-foreground mt-6 mb-3 tracking-wide">
                 Endereco
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -814,7 +814,7 @@ const MemberDetailPage = () => {
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical min-w-[180px]"
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical min-w-[180px]"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -827,8 +827,8 @@ const MemberDetailPage = () => {
             </div>
 
             {/* Actions Section */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <h2 className="text-lg font-military font-bold text-white mb-4 tracking-wide">
+            <div className="bg-card/50 border border-border rounded-lg p-6">
+              <h2 className="text-lg font-military font-bold text-foreground mb-4 tracking-wide">
                 Acoes
               </h2>
               <div className="flex flex-wrap gap-3">
@@ -836,7 +836,7 @@ const MemberDetailPage = () => {
                 <Button
                   variant="outline"
                   onClick={() => setPasswordDialogOpen(true)}
-                  className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                  className="bg-muted border-input text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
                 >
                   <Key className="h-4 w-4 mr-2" />
                   Alterar Senha
@@ -848,8 +848,8 @@ const MemberDetailPage = () => {
                   onClick={handleToggleStatus}
                   className={
                     member.status === 'ACTIVE'
-                      ? 'bg-gray-800 border-yellow-700 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 font-tactical'
-                      : 'bg-gray-800 border-green-700 text-green-400 hover:bg-green-900/30 hover:text-green-300 font-tactical'
+                      ? 'bg-muted border-yellow-700 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 font-tactical'
+                      : 'bg-muted border-green-700 text-green-400 hover:bg-green-900/30 hover:text-green-300 font-tactical'
                   }
                 >
                   {member.status === 'ACTIVE' ? (
@@ -869,7 +869,7 @@ const MemberDetailPage = () => {
                 <Button
                   variant="outline"
                   onClick={handleDelete}
-                  className="bg-gray-800 border-red-800 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+                  className="bg-muted border-red-800 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir Associado
@@ -878,9 +878,9 @@ const MemberDetailPage = () => {
             </div>
 
             {/* Attachments Section */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+            <div className="bg-card/50 border border-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-military font-bold text-white tracking-wide">
+                <h2 className="text-lg font-military font-bold text-foreground tracking-wide">
                   Anexos
                 </h2>
                 <div>
@@ -921,7 +921,7 @@ const MemberDetailPage = () => {
                   <Button
                     variant="outline"
                     onClick={() => document.getElementById('detail-file-upload')?.click()}
-                    className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                    className="bg-muted border-input text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Adicionar Anexo
@@ -929,22 +929,22 @@ const MemberDetailPage = () => {
                 </div>
               </div>
               {attachments.length > 0 ? (
-                <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+                <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-gray-800 hover:bg-transparent">
-                        <TableHead className="text-gray-400 font-tactical">Arquivo</TableHead>
-                        <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                        <TableHead className="text-gray-400 font-tactical">Data de Upload</TableHead>
-                        <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-muted-foreground font-tactical">Arquivo</TableHead>
+                        <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                        <TableHead className="text-muted-foreground font-tactical">Data de Upload</TableHead>
+                        <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {attachments.map((att) => (
-                        <TableRow key={att.id} className="border-gray-800 hover:bg-gray-800/50">
-                          <TableCell className="text-white font-medium">{att.fileName}</TableCell>
-                          <TableCell className="text-gray-300 text-sm">{att.fileType}</TableCell>
-                          <TableCell className="text-gray-300 text-sm">
+                        <TableRow key={att.id} className="border-border hover:bg-muted/50">
+                          <TableCell className="text-foreground font-medium">{att.fileName}</TableCell>
+                          <TableCell className="text-foreground/85 text-sm">{att.fileType}</TableCell>
+                          <TableCell className="text-foreground/85 text-sm">
                             {formatDateTime(att.uploadedAt)}
                           </TableCell>
                           <TableCell className="text-right">
@@ -952,7 +952,7 @@ const MemberDetailPage = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => window.open(att.fileUrl, '_blank')}
-                              className="text-gray-400 hover:text-white hover:bg-gray-700 font-tactical text-xs"
+                              className="text-muted-foreground hover:text-foreground hover:bg-secondary font-tactical text-xs"
                             >
                               <Eye className="h-4 w-4 mr-1" />
                               Visualizar
@@ -964,13 +964,13 @@ const MemberDetailPage = () => {
                   </Table>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 py-6 px-4 text-gray-500 border border-dashed border-gray-700 rounded-lg">
+                <div className="flex items-center gap-3 py-6 px-4 text-muted-foreground/80 border border-dashed border-border rounded-lg">
                   <FileText className="h-5 w-5" />
                   <div>
-                    <p className="text-gray-400 font-tactical text-sm">
+                    <p className="text-muted-foreground font-tactical text-sm">
                       Nenhum anexo cadastrado.
                     </p>
-                    <p className="text-gray-500 font-tactical text-xs mt-1">
+                    <p className="text-muted-foreground/80 font-tactical text-xs mt-1">
                       Clique em "Adicionar Anexo" para enviar documentos.
                     </p>
                   </div>
@@ -986,25 +986,25 @@ const MemberDetailPage = () => {
 
         {/* ══════════════════════ TAB 2: VISITAS ══════════════════════ */}
         <TabsContent value="visitas">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {visitsLoading ? (
               <LoadingSpinner message="Carregando visitas..." />
             ) : visits.length === 0 ? (
               <EmptyState
-                icon={<Crosshair className="w-8 h-8 text-gray-500" />}
+                icon={<Crosshair className="w-8 h-8 text-muted-foreground/80" />}
                 title="Nenhuma visita registrada"
                 description="As visitas deste associado apareceriam aqui."
               />
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical w-8" />
-                    <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Entrada</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Saida</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Baia</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Finalidade</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical w-8" />
+                    <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Entrada</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Saida</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Baia</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Finalidade</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1017,7 +1017,7 @@ const MemberDetailPage = () => {
                     return (
                       <Fragment key={visit.id}>
                         <TableRow
-                          className={`border-gray-800 hover:bg-gray-800/50 ${
+                          className={`border-border hover:bg-muted/50 ${
                             hasDetails ? 'cursor-pointer' : ''
                           }`}
                           onClick={() => {
@@ -1029,19 +1029,19 @@ const MemberDetailPage = () => {
                           <TableCell className="w-8 text-center">
                             {hasDetails && (
                               isExpanded ? (
-                                <ChevronUp className="h-4 w-4 text-gray-500" />
+                                <ChevronUp className="h-4 w-4 text-muted-foreground/80" />
                               ) : (
-                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                                <ChevronDown className="h-4 w-4 text-muted-foreground/80" />
                               )
                             )}
                           </TableCell>
-                          <TableCell className="text-white font-medium">
+                          <TableCell className="text-foreground font-medium">
                             {formatDate(visit.visitDate)}
                           </TableCell>
-                          <TableCell className="text-gray-300">
+                          <TableCell className="text-foreground/85">
                             {visit.checkInTime ? formatDateTime(visit.checkInTime).split(' ')[1] : '--'}
                           </TableCell>
-                          <TableCell className="text-gray-300">
+                          <TableCell className="text-foreground/85">
                             {visit.checkOutTime ? (
                               formatDateTime(visit.checkOutTime).split(' ')[1]
                             ) : (
@@ -1050,41 +1050,41 @@ const MemberDetailPage = () => {
                               </Badge>
                             )}
                           </TableCell>
-                          <TableCell className="text-gray-300">
+                          <TableCell className="text-foreground/85">
                             {visit.lane?.name || '--'}
                           </TableCell>
-                          <TableCell className="text-gray-300">
+                          <TableCell className="text-foreground/85">
                             {visit.purpose || '--'}
                           </TableCell>
                         </TableRow>
 
                         {/* Expanded Details */}
                         {isExpanded && hasDetails && (
-                          <TableRow key={`${visit.id}-details`} className="border-gray-800 bg-gray-800/30">
+                          <TableRow key={`${visit.id}-details`} className="border-border bg-muted/30">
                             <TableCell colSpan={6} className="p-4">
                               <div className="space-y-4">
                                 {/* Visit Details */}
                                 {visit.details && visit.details.length > 0 && (
                                   <div>
-                                    <h4 className="text-sm font-military font-bold text-gray-300 mb-2">
+                                    <h4 className="text-sm font-military font-bold text-foreground/85 mb-2">
                                       Detalhes do Tiro
                                     </h4>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                       {visit.details.map((detail, idx) => (
                                         <div
                                           key={idx}
-                                          className="bg-gray-900/50 border border-gray-700 rounded p-3"
+                                          className="bg-card/50 border border-border rounded p-3"
                                         >
-                                          <p className="text-xs text-gray-500 font-tactical">
+                                          <p className="text-xs text-muted-foreground/80 font-tactical">
                                             Calibre
                                           </p>
-                                          <p className="text-sm text-white">
+                                          <p className="text-sm text-foreground">
                                             {detail.caliber || '--'}
                                           </p>
-                                          <p className="text-xs text-gray-500 font-tactical mt-1">
+                                          <p className="text-xs text-muted-foreground/80 font-tactical mt-1">
                                             Disparos
                                           </p>
-                                          <p className="text-sm text-white">
+                                          <p className="text-sm text-foreground">
                                             {detail.shotsFired ?? '--'}
                                           </p>
                                         </div>
@@ -1096,23 +1096,23 @@ const MemberDetailPage = () => {
                                 {/* Visit Transactions */}
                                 {visit.transactions && visit.transactions.length > 0 && (
                                   <div>
-                                    <h4 className="text-sm font-military font-bold text-gray-300 mb-2">
+                                    <h4 className="text-sm font-military font-bold text-foreground/85 mb-2">
                                       Transacoes da Visita
                                     </h4>
                                     <div className="space-y-2">
                                       {visit.transactions.map((tx) => (
                                         <div
                                           key={tx.id}
-                                          className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded p-3"
+                                          className="flex items-center justify-between bg-card/50 border border-border rounded p-3"
                                         >
                                           <div>
                                             <Badge
                                               variant="outline"
-                                              className="bg-gray-800 text-gray-300 border-gray-600 font-tactical text-xs mr-2"
+                                              className="bg-muted text-foreground/85 border-input font-tactical text-xs mr-2"
                                             >
                                               {transactionTypeLabels[tx.type] || tx.type}
                                             </Badge>
-                                            <span className="text-sm text-gray-300">
+                                            <span className="text-sm text-foreground/85">
                                               {tx.items || '--'}
                                             </span>
                                           </div>
@@ -1157,15 +1157,15 @@ const MemberDetailPage = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div>
-                      <p className="text-sm text-gray-400 font-tactical">
+                      <p className="text-sm text-muted-foreground font-tactical">
                         Valida ate
                       </p>
                       <p className={`text-lg font-bold ${info.color}`}>
                         {formatDate(info.validUntil)}
                       </p>
                     </div>
-                    <div className="sm:border-l sm:border-gray-700 sm:pl-4">
-                      <p className="text-sm text-gray-400 font-tactical">
+                    <div className="sm:border-l sm:border-border sm:pl-4">
+                      <p className="text-sm text-muted-foreground font-tactical">
                         Dias restantes
                       </p>
                       <p className={`text-lg font-bold ${info.color}`}>
@@ -1184,15 +1184,15 @@ const MemberDetailPage = () => {
 
             {/* Annuity History */}
             {annuities.length > 0 && (
-              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-                <h2 className="text-lg font-military font-bold text-white mb-4 tracking-wide">
+              <div className="bg-card/50 border border-border rounded-lg p-6">
+                <h2 className="text-lg font-military font-bold text-foreground mb-4 tracking-wide">
                   Historico de Anuidades
                 </h2>
                 <div className="space-y-2">
                   {annuities.map((ann) => (
                     <div
                       key={ann.id}
-                      className="flex items-center justify-between bg-gray-800/50 border border-gray-700 rounded p-3"
+                      className="flex items-center justify-between bg-muted/50 border border-border rounded p-3"
                     >
                       <div className="flex items-center gap-3">
                         <Badge
@@ -1202,12 +1202,12 @@ const MemberDetailPage = () => {
                               ? 'bg-green-900/50 text-green-400 border-green-800 font-tactical text-xs'
                               : ann.status === 'PENDING'
                               ? 'bg-yellow-900/50 text-yellow-400 border-yellow-800 font-tactical text-xs'
-                              : 'bg-gray-800/50 text-gray-400 border-gray-700 font-tactical text-xs'
+                              : 'bg-muted/50 text-muted-foreground border-border font-tactical text-xs'
                           }
                         >
                           {ann.status === 'PAID' ? 'Pago' : ann.status === 'PENDING' ? 'Pendente' : ann.status}
                         </Badge>
-                        <span className="text-sm text-gray-300">
+                        <span className="text-sm text-foreground/85">
                           Valido ate {formatDate(ann.validUntil)}
                         </span>
                       </div>
@@ -1223,9 +1223,9 @@ const MemberDetailPage = () => {
             )}
 
             {/* Transactions Table */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
               <div className="px-6 pt-5 pb-3">
-                <h2 className="text-lg font-military font-bold text-white tracking-wide">
+                <h2 className="text-lg font-military font-bold text-foreground tracking-wide">
                   Transacoes
                 </h2>
               </div>
@@ -1233,42 +1233,42 @@ const MemberDetailPage = () => {
                 <LoadingSpinner message="Carregando dados financeiros..." />
               ) : transactions.length === 0 ? (
                 <EmptyState
-                  icon={<DollarSign className="w-8 h-8 text-gray-500" />}
+                  icon={<DollarSign className="w-8 h-8 text-muted-foreground/80" />}
                   title="Nenhuma transacao registrada"
                   description="As transacoes deste associado apareceriam aqui."
                 />
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-800 hover:bg-transparent">
-                      <TableHead className="text-gray-400 font-tactical">Data</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Tipo</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Descricao</TableHead>
-                      <TableHead className="text-gray-400 font-tactical text-right">Valor</TableHead>
-                      <TableHead className="text-gray-400 font-tactical">Pagamento</TableHead>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-muted-foreground font-tactical">Data</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Tipo</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Descricao</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical text-right">Valor</TableHead>
+                      <TableHead className="text-muted-foreground font-tactical">Pagamento</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {transactions.map((tx) => (
-                      <TableRow key={tx.id} className="border-gray-800 hover:bg-gray-800/50">
-                        <TableCell className="text-white font-medium">
+                      <TableRow key={tx.id} className="border-border hover:bg-muted/50">
+                        <TableCell className="text-foreground font-medium">
                           {formatDate(tx.date)}
                         </TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className="bg-gray-800 text-gray-300 border-gray-600 font-tactical text-xs"
+                            className="bg-muted text-foreground/85 border-input font-tactical text-xs"
                           >
                             {transactionTypeLabels[tx.type] || tx.type}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-300 text-sm">
+                        <TableCell className="text-foreground/85 text-sm">
                           {tx.description || '--'}
                         </TableCell>
                         <TableCell className="text-right text-cbt-orange font-medium">
                           {formatCurrency(tx.amount)}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-sm">
+                        <TableCell className="text-foreground/85 text-sm">
                           {tx.paymentMethod || '--'}
                         </TableCell>
                       </TableRow>
@@ -1282,40 +1282,40 @@ const MemberDetailPage = () => {
 
         {/* ══════════════════════ TAB 4: EMPRESTIMOS ══════════════════════ */}
         <TabsContent value="emprestimos">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {loansLoading ? (
               <LoadingSpinner message="Carregando emprestimos..." />
             ) : loans.length === 0 ? (
               <EmptyState
-                icon={<Package className="w-8 h-8 text-gray-500" />}
+                icon={<Package className="w-8 h-8 text-muted-foreground/80" />}
                 title="Nenhum emprestimo registrado"
                 description="Os emprestimos de equipamentos deste associado apareceriam aqui."
               />
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Equipamento</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Data Emprestimo</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Devolucao Prevista</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Devolucao Real</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Equipamento</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Data Emprestimo</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Devolucao Prevista</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Devolucao Real</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loans.map((loan) => (
-                    <TableRow key={loan.id} className="border-gray-800 hover:bg-gray-800/50">
-                      <TableCell className="text-white font-medium">
+                    <TableRow key={loan.id} className="border-border hover:bg-muted/50">
+                      <TableCell className="text-foreground font-medium">
                         {loan.equipmentName}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-foreground/85">
                         {formatDate(loan.loanDate)}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-foreground/85">
                         {formatDate(loan.expectedReturn)}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell className="text-foreground/85">
                         {loan.actualReturn ? formatDate(loan.actualReturn) : '--'}
                       </TableCell>
                       <TableCell>{getLoanStatusBadge(loan.status)}</TableCell>
@@ -1325,7 +1325,7 @@ const MemberDetailPage = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                              className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
                               title="Transferir"
                               onClick={async () => {
                                 const res = await getLoanById(loan.id);
@@ -1337,7 +1337,7 @@ const MemberDetailPage = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                              className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
                               title="Devolver"
                               onClick={async () => {
                                 const res = await getLoanById(loan.id);
@@ -1380,12 +1380,12 @@ const MemberDetailPage = () => {
 
       {/* ══════════════════════ PASSWORD DIALOG ══════════════════════ */}
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800">
+        <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-white font-military">
+            <DialogTitle className="text-foreground font-military">
               Alterar Senha
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical">
+            <DialogDescription className="text-muted-foreground font-tactical">
               Defina uma nova senha para o associado {member.fullName}.
             </DialogDescription>
           </DialogHeader>
@@ -1422,14 +1422,14 @@ const MemberDetailPage = () => {
                 setConfirmPassword('');
               }}
               disabled={isPasswordSaving}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               Cancelar
             </Button>
             <Button
               onClick={handlePasswordChange}
               disabled={isPasswordSaving}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical min-w-[120px]"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical min-w-[120px]"
             >
               {isPasswordSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

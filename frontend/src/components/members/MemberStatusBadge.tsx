@@ -12,7 +12,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   },
   INACTIVE: {
     label: 'Inativo',
-    className: 'bg-gray-800/50 text-gray-400 border-gray-700 hover:bg-gray-800/70',
+    className: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted/70',
   },
   SUSPENDED: {
     label: 'Suspenso',

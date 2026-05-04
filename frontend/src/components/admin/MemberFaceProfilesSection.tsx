@@ -75,14 +75,14 @@ const MemberFaceProfilesSection = ({ memberId, memberName }: MemberFaceProfilesS
   };
 
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
+    <div className="bg-card/50 border border-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-military font-bold text-white tracking-wide flex items-center gap-2">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide flex items-center gap-2">
             <ScanFace className="h-5 w-5 text-cbt-orange" />
             Identidade Facial
           </h3>
-          <p className="text-xs font-tactical text-gray-500 mt-1">
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-1">
             Perfis faciais cadastrados — usados para check-in e validação de habitualidade
           </p>
         </div>
@@ -91,7 +91,7 @@ const MemberFaceProfilesSection = ({ memberId, memberName }: MemberFaceProfilesS
           onClick={() =>
             setCaptureTarget({ memberId, memberName, source: 'MANUAL' })
           }
-          className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+          className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
         >
           <Plus className="h-4 w-4 mr-2" />
           Adicionar facial
@@ -103,7 +103,7 @@ const MemberFaceProfilesSection = ({ memberId, memberName }: MemberFaceProfilesS
           <Loader2 className="h-5 w-5 animate-spin text-cbt-orange" />
         </div>
       ) : profiles.length === 0 ? (
-        <div className="py-8 text-center text-gray-500 font-tactical text-sm">
+        <div className="py-8 text-center text-muted-foreground/80 font-tactical text-sm">
           Nenhum perfil facial cadastrado.
         </div>
       ) : (
@@ -111,30 +111,30 @@ const MemberFaceProfilesSection = ({ memberId, memberName }: MemberFaceProfilesS
           {profiles.map((p) => (
             <div
               key={p.id}
-              className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col gap-2 group hover:border-cbt-orange/40 transition-colors"
+              className="bg-muted/50 border border-border rounded-lg p-3 flex flex-col gap-2 group hover:border-cbt-orange/40 transition-colors"
             >
-              <div className="aspect-square rounded-md overflow-hidden bg-gray-900 flex items-center justify-center">
+              <div className="aspect-square rounded-md overflow-hidden bg-card flex items-center justify-center">
                 {p.thumbnail ? (
                   <img src={p.thumbnail} alt="Face" className="w-full h-full object-cover" />
                 ) : (
-                  <ScanFace className="h-8 w-8 text-gray-600" />
+                  <ScanFace className="h-8 w-8 text-muted-foreground/60" />
                 )}
               </div>
               <div className="text-xs font-tactical">
-                <p className="text-white font-semibold truncate">
+                <p className="text-foreground font-semibold truncate">
                   {sourceLabels[p.source] || p.source}
                 </p>
-                <p className="text-gray-500 truncate" title={formatDateTime(p.createdAt)}>
+                <p className="text-muted-foreground/80 truncate" title={formatDateTime(p.createdAt)}>
                   {formatDateTime(p.createdAt)}
                 </p>
-                <p className="text-gray-600 truncate">por {p.capturedBy.fullName}</p>
+                <p className="text-muted-foreground/60 truncate">por {p.capturedBy.fullName}</p>
               </div>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => handleDelete(p.id)}
-                className="bg-gray-900 border-gray-700 text-gray-400 hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/10 font-tactical h-8 w-full"
+                className="bg-card border-border text-muted-foreground hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/10 font-tactical h-8 w-full"
               >
                 <Trash2 className="h-3 w-3 mr-1" />
                 Remover

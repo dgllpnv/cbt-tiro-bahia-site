@@ -46,11 +46,10 @@ interface VisitDetail {
 
 interface Visit {
   id: string;
-  checkInAt: string;
-  checkOutAt?: string;
-  bay?: string;
-  purpose?: string;
-  status: string;
+  visitDate: string;             // backend: data da visita (YYYY-MM-DD)
+  checkInTime: string;           // backend: timestamp ISO de entrada
+  checkOutTime?: string | null;  // backend: timestamp ISO de saida
+  purpose?: string | null;
   details?: VisitDetail[];
 }
 
@@ -164,7 +163,7 @@ const TrainingHistoryPage = () => {
 
   // ── Status helpers ─────────────────────────────────────────────────────
   const getStatusBadge = (visit: Visit) => {
-    if (visit.checkOutAt) {
+    if (visit.checkOutTime) {
       return (
         <Badge variant="outline" className="text-[10px] font-tactical bg-green-500/10 text-green-400 border-green-500/30">
           <DoorClosed className="h-3 w-3 mr-1" />
@@ -180,13 +179,11 @@ const TrainingHistoryPage = () => {
     );
   };
 
-  const formatTime = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '—';
-    }
+  const formatTime = (dateStr?: string | null) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -197,12 +194,12 @@ const TrainingHistoryPage = () => {
         description="Suas visitas e registros de tiro no clube"
       />
 
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <LoadingSpinner message="Carregando historico..." />
         ) : visits.length === 0 ? (
           <EmptyState
-            icon={<Clock className="w-8 h-8 text-gray-500" />}
+            icon={<Clock className="w-8 h-8 text-muted-foreground/80" />}
             title="Nenhuma visita registrada"
             description="Seu historico de treinos aparecera aqui apos o primeiro check-in."
           />
@@ -220,34 +217,28 @@ const TrainingHistoryPage = () => {
                   >
                     {/* Visit header row */}
                     <CollapsibleTrigger asChild>
-                      <button className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-800/30 transition-colors text-left">
+                      <button className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left">
                         {/* Date */}
-                        <div className="flex-shrink-0 text-center w-16">
-                          <p className="text-sm font-tactical text-white font-medium">
-                            {formatDate(visit.checkInAt)}
+                        <div className="flex-shrink-0 text-center w-20">
+                          <p className="text-sm font-tactical text-foreground font-medium">
+                            {formatDate(visit.visitDate || visit.checkInTime)}
                           </p>
                         </div>
 
                         {/* Time */}
-                        <div className="flex-shrink-0 w-28">
-                          <p className="text-xs font-tactical text-gray-500 mb-0.5">Horario</p>
-                          <p className="text-sm font-tactical text-gray-300">
-                            {formatTime(visit.checkInAt)}
+                        <div className="flex-shrink-0 w-32">
+                          <p className="text-xs font-tactical text-muted-foreground/80 mb-0.5">Horario</p>
+                          <p className="text-sm font-tactical text-foreground/85">
+                            {formatTime(visit.checkInTime)}
                             {' - '}
-                            {visit.checkOutAt ? formatTime(visit.checkOutAt) : '--:--'}
+                            {visit.checkOutTime ? formatTime(visit.checkOutTime) : '--:--'}
                           </p>
-                        </div>
-
-                        {/* Bay */}
-                        <div className="hidden sm:block flex-shrink-0 w-20">
-                          <p className="text-xs font-tactical text-gray-500 mb-0.5">Baia</p>
-                          <p className="text-sm font-tactical text-gray-300">{visit.bay || '—'}</p>
                         </div>
 
                         {/* Purpose */}
                         <div className="flex-1 min-w-0 hidden md:block">
-                          <p className="text-xs font-tactical text-gray-500 mb-0.5">Proposito</p>
-                          <p className="text-sm font-tactical text-gray-300 truncate">
+                          <p className="text-xs font-tactical text-muted-foreground/80 mb-0.5">Proposito</p>
+                          <p className="text-sm font-tactical text-foreground/85 truncate">
                             {visit.purpose || '—'}
                           </p>
                         </div>
@@ -257,7 +248,7 @@ const TrainingHistoryPage = () => {
 
                         {/* Expand indicator */}
                         <ChevronDown
-                          className={`h-4 w-4 text-gray-500 transition-transform flex-shrink-0 ${
+                          className={`h-4 w-4 text-muted-foreground/80 transition-transform flex-shrink-0 ${
                             isExpanded ? 'rotate-180' : ''
                           }`}
                         />
@@ -266,29 +257,25 @@ const TrainingHistoryPage = () => {
 
                     {/* Expanded details */}
                     <CollapsibleContent>
-                      <div className="px-5 pb-4 bg-gray-800/20">
+                      <div className="px-5 pb-4 bg-muted/20">
                         {/* Mobile-only info */}
-                        <div className="flex sm:hidden gap-6 mb-3 pt-2">
+                        <div className="flex md:hidden gap-6 mb-3 pt-2">
                           <div>
-                            <p className="text-xs font-tactical text-gray-500">Baia</p>
-                            <p className="text-sm font-tactical text-gray-300">{visit.bay || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-tactical text-gray-500">Proposito</p>
-                            <p className="text-sm font-tactical text-gray-300">{visit.purpose || '—'}</p>
+                            <p className="text-xs font-tactical text-muted-foreground/80">Proposito</p>
+                            <p className="text-sm font-tactical text-foreground/85">{visit.purpose || '—'}</p>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between mb-3 pt-2 sm:pt-0">
                           <div className="flex items-center gap-2">
                             <Target className="h-4 w-4 text-cbt-orange" />
-                            <span className="text-sm font-military text-white font-bold">
+                            <span className="text-sm font-military text-foreground font-bold">
                               Registros de Tiro
                             </span>
                           </div>
                           <Button
                             size="sm"
-                            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical text-xs h-8"
+                            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical text-xs h-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenAddDetail(visit.id);
@@ -304,42 +291,42 @@ const TrainingHistoryPage = () => {
                             {visit.details.map((detail) => (
                               <div
                                 key={detail.id}
-                                className="flex items-center gap-3 bg-gray-900/60 border border-gray-700/50 rounded-md px-4 py-2.5"
+                                className="flex items-center gap-3 bg-card/60 border border-border/50 rounded-md px-4 py-2.5"
                               >
                                 <Crosshair className="h-4 w-4 text-cbt-orange flex-shrink-0" />
-                                <span className="text-sm font-tactical text-white font-medium">
+                                <span className="text-sm font-tactical text-foreground font-medium">
                                   {detail.caliber}
                                 </span>
-                                <span className="text-xs font-tactical text-gray-500">—</span>
-                                <span className="text-sm font-tactical text-gray-300">
+                                <span className="text-xs font-tactical text-muted-foreground/80">—</span>
+                                <span className="text-sm font-tactical text-foreground/85">
                                   {detail.shotsFired} disparo{detail.shotsFired !== 1 ? 's' : ''}
                                 </span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm font-tactical text-gray-500 text-center py-3">
+                          <p className="text-sm font-tactical text-muted-foreground/80 text-center py-3">
                             Nenhum registro de tiro para esta visita.
                           </p>
                         )}
 
                         {/* Full datetime info */}
-                        <div className="flex gap-6 mt-3 pt-3 border-t border-gray-700/30">
+                        <div className="flex gap-6 mt-3 pt-3 border-t border-border/30">
                           <div>
-                            <p className="text-[10px] font-tactical text-gray-500 uppercase tracking-wider">
+                            <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
                               Check-in
                             </p>
-                            <p className="text-xs font-tactical text-gray-400">
-                              {formatDateTime(visit.checkInAt)}
+                            <p className="text-xs font-tactical text-muted-foreground">
+                              {formatDateTime(visit.checkInTime)}
                             </p>
                           </div>
-                          {visit.checkOutAt && (
+                          {visit.checkOutTime && (
                             <div>
-                              <p className="text-[10px] font-tactical text-gray-500 uppercase tracking-wider">
+                              <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
                                 Checkout
                               </p>
-                              <p className="text-xs font-tactical text-gray-400">
-                                {formatDateTime(visit.checkOutAt)}
+                              <p className="text-xs font-tactical text-muted-foreground">
+                                {formatDateTime(visit.checkOutTime)}
                               </p>
                             </div>
                           )}
@@ -353,8 +340,8 @@ const TrainingHistoryPage = () => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-                <p className="text-sm text-gray-400 font-tactical">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-sm text-muted-foreground font-tactical">
                   Mostrando {(page - 1) * ITEMS_PER_PAGE + 1} a{' '}
                   {Math.min(page * ITEMS_PER_PAGE, pagination.total)} de{' '}
                   {pagination.total} visitas
@@ -365,12 +352,12 @@ const TrainingHistoryPage = () => {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-gray-400 font-tactical px-2">
+                  <span className="text-sm text-muted-foreground font-tactical px-2">
                     {page} / {pagination.totalPages}
                   </span>
                   <Button
@@ -378,7 +365,7 @@ const TrainingHistoryPage = () => {
                     size="sm"
                     disabled={page >= pagination.totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     Proximo
                     <ChevronRight className="h-4 w-4 ml-1" />
@@ -397,18 +384,18 @@ const TrainingHistoryPage = () => {
           if (!open) setAddDetailDialog({ open: false, visitId: '' });
         }}
       >
-        <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-md">
+        <DialogContent className="bg-card border-border text-foreground sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-military text-lg tracking-wide text-white">
+            <DialogTitle className="font-military text-lg tracking-wide text-foreground">
               Adicionar Registro de Tiro
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Informe o calibre utilizado e a quantidade de disparos.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="caliber" className="text-gray-300 font-tactical text-sm">
+              <Label htmlFor="caliber" className="text-foreground/85 font-tactical text-sm">
                 Calibre
               </Label>
               <Input
@@ -416,11 +403,11 @@ const TrainingHistoryPage = () => {
                 placeholder="Ex: 9mm Luger, .380 ACP, .38 SPL"
                 value={detailForm.caliber}
                 onChange={(e) => setDetailForm((f) => ({ ...f, caliber: e.target.value }))}
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 font-tactical focus:border-cbt-orange focus:ring-cbt-orange/20"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 font-tactical focus:border-cbt-orange focus:ring-cbt-orange/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="shotsFired" className="text-gray-300 font-tactical text-sm">
+              <Label htmlFor="shotsFired" className="text-foreground/85 font-tactical text-sm">
                 Quantidade de Disparos
               </Label>
               <Input
@@ -430,20 +417,20 @@ const TrainingHistoryPage = () => {
                 placeholder="Ex: 50"
                 value={detailForm.shotsFired}
                 onChange={(e) => setDetailForm((f) => ({ ...f, shotsFired: e.target.value }))}
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 font-tactical focus:border-cbt-orange focus:ring-cbt-orange/20"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 font-tactical focus:border-cbt-orange focus:ring-cbt-orange/20"
               />
             </div>
           </div>
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               onClick={() => setAddDetailDialog({ open: false, visitId: '' })}
             >
               Cancelar
             </Button>
             <Button
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
               onClick={handleSubmitDetail}
               disabled={isSubmitting}
             >

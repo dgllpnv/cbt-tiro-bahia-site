@@ -3,9 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PortalLayout from "@/components/layout/PortalLayout";
+import PublicLayout from "@/components/layout/PublicLayout";
 
 // Public pages
 import Index from "./pages/Index";
@@ -45,17 +47,25 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<LoginPage />} />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+      themes={['light', 'dark']}
+      storageKey="cbt-theme"
+    >
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public — sempre dark via PublicLayout (identidade institucional) */}
+              <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+              <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
 
-            {/* Associate Portal — path="/portal" ensures only /portal/* URLs match */}
+              {/* Associate Portal — path="/portal" ensures only /portal/* URLs match */}
             <Route
               path="/portal"
               element={
@@ -102,12 +112,13 @@ const App = () => (
               <Route path="eventos" element={<EventsManagementPage />} />
             </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

@@ -4,65 +4,118 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* =====================================================
+   Design system — tokens semânticos shadcn
+   :root  = light mode (default)
+   .dark  = dark mode (aplicado no <html> via next-themes)
+   ===================================================== */
 
 @layer base {
   :root {
-    --background: 15 15 15;
-    --foreground: 250 250 250;
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 20 20 20;
-    --card-foreground: 250 250 250;
+    --card: 0 0% 99%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 20 20 20;
-    --popover-foreground: 250 250 250;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 40 100% 50%;
-    --primary-foreground: 15 15 15;
+    --primary: 32 100% 50%;             /* cbt-orange — mantido em ambos modos */
+    --primary-foreground: 0 0% 6%;      /* texto escuro sobre laranja (melhor contraste) */
 
-    --secondary: 30 30 30;
-    --secondary-foreground: 250 250 250;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 25 25 25;
-    --muted-foreground: 165 165 165;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 35%;  /* tom mais escuro p/ legibilidade */
 
-    --accent: 40 100% 50%;
-    --accent-foreground: 15 15 15;
+    --accent: 32 100% 50%;
+    --accent-foreground: 0 0% 6%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 250 250 250;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 40 40 40;
-    --input: 40 40 40;
-    --ring: 40 100% 50%;
+    --border: 214.3 31.8% 88%;
+    --input: 214.3 31.8% 88%;
+    --ring: 32 100% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 15 15 15;
-    --sidebar-foreground: 250 250 250;
-    --sidebar-primary: 40 100% 50%;
-    --sidebar-primary-foreground: 15 15 15;
-    --sidebar-accent: 25 25 25;
-    --sidebar-accent-foreground: 250 250 250;
-    --sidebar-border: 40 40 40;
-    --sidebar-ring: 40 100% 50%;
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-primary: 32 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 88%;
+    --sidebar-ring: 32 100% 50%;
+
+    /* Padrão de pontos do background (light) */
+    --bg-pattern-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    /* Dark theme — preserva o look táctico/militar do CBT */
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 32 100% 50%;
+    --primary-foreground: 0 0% 6%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 32 100% 50%;
+    --accent-foreground: 0 0% 6%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 32 100% 50%;
+
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 32 100% 50%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 32 100% 50%;
+
+    --bg-pattern-color: rgba(255, 255, 255, 0.15);
   }
 }
 
 @layer base {
+  /* Aumento de fonte global (16 → 17px). Tailwind é REM-based, então
+     todos os textos, paddings e gaps escalam proporcionalmente. */
+  html {
+    font-size: 17px;
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground font-tactical;
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+    background-image:
+      radial-gradient(circle at 1px 1px, var(--bg-pattern-color) 1px, transparent 0);
     background-size: 20px 20px;
-  }
-
-  html {
-    scroll-behavior: smooth;
   }
 }
 
@@ -93,7 +146,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
+    background-image:
       linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.05) 50%),
       linear-gradient(0deg, transparent 50%, rgba(255,255,255,0.05) 50%);
     background-size: 2px 2px;

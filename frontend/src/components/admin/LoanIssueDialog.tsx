@@ -26,10 +26,10 @@ interface LoanIssueDialogProps {
   onCreated?: (loan: EquipmentLoan) => void;
 }
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
 const LoanIssueDialog = ({
   open,
@@ -91,13 +91,13 @@ const LoanIssueDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-lg">
+      <DialogContent className="bg-card border-border text-foreground max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <Package className="h-5 w-5 text-blue-400" />
             Novo Empréstimo
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             Empréstimo de equipamento do clube. Uso dentro do clube — devolução no fim do dia.
           </DialogDescription>
         </DialogHeader>
@@ -106,9 +106,9 @@ const LoanIssueDialog = ({
           {memberLocked ? (
             <div>
               <span className={labelClasses}>Membro</span>
-              <div className="flex items-center gap-2 h-10 px-3 bg-gray-800 border border-cbt-orange/50 rounded-md">
+              <div className="flex items-center gap-2 h-10 px-3 bg-muted border border-cbt-orange/50 rounded-md">
                 <Package className="h-4 w-4 text-cbt-orange flex-shrink-0" />
-                <span className="text-white font-tactical text-sm flex-1 truncate">
+                <span className="text-foreground font-tactical text-sm flex-1 truncate">
                   {preselectedMemberName || 'Membro pré-selecionado'}
                 </span>
               </div>
@@ -126,9 +126,9 @@ const LoanIssueDialog = ({
           {equipmentLocked ? (
             <div>
               <span className={labelClasses}>Equipamento</span>
-              <div className="flex items-center gap-2 h-10 px-3 bg-gray-800 border border-cbt-orange/50 rounded-md">
+              <div className="flex items-center gap-2 h-10 px-3 bg-muted border border-cbt-orange/50 rounded-md">
                 <Package className="h-4 w-4 text-cbt-orange flex-shrink-0" />
-                <span className="text-white font-tactical text-sm flex-1 truncate">
+                <span className="text-foreground font-tactical text-sm flex-1 truncate">
                   {preselectedEquipmentName || 'Equipamento pré-selecionado'}
                 </span>
               </div>
@@ -159,7 +159,7 @@ const LoanIssueDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
@@ -167,7 +167,7 @@ const LoanIssueDialog = ({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !memberId || !equipmentId}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

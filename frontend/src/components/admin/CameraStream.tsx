@@ -95,13 +95,13 @@ const CameraStream = forwardRef<CameraStreamHandle, CameraStreamProps>(
           className={`w-full h-full object-cover ${mirrored ? 'scale-x-[-1]' : ''}`}
         />
         {status === 'loading' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-2">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-foreground gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-cbt-orange" />
             <p className="text-sm font-tactical">Iniciando câmera...</p>
           </div>
         )}
         {status === 'error' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white gap-3 p-6 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-foreground gap-3 p-6 text-center">
             <AlertCircle className="h-10 w-10 text-red-400" />
             <p className="text-sm font-tactical">{errorMsg}</p>
             <button
@@ -118,7 +118,7 @@ const CameraStream = forwardRef<CameraStreamHandle, CameraStreamProps>(
           <button
             type="button"
             onClick={() => setFacingMode((m) => (m === 'user' ? 'environment' : 'user'))}
-            className="absolute top-2 right-2 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+            className="absolute top-2 right-2 p-2 bg-black/50 rounded-full text-foreground hover:bg-black/70 transition-colors"
             title="Trocar câmera"
           >
             <RefreshCw className="h-4 w-4" />

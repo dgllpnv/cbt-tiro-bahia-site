@@ -88,12 +88,12 @@ const IconPicker = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide">
+          <DialogTitle className="text-foreground font-military tracking-wide">
             {title ?? 'Escolher ícone'}
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             {description ??
               `Galeria com ${ICON_REGISTRY.length} mini-ícones (Game Icons) + paleta de ${ICON_COLOR_PALETTE.length} cores.`}
           </DialogDescription>
@@ -101,19 +101,19 @@ const IconPicker = ({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80 pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome (ex: pistola, alvo, escudo...)"
-            className="pl-9 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+            className="pl-9 bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
             autoFocus
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/80 hover:text-foreground/85"
               aria-label="Limpar busca"
             >
               <X className="h-4 w-4" />
@@ -141,10 +141,10 @@ const IconPicker = ({
         </div>
 
         {/* Grid */}
-        <div className="flex-1 min-h-[220px] overflow-y-auto bg-gray-950/40 border border-gray-800 rounded-lg p-2">
+        <div className="flex-1 min-h-[220px] overflow-y-auto bg-gray-950/40 border border-border rounded-lg p-2">
           {visible.length === 0 ? (
             <div className="h-full flex items-center justify-center py-12">
-              <p className="text-gray-500 font-tactical text-sm">
+              <p className="text-muted-foreground/80 font-tactical text-sm">
                 Nenhum ícone encontrado para “{search}”.
               </p>
             </div>
@@ -167,7 +167,7 @@ const IconPicker = ({
                     className={`group relative aspect-square flex items-center justify-center rounded-md border transition-all ${
                       isSelected
                         ? 'bg-cbt-orange/10 border-cbt-orange ring-2 ring-cbt-orange/40'
-                        : 'bg-gray-800 border-gray-700 hover:border-cbt-orange/50 hover:bg-gray-700'
+                        : 'bg-muted border-border hover:border-cbt-orange/50 hover:bg-secondary'
                     }`}
                   >
                     <Icon
@@ -179,11 +179,11 @@ const IconPicker = ({
                       }}
                     />
                     {isSelected && (
-                      <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-cbt-orange text-black flex items-center justify-center">
+                      <span className="absolute top-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-cbt-orange text-primary-foreground flex items-center justify-center">
                         <Check className="h-2.5 w-2.5" strokeWidth={3} />
                       </span>
                     )}
-                    <span className="absolute -bottom-0.5 left-0 right-0 px-1 truncate text-[9px] font-tactical text-gray-500 group-hover:text-gray-300 text-center opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900/90 rounded-b-md">
+                    <span className="absolute -bottom-0.5 left-0 right-0 px-1 truncate text-[9px] font-tactical text-muted-foreground/80 group-hover:text-foreground/85 text-center opacity-0 group-hover:opacity-100 transition-opacity bg-card/90 rounded-b-md">
                       {entry.label}
                     </span>
                   </button>
@@ -196,11 +196,11 @@ const IconPicker = ({
         {/* Color palette */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-tactical uppercase tracking-wider text-gray-500">
+            <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">
               Cor do ícone
             </p>
             {tempColor && (
-              <span className="text-[11px] font-tactical text-gray-400">
+              <span className="text-[11px] font-tactical text-muted-foreground">
                 {getColorLabel(tempColor)}
               </span>
             )}
@@ -217,7 +217,7 @@ const IconPicker = ({
                   className={`relative h-7 w-7 rounded-md border-2 transition-all ${
                     isSelected
                       ? 'ring-2 ring-cbt-orange ring-offset-1 ring-offset-gray-900 border-white/40'
-                      : 'border-gray-700 hover:border-white/60'
+                      : 'border-border hover:border-white/60'
                   }`}
                   style={{ background: swatch.hex }}
                 >
@@ -239,7 +239,7 @@ const IconPicker = ({
         </div>
 
         {/* Selection preview */}
-        <div className="flex items-center justify-between gap-3 px-3 py-2 bg-gray-800/40 border border-gray-800 rounded-md">
+        <div className="flex items-center justify-between gap-3 px-3 py-2 bg-muted/40 border border-border rounded-md">
           <div className="flex items-center gap-3 min-w-0">
             {tempKey ? (
               (() => {
@@ -248,12 +248,12 @@ const IconPicker = ({
                 const Icon = entry.Icon;
                 return (
                   <>
-                    <div className="h-9 w-9 rounded-md bg-gray-900 border border-gray-700 flex items-center justify-center flex-shrink-0">
+                    <div className="h-9 w-9 rounded-md bg-card border border-border flex items-center justify-center flex-shrink-0">
                       <Icon className="h-5 w-5" style={{ color: previewColor }} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-white font-tactical text-sm truncate">{entry.label}</p>
-                      <p className="text-gray-500 font-tactical text-xs truncate">
+                      <p className="text-foreground font-tactical text-sm truncate">{entry.label}</p>
+                      <p className="text-muted-foreground/80 font-tactical text-xs truncate">
                         {entry.key}
                         {tempColor && (
                           <>
@@ -267,7 +267,7 @@ const IconPicker = ({
                 );
               })()
             ) : (
-              <p className="text-gray-500 font-tactical text-sm">
+              <p className="text-muted-foreground/80 font-tactical text-sm">
                 Nenhum ícone selecionado — usar padrão da categoria.
               </p>
             )}
@@ -277,7 +277,7 @@ const IconPicker = ({
               variant="ghost"
               size="sm"
               onClick={handleClear}
-              className="text-gray-400 hover:text-red-400 font-tactical h-8"
+              className="text-muted-foreground hover:text-red-400 font-tactical h-8"
             >
               <X className="h-3.5 w-3.5 mr-1" />
               Limpar
@@ -289,13 +289,13 @@ const IconPicker = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             Aplicar
           </Button>
@@ -322,7 +322,7 @@ const GroupChip = ({
     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-tactical transition-colors ${
       active
         ? 'bg-cbt-orange/20 border-cbt-orange/60 text-cbt-orange'
-        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+        : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
     }`}
   >
     {label}

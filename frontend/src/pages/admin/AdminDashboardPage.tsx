@@ -49,12 +49,12 @@ interface StatCardProps {
 }
 
 const StatCard = ({ icon: Icon, label, value, color, bgColor, borderColor }: StatCardProps) => (
-  <div className={`relative overflow-hidden bg-gray-900/50 border ${borderColor} rounded-lg p-5 group hover:border-opacity-80 transition-all duration-300`}>
+  <div className={`relative overflow-hidden bg-card/50 border ${borderColor} rounded-lg p-5 group hover:border-opacity-80 transition-all duration-300`}>
     <div className="absolute top-0 right-0 w-24 h-24 -mr-6 -mt-6 rounded-full opacity-5 group-hover:opacity-10 transition-opacity" style={{ background: color }} />
     <div className="flex items-start justify-between">
       <div className="space-y-2">
-        <p className="text-xs font-tactical uppercase tracking-wider text-gray-500">{label}</p>
-        <p className="text-2xl font-military font-bold text-white tracking-wide">{value}</p>
+        <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">{label}</p>
+        <p className="text-2xl font-military font-bold text-foreground tracking-wide">{value}</p>
       </div>
       <div className={`p-2.5 rounded-lg ${bgColor}`}>
         <Icon className="h-5 w-5" style={{ color }} />
@@ -76,16 +76,16 @@ interface QuickActionProps {
 const QuickAction = ({ icon: Icon, label, description, to }: QuickActionProps) => (
   <Link
     to={to}
-    className="group flex items-center gap-4 bg-gray-900/50 border border-gray-800 rounded-lg p-4 hover:border-cbt-orange/40 hover:bg-gray-800/50 transition-all duration-300"
+    className="group flex items-center gap-4 bg-card/50 border border-border rounded-lg p-4 hover:border-cbt-orange/40 hover:bg-muted/50 transition-all duration-300"
   >
     <div className="p-2.5 rounded-lg bg-cbt-orange/10 group-hover:bg-cbt-orange/20 transition-colors">
       <Icon className="h-5 w-5 text-cbt-orange" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-white font-military text-sm tracking-wide">{label}</p>
-      <p className="text-gray-500 font-tactical text-xs mt-0.5">{description}</p>
+      <p className="text-foreground font-military text-sm tracking-wide">{label}</p>
+      <p className="text-muted-foreground/80 font-tactical text-xs mt-0.5">{description}</p>
     </div>
-    <ArrowRight className="h-4 w-4 text-gray-600 group-hover:text-cbt-orange group-hover:translate-x-1 transition-all" />
+    <ArrowRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-cbt-orange group-hover:translate-x-1 transition-all" />
   </Link>
 );
 
@@ -216,8 +216,8 @@ const AdminDashboardPage = () => {
       {/* ── Acoes Rapidas ───────────────────────────────────────────────── */}
       <div>
         <div className="mb-4">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide">Acoes Rapidas</h2>
-          <p className="text-xs font-tactical text-gray-500 mt-0.5">Atalhos para operacoes frequentes</p>
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide">Acoes Rapidas</h2>
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-0.5">Atalhos para operacoes frequentes</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <QuickAction
@@ -248,9 +248,9 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* ── Decorative Footer ───────────────────────────────────────────── */}
-      <div className="mt-8 flex items-center gap-3 px-4 py-3 bg-gray-900/30 border border-gray-800/50 rounded-lg">
-        <Wrench className="h-4 w-4 text-gray-600" />
-        <p className="text-xs font-tactical text-gray-600">
+      <div className="mt-8 flex items-center gap-3 px-4 py-3 bg-card/30 border border-border/50 rounded-lg">
+        <Wrench className="h-4 w-4 text-muted-foreground/60" />
+        <p className="text-xs font-tactical text-muted-foreground/60">
           CBT Admin v1.0 &mdash; Clube de Tiro da Bahia &mdash; Painel Administrativo
         </p>
       </div>

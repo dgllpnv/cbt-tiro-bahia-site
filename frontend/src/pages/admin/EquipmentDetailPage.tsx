@@ -200,7 +200,7 @@ const EquipmentDetailPage = () => {
           <Button
             asChild
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             <Link to="/admin/equipamentos">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -211,69 +211,69 @@ const EquipmentDetailPage = () => {
       />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="bg-gray-900 border border-gray-800">
+        <TabsList className="bg-card border border-border">
           <TabsTrigger
             value="dados"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-white"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground"
           >
             Dados
           </TabsTrigger>
           <TabsTrigger
             value="movimentacoes"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-white"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground"
           >
             Movimentações
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dados" className="mt-6">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6 space-y-4">
+          <div className="bg-card/50 border border-border rounded-lg p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-tactical">
               <div>
-                <p className="text-gray-500">Tipo</p>
-                <p className="text-white">{equipmentTypeLabels[equipment.equipmentType] || equipment.equipmentType}</p>
+                <p className="text-muted-foreground/80">Tipo</p>
+                <p className="text-foreground">{equipmentTypeLabels[equipment.equipmentType] || equipment.equipmentType}</p>
               </div>
               <div>
-                <p className="text-gray-500">Condição</p>
-                <p className="text-white">{equipmentConditionLabels[equipment.condition] || equipment.condition}</p>
+                <p className="text-muted-foreground/80">Condição</p>
+                <p className="text-foreground">{equipmentConditionLabels[equipment.condition] || equipment.condition}</p>
               </div>
               <div>
-                <p className="text-gray-500">Calibre</p>
-                <p className="text-white">{equipment.caliber || '—'}</p>
+                <p className="text-muted-foreground/80">Calibre</p>
+                <p className="text-foreground">{equipment.caliber || '—'}</p>
               </div>
               <div>
-                <p className="text-gray-500">Marca / Modelo</p>
-                <p className="text-white">
+                <p className="text-muted-foreground/80">Marca / Modelo</p>
+                <p className="text-foreground">
                   {[equipment.brand, equipment.model].filter(Boolean).join(' · ') || '—'}
                 </p>
               </div>
               <div>
-                <p className="text-gray-500">Número de Série</p>
-                <p className="text-white font-mono">{equipment.serialNumber || '—'}</p>
+                <p className="text-muted-foreground/80">Número de Série</p>
+                <p className="text-foreground font-mono">{equipment.serialNumber || '—'}</p>
               </div>
               <div>
-                <p className="text-gray-500">Registro</p>
-                <p className="text-white font-mono">{equipment.registrationId || '—'}</p>
+                <p className="text-muted-foreground/80">Registro</p>
+                <p className="text-foreground font-mono">{equipment.registrationId || '—'}</p>
               </div>
               <div>
-                <p className="text-gray-500">Data de Aquisição</p>
-                <p className="text-white">{equipment.acquisitionDate ? formatDate(equipment.acquisitionDate) : '—'}</p>
+                <p className="text-muted-foreground/80">Data de Aquisição</p>
+                <p className="text-foreground">{equipment.acquisitionDate ? formatDate(equipment.acquisitionDate) : '—'}</p>
               </div>
               <div>
-                <p className="text-gray-500">Status</p>
+                <p className="text-muted-foreground/80">Status</p>
                 <p>{statusBadge}</p>
               </div>
             </div>
             {equipment.description && (
-              <div className="pt-3 border-t border-gray-800">
-                <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Descrição</p>
-                <p className="text-white text-sm whitespace-pre-wrap">{equipment.description}</p>
+              <div className="pt-3 border-t border-border">
+                <p className="text-muted-foreground/80 text-xs uppercase tracking-wider mb-1">Descrição</p>
+                <p className="text-foreground text-sm whitespace-pre-wrap">{equipment.description}</p>
               </div>
             )}
             {equipment.notes && (
-              <div className="pt-3 border-t border-gray-800">
-                <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Observações Internas</p>
-                <p className="text-white text-sm whitespace-pre-wrap">{equipment.notes}</p>
+              <div className="pt-3 border-t border-border">
+                <p className="text-muted-foreground/80 text-xs uppercase tracking-wider mb-1">Observações Internas</p>
+                <p className="text-foreground text-sm whitespace-pre-wrap">{equipment.notes}</p>
               </div>
             )}
           </div>
@@ -282,14 +282,14 @@ const EquipmentDetailPage = () => {
             <Button
               variant="outline"
               onClick={handleDelete}
-              className="bg-gray-800 border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+              className="bg-muted border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Desativar Equipamento
             </Button>
             <Button
               onClick={() => setEditOpen(true)}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
             >
               <Pencil className="h-4 w-4 mr-2" />
               Editar Dados
@@ -298,7 +298,7 @@ const EquipmentDetailPage = () => {
         </TabsContent>
 
         <TabsContent value="movimentacoes" className="mt-6">
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
             {!historyLoaded ? (
               <LoadingSpinner message="Carregando movimentações..." />
             ) : history.length === 0 ? (
@@ -309,14 +309,14 @@ const EquipmentDetailPage = () => {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical">Membro</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Início</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Fim</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Condição</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Origem</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Ações</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical">Membro</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Início</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Fim</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Condição</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Origem</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -331,9 +331,9 @@ const EquipmentDetailPage = () => {
                             ? 'bg-green-500/15 text-green-300 border-green-500/30'
                             : loan.status === 'OVERDUE'
                               ? 'bg-red-500/15 text-red-300 border-red-500/30'
-                              : 'bg-gray-700/50 text-gray-300 border-gray-600/30';
+                              : 'bg-secondary/50 text-foreground/85 border-input/30';
                     return (
-                      <TableRow key={loan.id} className="border-gray-800 hover:bg-gray-800/50">
+                      <TableRow key={loan.id} className="border-border hover:bg-muted/50">
                         <TableCell>
                           <Link
                             to={
@@ -341,7 +341,7 @@ const EquipmentDetailPage = () => {
                                 ? `/admin/visitantes/${loan.member.id}`
                                 : `/admin/associados/${loan.member.id}`
                             }
-                            className="text-white hover:text-cbt-orange font-tactical text-sm"
+                            className="text-foreground hover:text-cbt-orange font-tactical text-sm"
                           >
                             {loan.member?.fullName || '—'}
                           </Link>
@@ -358,24 +358,24 @@ const EquipmentDetailPage = () => {
                             {loanStatusLabels[loan.status] || loan.status}
                           </span>
                         </TableCell>
-                        <TableCell className="text-gray-300 font-mono text-xs">
+                        <TableCell className="text-foreground/85 font-mono text-xs">
                           {formatDateTime(loan.loanDate)}
                         </TableCell>
-                        <TableCell className="text-gray-300 font-mono text-xs">
+                        <TableCell className="text-foreground/85 font-mono text-xs">
                           {loan.actualReturn ? formatDateTime(loan.actualReturn) : (
                             <span className="text-amber-400">Em aberto</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-xs">
+                        <TableCell className="text-foreground/85 text-xs">
                           {equipmentConditionLabels[loan.conditionAtLoan] || loan.conditionAtLoan || '—'}
                           {loan.conditionAtReturn && (
                             <>
-                              <span className="text-gray-500"> → </span>
+                              <span className="text-muted-foreground/80"> → </span>
                               {equipmentConditionLabels[loan.conditionAtReturn] || loan.conditionAtReturn}
                             </>
                           )}
                         </TableCell>
-                        <TableCell className="text-gray-400 text-xs">
+                        <TableCell className="text-muted-foreground text-xs">
                           {loan.transferredFrom ? (
                             <span className="text-blue-300">
                               ← {loan.transferredFrom.member?.fullName || '—'}
@@ -388,7 +388,7 @@ const EquipmentDetailPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-blue-300 hover:bg-gray-700"
+                                className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
                                 title="Transferir"
                                 onClick={() => setTransferLoan(loan)}
                               >
@@ -397,7 +397,7 @@ const EquipmentDetailPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-red-300 hover:bg-gray-700"
+                                className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
                                 title="Devolver"
                                 onClick={() => setReturnLoan(loan)}
                               >
@@ -418,9 +418,9 @@ const EquipmentDetailPage = () => {
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
               Editar Equipamento
             </DialogTitle>

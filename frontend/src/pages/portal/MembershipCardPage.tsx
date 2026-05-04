@@ -131,7 +131,7 @@ const MembershipCardPage = () => {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               onClick={handleDownload}
               disabled={isDownloading}
             >
@@ -143,7 +143,7 @@ const MembershipCardPage = () => {
               Baixar PDF
             </Button>
             <Button
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
               onClick={handleGenerate}
               disabled={isGenerating}
             >
@@ -204,7 +204,7 @@ const MembershipCardPage = () => {
                     <p className="text-[11px] font-tactical text-cbt-orange tracking-[0.25em] uppercase font-semibold">
                       Clube Baiano de Tiro
                     </p>
-                    <p className="text-[9px] font-tactical text-gray-500 tracking-[0.18em] uppercase">
+                    <p className="text-[9px] font-tactical text-muted-foreground/80 tracking-[0.18em] uppercase">
                       Associacao Desportiva · Salvador / BA
                     </p>
                   </div>
@@ -234,28 +234,28 @@ const MembershipCardPage = () => {
                     />
                   ) : (
                     <div
-                      className="rounded-md bg-gray-800 border-2 border-cbt-orange/30 flex items-center justify-center"
+                      className="rounded-md bg-muted border-2 border-cbt-orange/30 flex items-center justify-center"
                       style={{ width: 88, height: 112 }}
                     >
-                      <User className="h-10 w-10 text-gray-500" />
+                      <User className="h-10 w-10 text-muted-foreground/80" />
                     </div>
                   )}
                 </div>
 
                 {/* Nome + matricula + CR */}
                 <div className="flex-1 min-w-0 pt-1">
-                  <p className="text-[10px] font-tactical text-gray-500 tracking-[0.2em] uppercase">
+                  <p className="text-[10px] font-tactical text-muted-foreground/80 tracking-[0.2em] uppercase">
                     Associado
                   </p>
                   <p
-                    className="text-lg font-military font-bold text-white tracking-wide leading-tight mt-0.5 break-words"
+                    className="text-lg font-military font-bold text-foreground tracking-wide leading-tight mt-0.5 break-words"
                     style={{ wordBreak: 'break-word' }}
                   >
                     {user.fullName}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
                     <div>
-                      <p className="text-[9px] font-tactical text-gray-500 uppercase tracking-wider">
+                      <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
                         Nº Matricula
                       </p>
                       <p className="text-sm font-tactical font-semibold text-cbt-orange">
@@ -263,10 +263,10 @@ const MembershipCardPage = () => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-tactical text-gray-500 uppercase tracking-wider">
+                      <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
                         Filiado desde
                       </p>
-                      <p className="text-sm font-tactical text-gray-200">
+                      <p className="text-sm font-tactical text-foreground">
                         {user.memberSince ? formatDate(user.memberSince) : '—'}
                       </p>
                     </div>
@@ -314,11 +314,11 @@ const MembershipCardPage = () => {
               </div>
 
               {/* Footer institucional */}
-              <div className="mt-5 pt-3 border-t border-gray-800 flex items-center justify-between">
-                <p className="text-[9px] font-tactical text-gray-600 tracking-[0.18em] uppercase">
+              <div className="mt-5 pt-3 border-t border-border flex items-center justify-between">
+                <p className="text-[9px] font-tactical text-muted-foreground/60 tracking-[0.18em] uppercase">
                   Documento de identificacao do clube
                 </p>
-                <p className="text-[9px] font-tactical text-gray-600 tracking-wider">
+                <p className="text-[9px] font-tactical text-muted-foreground/60 tracking-wider">
                   cbt.com.br
                 </p>
               </div>
@@ -336,7 +336,7 @@ const MembershipCardPage = () => {
           />
 
           {/* Aviso pequeno abaixo do card */}
-          <p className="text-center text-xs font-tactical text-gray-500 mt-6">
+          <p className="text-center text-xs font-tactical text-muted-foreground/80 mt-6">
             Apresente esta carteirinha (digital ou impressa) na entrada do clube.
             O QR Code permite validacao rapida no balcao.
           </p>
@@ -357,12 +357,12 @@ const InfoField = ({
   highlight?: boolean;
 }) => (
   <div>
-    <p className="text-[9px] font-tactical text-gray-500 uppercase tracking-[0.18em] mb-0.5">
+    <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-[0.18em] mb-0.5">
       {label}
     </p>
     <p
       className={`text-sm font-tactical font-medium ${
-        highlight ? 'text-cbt-orange' : 'text-gray-200'
+        highlight ? 'text-cbt-orange' : 'text-foreground'
       }`}
     >
       {value}

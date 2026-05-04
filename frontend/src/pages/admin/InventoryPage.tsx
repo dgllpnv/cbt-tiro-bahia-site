@@ -240,7 +240,7 @@ const InventoryPage = () => {
         actions={
           <Button
             onClick={() => setCreateDialog(true)}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             <Plus className="h-4 w-4 mr-2" />
             Novo Produto
@@ -261,15 +261,15 @@ const InventoryPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 mb-5 space-y-3">
+      <div className="bg-card/50 border border-border rounded-lg p-4 mb-5 space-y-3">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar produto por nome..."
-              className="pl-9 bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 font-tactical"
+              className="pl-9 bg-muted border-border text-foreground placeholder:text-muted-foreground/80 font-tactical"
             />
           </div>
           <Button
@@ -279,7 +279,7 @@ const InventoryPage = () => {
             className={
               showLowOnly
                 ? 'bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 font-tactical'
-                : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 font-tactical'
+                : 'bg-muted border-border text-foreground/85 hover:bg-secondary font-tactical'
             }
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
@@ -309,9 +309,9 @@ const InventoryPage = () => {
 
       {/* Table */}
       {filteredItems.length === 0 ? (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+        <div className="bg-card/50 border border-border rounded-lg">
           <EmptyState
-            icon={<Package className="w-8 h-8 text-gray-500" />}
+            icon={<Package className="w-8 h-8 text-muted-foreground/80" />}
             title={items.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum item com esses filtros'}
             description={
               items.length === 0
@@ -321,9 +321,9 @@ const InventoryPage = () => {
           />
         </div>
       ) : (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-[44px_1fr_140px_120px_100px_88px] gap-3 px-3 py-2 border-b border-gray-800 bg-gray-900/80 text-xs font-tactical uppercase tracking-wider text-gray-500">
+          <div className="grid grid-cols-[44px_1fr_140px_120px_100px_88px] gap-3 px-3 py-2 border-b border-border bg-card/80 text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">
             <div></div>
             <div>Produto</div>
             <div>Categoria</div>
@@ -356,7 +356,7 @@ const InventoryPage = () => {
               return (
                 <li
                   key={item.id}
-                  className={`grid grid-cols-[44px_1fr_140px_120px_100px_88px] gap-3 items-center px-3 py-2 hover:bg-gray-800/40 transition-colors ${
+                  className={`grid grid-cols-[44px_1fr_140px_120px_100px_88px] gap-3 items-center px-3 py-2 hover:bg-muted/40 transition-colors ${
                     isEmpty ? 'opacity-60' : ''
                   }`}
                 >
@@ -375,9 +375,9 @@ const InventoryPage = () => {
 
                   {/* Name + caliber */}
                   <div className="min-w-0">
-                    <p className="text-white font-tactical text-sm truncate">{item.product?.name}</p>
+                    <p className="text-foreground font-tactical text-sm truncate">{item.product?.name}</p>
                     {item.product?.caliber && (
-                      <p className="text-gray-500 font-tactical text-xs truncate">
+                      <p className="text-muted-foreground/80 font-tactical text-xs truncate">
                         {item.product.caliber}
                       </p>
                     )}
@@ -444,27 +444,27 @@ const InventoryPage = () => {
 
       {/* Adjust dialog */}
       <Dialog open={adjustDialog} onOpenChange={setAdjustDialog}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="font-military">
               {adjustType === 'ADJUSTMENT_IN' ? 'Entrada' : 'Saída'} — {selectedItem?.product?.name}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
-              Estoque atual: <span className="text-white font-bold">{selectedItem?.currentStock}</span>{' '}
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
+              Estoque atual: <span className="text-foreground font-bold">{selectedItem?.currentStock}</span>{' '}
               {selectedItem?.product?.unit}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Quantidade *</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Quantidade *</Label>
               <Input
                 type="number"
                 min="1"
                 placeholder="Quantidade"
                 value={adjustQty}
                 onChange={(e) => setAdjustQty(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
                 autoFocus
               />
               <div className="flex flex-wrap gap-2 pt-1">
@@ -473,7 +473,7 @@ const InventoryPage = () => {
                     key={q}
                     type="button"
                     onClick={() => setAdjustQty(String(q))}
-                    className="px-3 py-1.5 text-xs font-tactical bg-gray-800 border border-gray-700 rounded-md text-gray-300 hover:border-cbt-orange hover:text-white transition-colors"
+                    className="px-3 py-1.5 text-xs font-tactical bg-muted border border-border rounded-md text-foreground/85 hover:border-cbt-orange hover:text-foreground transition-colors"
                   >
                     {adjustType === 'ADJUSTMENT_IN' ? '+' : '−'}
                     {q}
@@ -488,12 +488,12 @@ const InventoryPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Motivo (opcional)</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Motivo (opcional)</Label>
               <Input
                 placeholder="Ex: compra, venda, perda, ajuste de inventário"
                 value={adjustNotes}
                 onChange={(e) => setAdjustNotes(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
             </div>
           </div>
@@ -505,7 +505,7 @@ const InventoryPage = () => {
             <Button
               onClick={handleAdjust}
               disabled={adjustDisabled}
-              className={`font-tactical text-white ${
+              className={`font-tactical text-foreground ${
                 adjustType === 'ADJUSTMENT_IN'
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-red-600 hover:bg-red-700'
@@ -525,36 +525,36 @@ const InventoryPage = () => {
           if (!open) resetNewProduct();
         }}
       >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-lg">
+        <DialogContent className="bg-card border-border text-foreground max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-military flex items-center gap-2">
               <Plus className="h-5 w-5 text-cbt-orange" />
               Novo Produto
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               Cadastro rápido — o item já é criado com estoque inicial.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Nome *</Label>
+              <Label className="text-foreground/85 font-tactical text-sm">Nome *</Label>
               <Input
                 placeholder="Ex: Munição 9mm Luger (50un)"
                 value={newProduct.name}
                 onChange={(e) => setNewProduct((p) => ({ ...p, name: e.target.value }))}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
                 autoFocus
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Categoria *</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Categoria *</Label>
                 <select
                   value={newProduct.category}
                   onChange={(e) => setNewProduct((p) => ({ ...p, category: e.target.value }))}
-                  className="w-full h-10 rounded-md bg-gray-800 border border-gray-600 text-white px-3 text-sm font-tactical focus:outline-none focus:border-cbt-orange"
+                  className="w-full h-10 rounded-md bg-muted border border-input text-foreground px-3 text-sm font-tactical focus:outline-none focus:border-cbt-orange"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -564,19 +564,19 @@ const InventoryPage = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Unidade</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Unidade</Label>
                 <Input
                   placeholder="un, cx, kg..."
                   value={newProduct.unit}
                   onChange={(e) => setNewProduct((p) => ({ ...p, unit: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Preço unitário *</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Preço unitário *</Label>
                 <Input
                   type="number"
                   min="0"
@@ -584,29 +584,29 @@ const InventoryPage = () => {
                   placeholder="0,00"
                   value={newProduct.unitPrice}
                   onChange={(e) => setNewProduct((p) => ({ ...p, unitPrice: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Estoque inicial</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Estoque inicial</Label>
                 <Input
                   type="number"
                   min="0"
                   placeholder="0"
                   value={newProduct.initialStock}
                   onChange={(e) => setNewProduct((p) => ({ ...p, initialStock: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-300 font-tactical text-sm">Estoque mínimo</Label>
+                <Label className="text-foreground/85 font-tactical text-sm">Estoque mínimo</Label>
                 <Input
                   type="number"
                   min="0"
                   placeholder="0"
                   value={newProduct.minimumStock}
                   onChange={(e) => setNewProduct((p) => ({ ...p, minimumStock: e.target.value }))}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
             </div>
@@ -619,7 +619,7 @@ const InventoryPage = () => {
             <Button
               onClick={handleCreateProduct}
               disabled={creating || !newProduct.name.trim() || !newProduct.unitPrice}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
             >
               {creating ? <Loader2 size={16} className="animate-spin" /> : 'Cadastrar'}
             </Button>
@@ -643,10 +643,10 @@ const KpiCard = ({
   value: string;
   accent: string;
 }) => (
-  <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
+  <div className="bg-card/50 border border-border rounded-lg p-4 flex items-center justify-between">
     <div>
-      <p className="text-xs font-tactical uppercase tracking-wider text-gray-500">{label}</p>
-      <p className="text-2xl font-military font-bold text-white tracking-wide mt-1">{value}</p>
+      <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80">{label}</p>
+      <p className="text-2xl font-military font-bold text-foreground tracking-wide mt-1">{value}</p>
     </div>
     <div className="p-2.5 rounded-lg" style={{ background: `${accent}20` }}>
       <Icon className="h-5 w-5" style={{ color: accent }} />
@@ -677,7 +677,7 @@ const CategoryChip = ({
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-tactical border transition-colors ${
         active
           ? activeCls
-          : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500'
+          : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
       }`}
     >
       {Icon && <Icon className="h-3.5 w-3.5" />}

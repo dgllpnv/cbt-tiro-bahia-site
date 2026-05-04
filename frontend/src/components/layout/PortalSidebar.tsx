@@ -75,19 +75,19 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="p-4 border-b border-gray-800">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
             <CbtLogo className="w-full h-full" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-white font-military font-bold text-sm truncate">CBT</h2>
+            <h2 className="text-foreground font-military font-bold text-sm truncate">CBT</h2>
             <p className="text-cbt-orange text-xs font-tactical truncate">
               {user?.role === 'admin' ? 'ADMINISTRACAO' : 'PORTAL DO ASSOCIADO'}
             </p>
           </div>
           {onClose && (
-            <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
+            <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-foreground">
               <X size={20} />
             </button>
           )}
@@ -104,7 +104,7 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-tactical text-sm transition-all duration-200 ${
               isActive(item.href)
                 ? 'bg-cbt-orange/10 text-cbt-orange border border-cbt-orange/20'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
             {item.icon}
@@ -114,14 +114,14 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
       </nav>
 
       {/* User info at bottom */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-            <User size={16} className="text-gray-400" />
+          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+            <User size={16} className="text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-tactical truncate">{user?.fullName}</p>
-            <p className="text-gray-500 text-xs font-tactical truncate">
+            <p className="text-foreground text-sm font-tactical truncate">{user?.fullName}</p>
+            <p className="text-muted-foreground/80 text-xs font-tactical truncate">
               {user?.role === 'admin' ? 'Administrador' : `Associado ${user?.memberNumber}`}
             </p>
           </div>
@@ -133,7 +133,7 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-gray-900 border-r border-gray-800">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-card border-r border-border">
         {sidebarContent}
       </aside>
 
@@ -141,7 +141,7 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
       {isOpen && (
         <>
           <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={onClose} />
-          <aside className="fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 z-50 lg:hidden">
+          <aside className="fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 lg:hidden">
             {sidebarContent}
           </aside>
         </>

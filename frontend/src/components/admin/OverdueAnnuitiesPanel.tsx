@@ -140,11 +140,11 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
   const accentText = overdueCount > 0 ? 'text-red-400' : 'text-yellow-400';
 
   return (
-    <div className={`bg-gray-900/50 border ${accentColor} rounded-lg p-4`}>
+    <div className={`bg-card/50 border ${accentColor} rounded-lg p-4`}>
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <AlertTriangle className={`h-4 w-4 ${accentText} flex-shrink-0`} />
-          <h3 className="text-sm font-military font-bold text-white tracking-wide truncate">
+          <h3 className="text-sm font-military font-bold text-foreground tracking-wide truncate">
             Anuidades pendentes
           </h3>
         </div>
@@ -168,9 +168,9 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
         </div>
       ) : items.length === 0 ? (
         <div className="py-6 text-center">
-          <CalendarClock className="h-8 w-8 text-gray-600 mx-auto mb-1.5" />
-          <p className="text-sm font-tactical text-gray-400">Tudo em dia</p>
-          <p className="text-xs font-tactical text-gray-500 mt-0.5">
+          <CalendarClock className="h-8 w-8 text-muted-foreground/60 mx-auto mb-1.5" />
+          <p className="text-sm font-tactical text-muted-foreground">Tudo em dia</p>
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-0.5">
             Nenhum associado com anuidade vencida ou vencendo nos próximos 30 dias.
           </p>
         </div>
@@ -186,8 +186,8 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                   {getInitials(item.fullName)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-tactical text-white truncate">{item.fullName}</p>
-                  <p className="text-[10px] font-tactical text-gray-500">
+                  <p className="text-sm font-tactical text-foreground truncate">{item.fullName}</p>
+                  <p className="text-[10px] font-tactical text-muted-foreground/80">
                     Nº {item.memberNumber ?? '—'} ·{' '}
                     <span className={overdue ? 'text-red-400' : 'text-yellow-400'}>
                       {overdue
@@ -196,7 +196,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                         ? 'Vence hoje'
                         : `Vence em ${days} dia${days === 1 ? '' : 's'}`}
                     </span>{' '}
-                    <span className="text-gray-600">· {due}</span>
+                    <span className="text-muted-foreground/60">· {due}</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -206,7 +206,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                     size="sm"
                     onClick={() => handleCopyMessage(item)}
                     title="Copiar mensagem de cobrança"
-                    className="h-7 px-2 bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical text-xs"
+                    className="h-7 px-2 bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical text-xs"
                   >
                     {copiedId === item.id ? (
                       <Check className="h-3 w-3 text-green-400" />
@@ -232,20 +232,20 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
 
       {/* Diálogo de registro de pagamento (inline) */}
       <Dialog open={!!paying} onOpenChange={(o) => !submitting && !o && setPaying(null)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-cbt-orange" />
               Registrar anuidade
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-sm">
+            <DialogDescription className="text-muted-foreground font-tactical text-sm">
               {paying?.fullName} · Nº {paying?.memberNumber ?? '—'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Valor
               </Label>
               <NumberStepper
@@ -258,14 +258,14 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Forma de pagamento
               </Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-muted border-border">
                   {PAYMENT_METHODS.map((m) => (
                     <SelectItem key={m} value={m}>
                       {m}
@@ -274,7 +274,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-[10px] font-tactical text-gray-500 leading-relaxed">
+            <p className="text-[10px] font-tactical text-muted-foreground/80 leading-relaxed">
               A anuidade será válida por 12 meses a partir da data atual e o lançamento aparecerá em{' '}
               /admin/lancamentos e no fechamento financeiro.
             </p>
@@ -285,14 +285,14 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
               variant="outline"
               onClick={() => setPaying(null)}
               disabled={submitting}
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleConfirmPayment}
               disabled={submitting || amount <= 0}
-              className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold"
+              className="bg-green-600 hover:bg-green-700 text-foreground font-tactical font-bold"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

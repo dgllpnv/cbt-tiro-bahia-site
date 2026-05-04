@@ -35,17 +35,17 @@ const ConfirmDialog = ({
   isLoading = false,
 }: ConfirmDialogProps) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent className="bg-gray-900 border-gray-800">
+    <AlertDialogContent className="bg-card border-border">
       <AlertDialogHeader>
-        <AlertDialogTitle className="text-white">{title}</AlertDialogTitle>
-        <AlertDialogDescription className="text-gray-400">
+        <AlertDialogTitle className="text-foreground">{title}</AlertDialogTitle>
+        <AlertDialogDescription className="text-muted-foreground">
           {description}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel
           disabled={isLoading}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+          className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground"
         >
           {cancelLabel}
         </AlertDialogCancel>
@@ -58,8 +58,8 @@ const ConfirmDialog = ({
           className={cn(
             'min-w-[100px]',
             variant === 'destructive'
-              ? 'bg-red-600 text-white hover:bg-red-700'
-              : 'bg-cbt-orange text-white hover:bg-cbt-orange/90'
+              ? 'bg-red-600 text-foreground hover:bg-red-700'
+              : 'bg-cbt-orange text-foreground hover:bg-cbt-orange/90'
           )}
         >
           {isLoading ? (

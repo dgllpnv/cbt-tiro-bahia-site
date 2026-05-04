@@ -158,16 +158,16 @@ const PortalHomePage = () => {
       <PageHeader title="Inicio" description="Painel do associado" />
 
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-900/80 to-cbt-orange/10 border border-gray-800 rounded-lg p-6 mb-6">
+      <div className="bg-gradient-to-r from-gray-900 via-gray-900/80 to-cbt-orange/10 border border-border rounded-lg p-6 mb-6">
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0">
             <CbtLogo className="h-full w-full" />
           </div>
           <div>
-            <h2 className="text-xl font-military font-bold text-white tracking-wide">
+            <h2 className="text-xl font-military font-bold text-foreground tracking-wide">
               Bem-vindo, {firstName}!
             </h2>
-            <p className="text-gray-400 font-tactical text-sm mt-0.5">
+            <p className="text-muted-foreground font-tactical text-sm mt-0.5">
               Clube Baiano de Tiro — Area do Associado
             </p>
           </div>
@@ -189,31 +189,31 @@ const PortalHomePage = () => {
         </div>
 
         {/* Visitas */}
-        <div className="border border-gray-700/50 bg-gray-900/50 rounded-lg p-5">
+        <div className="border border-border/50 bg-card/50 rounded-lg p-5">
           <div className="flex items-center gap-3 mb-3">
             <Eye className="h-5 w-5 text-cbt-orange" />
-            <span className="text-gray-400 font-tactical text-sm font-semibold uppercase tracking-wide">
+            <span className="text-muted-foreground font-tactical text-sm font-semibold uppercase tracking-wide">
               Visitas
             </span>
           </div>
-          <p className="text-2xl font-military font-bold text-white">
+          <p className="text-2xl font-military font-bold text-foreground">
             {dashboard?.visitsThisYear ?? 0}
           </p>
-          <p className="text-xs font-tactical text-gray-500 mt-1">visitas este ano</p>
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-1">visitas este ano</p>
         </div>
 
         {/* Disparos */}
-        <div className="border border-gray-700/50 bg-gray-900/50 rounded-lg p-5">
+        <div className="border border-border/50 bg-card/50 rounded-lg p-5">
           <div className="flex items-center gap-3 mb-3">
             <Crosshair className="h-5 w-5 text-cbt-orange" />
-            <span className="text-gray-400 font-tactical text-sm font-semibold uppercase tracking-wide">
+            <span className="text-muted-foreground font-tactical text-sm font-semibold uppercase tracking-wide">
               Disparos
             </span>
           </div>
-          <p className="text-2xl font-military font-bold text-white">
+          <p className="text-2xl font-military font-bold text-foreground">
             {dashboard?.shotsRegistered ?? 0}
           </p>
-          <p className="text-xs font-tactical text-gray-500 mt-1">disparos registrados</p>
+          <p className="text-xs font-tactical text-muted-foreground/80 mt-1">disparos registrados</p>
         </div>
       </div>
 
@@ -223,10 +223,10 @@ const PortalHomePage = () => {
           <Link
             key={action.to}
             to={action.to}
-            className="group flex flex-col items-center gap-2 bg-gray-900/50 border border-gray-800 hover:border-cbt-orange/40 rounded-lg p-4 transition-all hover:bg-gray-800/60"
+            className="group flex flex-col items-center gap-2 bg-card/50 border border-border hover:border-cbt-orange/40 rounded-lg p-4 transition-all hover:bg-muted/60"
           >
-            <action.icon className="h-6 w-6 text-gray-400 group-hover:text-cbt-orange transition-colors" />
-            <span className="text-xs font-tactical text-gray-300 group-hover:text-white text-center transition-colors">
+            <action.icon className="h-6 w-6 text-muted-foreground group-hover:text-cbt-orange transition-colors" />
+            <span className="text-xs font-tactical text-foreground/85 group-hover:text-foreground text-center transition-colors">
               {action.label}
             </span>
           </Link>
@@ -237,14 +237,14 @@ const PortalHomePage = () => {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Newspaper className="h-5 w-5 text-cbt-orange" />
-          <h3 className="text-lg font-military font-bold text-white tracking-wide">
+          <h3 className="text-lg font-military font-bold text-foreground tracking-wide">
             Ultimas Noticias
           </h3>
         </div>
 
         {news.length === 0 ? (
-          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-8 text-center">
-            <p className="text-gray-500 font-tactical text-sm">Nenhuma noticia disponivel no momento.</p>
+          <div className="bg-card/50 border border-border rounded-lg p-8 text-center">
+            <p className="text-muted-foreground/80 font-tactical text-sm">Nenhuma noticia disponivel no momento.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -252,7 +252,7 @@ const PortalHomePage = () => {
               <button
                 key={item.id}
                 onClick={() => setSelectedNews(item)}
-                className="bg-gray-900/50 border border-gray-800 hover:border-cbt-orange/30 rounded-lg overflow-hidden text-left transition-all hover:bg-gray-800/40 group"
+                className="bg-card/50 border border-border hover:border-cbt-orange/30 rounded-lg overflow-hidden text-left transition-all hover:bg-muted/40 group"
               >
                 {item.imageUrl && (
                   <div className="h-36 w-full overflow-hidden">
@@ -264,13 +264,13 @@ const PortalHomePage = () => {
                   </div>
                 )}
                 <div className="p-4">
-                  <p className="text-xs font-tactical text-gray-500 mb-1">
+                  <p className="text-xs font-tactical text-muted-foreground/80 mb-1">
                     {formatDate(item.createdAt)}
                   </p>
-                  <h4 className="text-sm font-military font-bold text-white mb-1 line-clamp-2 group-hover:text-cbt-orange transition-colors">
+                  <h4 className="text-sm font-military font-bold text-foreground mb-1 line-clamp-2 group-hover:text-cbt-orange transition-colors">
                     {item.title}
                   </h4>
-                  <p className="text-xs font-tactical text-gray-400 line-clamp-2">{item.summary}</p>
+                  <p className="text-xs font-tactical text-muted-foreground line-clamp-2">{item.summary}</p>
                   <span className="inline-flex items-center text-xs text-cbt-orange font-tactical mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     Ler mais <ChevronRight className="h-3 w-3 ml-0.5" />
                   </span>
@@ -283,12 +283,12 @@ const PortalHomePage = () => {
 
       {/* News detail dialog */}
       <Dialog open={!!selectedNews} onOpenChange={(open) => !open && setSelectedNews(null)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-military text-lg tracking-wide text-white">
+            <DialogTitle className="font-military text-lg tracking-wide text-foreground">
               {selectedNews?.title}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-xs">
+            <DialogDescription className="text-muted-foreground font-tactical text-xs">
               {selectedNews?.createdAt ? formatDate(selectedNews.createdAt) : ''}
             </DialogDescription>
           </DialogHeader>
@@ -301,13 +301,13 @@ const PortalHomePage = () => {
               />
             </div>
           )}
-          <div className="text-sm font-tactical text-gray-300 leading-relaxed whitespace-pre-line">
+          <div className="text-sm font-tactical text-foreground/85 leading-relaxed whitespace-pre-line">
             {selectedNews?.content || selectedNews?.summary}
           </div>
           <div className="flex justify-end mt-2">
             <Button
               variant="outline"
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               onClick={() => setSelectedNews(null)}
             >
               Fechar

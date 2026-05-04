@@ -26,16 +26,16 @@ const FaceRegisterPromptDialog = ({
   onSkip,
 }: FaceRegisterPromptDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+    <DialogContent className="bg-card border-border text-foreground max-w-md">
       <DialogHeader>
-        <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+        <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
           <ScanFace className="h-5 w-5 text-cbt-orange" />
           Verificar Facial?
         </DialogTitle>
-        <DialogDescription className="text-gray-400 font-tactical text-sm">
+        <DialogDescription className="text-muted-foreground font-tactical text-sm">
           {memberName ? (
             <>
-              Deseja verificar a face de <strong className="text-white">{memberName}</strong> antes
+              Deseja verificar a face de <strong className="text-foreground">{memberName}</strong> antes
               de fechar a conta? A verificação confirma a saída e gera os registros de
               habitualidade para os calibres usados nesta visita.
             </>
@@ -53,7 +53,7 @@ const FaceRegisterPromptDialog = ({
             onSkip();
             onOpenChange(false);
           }}
-          className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+          className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
         >
           <X className="h-4 w-4 mr-2" />
           Não, fechar sem verificar
@@ -64,7 +64,7 @@ const FaceRegisterPromptDialog = ({
             onConfirm();
             onOpenChange(false);
           }}
-          className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+          className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
         >
           <ScanFace className="h-4 w-4 mr-2" />
           Sim, verificar

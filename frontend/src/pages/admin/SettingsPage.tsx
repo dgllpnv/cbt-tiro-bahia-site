@@ -325,17 +325,17 @@ const SettingsPage = () => {
     <div>
       <PageHeader title="Cadastros Gerais" description="Produtos, equipamentos e categorias" />
       <Tabs defaultValue="products">
-        <TabsList className="bg-gray-800 border border-gray-700">
+        <TabsList className="bg-muted border border-border">
           <TabsTrigger
             value="products"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
           >
             <Package size={16} className="mr-2" />
             Produtos ({products.length})
           </TabsTrigger>
           <TabsTrigger
             value="club"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
           >
             <Building2 size={16} className="mr-2" />
             Dados do Clube
@@ -347,7 +347,7 @@ const SettingsPage = () => {
           <div className="flex justify-end mb-4">
             <Button
               onClick={openNewProduct}
-              className="bg-cbt-orange text-black font-tactical hover:bg-cbt-orange/90"
+              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
             >
               <Plus size={16} className="mr-2" />
               Novo Produto
@@ -359,27 +359,27 @@ const SettingsPage = () => {
               description="Cadastre produtos para vendas e estoque"
             />
           ) : (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-transparent">
-                    <TableHead className="text-gray-400 font-tactical w-14">Ícone</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Nome</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Categoria</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Calibre</TableHead>
-                    <TableHead className="text-gray-400 font-tactical">Preço</TableHead>
-                    <TableHead className="text-gray-400 font-tactical text-right">Ações</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-tactical w-14">Ícone</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Nome</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Categoria</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Calibre</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical">Preço</TableHead>
+                    <TableHead className="text-muted-foreground font-tactical text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {products.map((p: any) => (
-                    <TableRow key={p.id} className="border-gray-800 hover:bg-gray-800/40">
+                    <TableRow key={p.id} className="border-border hover:bg-muted/40">
                       <TableCell>
                         <button
                           type="button"
                           onClick={() => openInlinePicker(p)}
                           title="Editar ícone"
-                          className="group h-9 w-9 rounded-md bg-gray-800 border border-gray-700 hover:border-cbt-orange hover:bg-cbt-orange/10 flex items-center justify-center transition-colors relative"
+                          className="group h-9 w-9 rounded-md bg-muted border border-border hover:border-cbt-orange hover:bg-cbt-orange/10 flex items-center justify-center transition-colors relative"
                         >
                           <ProductIcon product={p} size={20} />
                           <span className="absolute inset-0 rounded-md bg-cbt-orange/0 group-hover:bg-cbt-orange/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -387,11 +387,11 @@ const SettingsPage = () => {
                           </span>
                         </button>
                       </TableCell>
-                      <TableCell className="text-white font-tactical">{p.name}</TableCell>
-                      <TableCell className="text-gray-400 font-tactical">
+                      <TableCell className="text-foreground font-tactical">{p.name}</TableCell>
+                      <TableCell className="text-muted-foreground font-tactical">
                         {categoryLabels[p.category] || p.category}
                       </TableCell>
-                      <TableCell className="text-gray-400 font-tactical">{p.caliber || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground font-tactical">{p.caliber || '-'}</TableCell>
                       <TableCell className="text-cbt-orange font-tactical">
                         {formatCurrency(Number(p.unitPrice))}
                       </TableCell>
@@ -400,7 +400,7 @@ const SettingsPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-cbt-orange"
+                            className="h-8 w-8 text-muted-foreground hover:text-cbt-orange"
                             title="Editar ícone"
                             onClick={() => openInlinePicker(p)}
                           >
@@ -409,7 +409,7 @@ const SettingsPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-cbt-orange"
+                            className="h-8 w-8 text-muted-foreground hover:text-cbt-orange"
                             title="Editar"
                             onClick={() => openEditProduct(p)}
                           >
@@ -418,7 +418,7 @@ const SettingsPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-red-400"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-400"
                             title="Remover"
                             onClick={() =>
                               setDeleteConfirm({
@@ -449,7 +449,7 @@ const SettingsPage = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="font-military">
               {editingId
@@ -467,12 +467,12 @@ const SettingsPage = () => {
                 placeholder="Nome"
                 value={productForm.name}
                 onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
               <select
                 value={productForm.category}
                 onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                className="w-full h-10 px-3 rounded-md bg-gray-800 border border-gray-600 text-white font-tactical"
+                className="w-full h-10 px-3 rounded-md bg-muted border border-input text-foreground font-tactical"
               >
                 {Object.entries(categoryLabels).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -484,7 +484,7 @@ const SettingsPage = () => {
                 placeholder="Calibre"
                 value={productForm.caliber}
                 onChange={(e) => setProductForm({ ...productForm, caliber: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
@@ -493,7 +493,7 @@ const SettingsPage = () => {
                   placeholder="Preço venda"
                   value={productForm.unitPrice}
                   onChange={(e) => setProductForm({ ...productForm, unitPrice: e.target.value })}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
                 <Input
                   type="number"
@@ -501,17 +501,17 @@ const SettingsPage = () => {
                   placeholder="Preço custo"
                   value={productForm.costPrice}
                   onChange={(e) => setProductForm({ ...productForm, costPrice: e.target.value })}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
 
               {/* Icon picker trigger */}
-              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-3">
-                <p className="text-xs font-tactical uppercase tracking-wider text-gray-500 mb-2">
+              <div className="bg-muted/40 border border-border rounded-md p-3">
+                <p className="text-xs font-tactical uppercase tracking-wider text-muted-foreground/80 mb-2">
                   Mini-ícone
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-md bg-gray-800 border border-gray-700 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-md bg-muted border border-border flex items-center justify-center flex-shrink-0">
                     <ProductIcon
                       product={{
                         id: 'preview',
@@ -531,10 +531,10 @@ const SettingsPage = () => {
                         const entry = getIconEntry(productForm.iconKey);
                         return (
                           <>
-                            <p className="text-white font-tactical text-sm truncate">
+                            <p className="text-foreground font-tactical text-sm truncate">
                               {entry?.label ?? 'Cor personalizada'}
                             </p>
-                            <p className="text-gray-500 font-tactical text-xs truncate">
+                            <p className="text-muted-foreground/80 font-tactical text-xs truncate">
                               {productForm.iconKey ?? '—'}
                               {productForm.iconColor && (
                                 <>
@@ -549,7 +549,7 @@ const SettingsPage = () => {
                         );
                       })()
                     ) : (
-                      <p className="text-gray-500 font-tactical text-xs">
+                      <p className="text-muted-foreground/80 font-tactical text-xs">
                         Usando ícone padrão da categoria
                       </p>
                     )}
@@ -559,7 +559,7 @@ const SettingsPage = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setFormPickerOpen(true)}
-                    className="bg-gray-800 border-gray-700 text-cbt-orange hover:bg-cbt-orange/10 hover:border-cbt-orange/40 font-tactical h-9"
+                    className="bg-muted border-border text-cbt-orange hover:bg-cbt-orange/10 hover:border-cbt-orange/40 font-tactical h-9"
                   >
                     <ImagePlus className="h-4 w-4 mr-1.5" />
                     Trocar
@@ -573,12 +573,12 @@ const SettingsPage = () => {
                 placeholder="Nome"
                 value={equipForm.name}
                 onChange={(e) => setEquipForm({ ...equipForm, name: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
               <select
                 value={equipForm.equipmentType}
                 onChange={(e) => setEquipForm({ ...equipForm, equipmentType: e.target.value })}
-                className="w-full h-10 px-3 rounded-md bg-gray-800 border border-gray-600 text-white font-tactical"
+                className="w-full h-10 px-3 rounded-md bg-muted border border-input text-foreground font-tactical"
               >
                 {Object.entries(equipmentTypeLabels).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -590,26 +590,26 @@ const SettingsPage = () => {
                 placeholder="N. Série"
                 value={equipForm.serialNumber}
                 onChange={(e) => setEquipForm({ ...equipForm, serialNumber: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
               <Input
                 placeholder="Calibre"
                 value={equipForm.caliber}
                 onChange={(e) => setEquipForm({ ...equipForm, caliber: e.target.value })}
-                className="bg-gray-800 border-gray-600 text-white font-tactical"
+                className="bg-muted border-input text-foreground font-tactical"
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   placeholder="Marca"
                   value={equipForm.brand}
                   onChange={(e) => setEquipForm({ ...equipForm, brand: e.target.value })}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
                 <Input
                   placeholder="Modelo"
                   value={equipForm.model}
                   onChange={(e) => setEquipForm({ ...equipForm, model: e.target.value })}
-                  className="bg-gray-800 border-gray-600 text-white font-tactical"
+                  className="bg-muted border-input text-foreground font-tactical"
                 />
               </div>
             </div>
@@ -621,7 +621,7 @@ const SettingsPage = () => {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="bg-cbt-orange text-black font-tactical hover:bg-cbt-orange/90"
+              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : editingId ? 'Salvar' : 'Criar'}
             </Button>

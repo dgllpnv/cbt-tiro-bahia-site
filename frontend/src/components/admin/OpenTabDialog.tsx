@@ -145,13 +145,13 @@ const OpenTabDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+          <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-green-400" />
             Comanda — {memberName}
           </DialogTitle>
-          <DialogDescription className="text-gray-400 font-tactical text-sm">
+          <DialogDescription className="text-muted-foreground font-tactical text-sm">
             Adicione os itens consumidos. A conta sera lancada apenas ao fechar.
           </DialogDescription>
         </DialogHeader>
@@ -164,12 +164,12 @@ const OpenTabDialog = ({
           <div className="space-y-4 py-2">
             {/* Lista de itens ja adicionados */}
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Itens em aberto ({draft?.items.length ?? 0})
               </Label>
               {!draft?.items.length ? (
-                <div className="py-6 px-4 bg-gray-800/40 border border-dashed border-gray-700 rounded-md text-center">
-                  <p className="text-gray-500 font-tactical text-sm">
+                <div className="py-6 px-4 bg-muted/40 border border-dashed border-border rounded-md text-center">
+                  <p className="text-muted-foreground/80 font-tactical text-sm">
                     Nenhum item adicionado ainda. Use o formulario abaixo.
                   </p>
                 </div>
@@ -180,11 +180,11 @@ const OpenTabDialog = ({
                     return (
                       <div
                         key={it.id}
-                        className="flex items-center gap-3 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-md"
+                        className="flex items-center gap-3 px-3 py-2 bg-muted/60 border border-border rounded-md"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-tactical text-sm truncate">{it.description}</p>
-                          <p className="text-gray-500 font-tactical text-xs">
+                          <p className="text-foreground font-tactical text-sm truncate">{it.description}</p>
+                          <p className="text-muted-foreground/80 font-tactical text-xs">
                             {it.quantity} × {formatCurrency(Number(it.unitPrice))}
                           </p>
                         </div>
@@ -197,7 +197,7 @@ const OpenTabDialog = ({
                           size="icon"
                           onClick={() => handleRemove(it.id)}
                           disabled={removingItemId === it.id}
-                          className="h-7 w-7 text-gray-500 hover:text-red-400 hover:bg-red-500/10"
+                          className="h-7 w-7 text-muted-foreground/80 hover:text-red-400 hover:bg-red-500/10"
                         >
                           {removingItemId === it.id ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -211,18 +211,18 @@ const OpenTabDialog = ({
                 </div>
               )}
               {draft && draft.items.length > 0 && (
-                <div className="flex justify-end gap-3 pt-2 border-t border-gray-800">
-                  <span className="text-gray-400 font-tactical text-xs uppercase tracking-wider">
+                <div className="flex justify-end gap-3 pt-2 border-t border-border">
+                  <span className="text-muted-foreground font-tactical text-xs uppercase tracking-wider">
                     Subtotal
                   </span>
-                  <span className="text-white font-military text-base">{formatCurrency(subtotal)}</span>
+                  <span className="text-foreground font-military text-base">{formatCurrency(subtotal)}</span>
                 </div>
               )}
             </div>
 
             {/* Form para adicionar item */}
-            <div className="p-3 bg-gray-800/50 border border-gray-700 rounded-lg space-y-3">
-              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+            <div className="p-3 bg-muted/50 border border-border rounded-lg space-y-3">
+              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
                 Adicionar item
               </Label>
               <ProductSearch
@@ -238,16 +238,16 @@ const OpenTabDialog = ({
               />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div className="sm:col-span-3">
-                  <Label className="text-gray-400 font-tactical text-xs">Descricao *</Label>
+                  <Label className="text-muted-foreground font-tactical text-xs">Descricao *</Label>
                   <Input
                     value={form.description}
                     onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                     placeholder="Ex.: Alvo de papel A4"
-                    className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9"
+                    className="bg-card border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-gray-400 font-tactical text-xs">Qtde *</Label>
+                  <Label className="text-muted-foreground font-tactical text-xs">Qtde *</Label>
                   <NumberStepper
                     value={form.quantity}
                     onChange={(v) => setForm((prev) => ({ ...prev, quantity: Math.max(1, Math.round(v)) }))}
@@ -256,7 +256,7 @@ const OpenTabDialog = ({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <Label className="text-gray-400 font-tactical text-xs">Preco unitario</Label>
+                  <Label className="text-muted-foreground font-tactical text-xs">Preco unitario</Label>
                   <NumberStepper
                     value={form.unitPrice}
                     onChange={(v) => setForm((prev) => ({ ...prev, unitPrice: Math.max(0, v) }))}
@@ -271,7 +271,7 @@ const OpenTabDialog = ({
                 type="button"
                 onClick={handleAdd}
                 disabled={adding}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-tactical h-9"
+                className="w-full bg-green-600 hover:bg-green-700 text-foreground font-tactical h-9"
               >
                 {adding ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -291,7 +291,7 @@ const OpenTabDialog = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Concluir adicoes
           </Button>

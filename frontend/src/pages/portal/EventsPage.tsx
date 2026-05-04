@@ -66,7 +66,7 @@ const getEventTypeBadge = (type: string) => {
     COURSE: { label: 'Curso', className: 'bg-green-500/15 text-green-400 border-green-500/30', icon: BookOpen },
     WORKSHOP: { label: 'Workshop', className: 'bg-purple-500/15 text-purple-400 border-purple-500/30', icon: Wrench },
   };
-  return map[type] || { label: type, className: 'bg-gray-500/15 text-gray-400 border-gray-500/30', icon: Calendar };
+  return map[type] || { label: type, className: 'bg-muted-foreground/20 text-muted-foreground border-muted-foreground/40', icon: Calendar };
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -142,7 +142,7 @@ const EventsPage = () => {
     const participations = event.participations || [];
 
     return (
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors overflow-hidden">
+      <div className="bg-card/50 border border-border rounded-lg hover:border-border transition-colors overflow-hidden">
         <button
           className="w-full p-5 text-left"
           onClick={() => setSelectedEvent(event)}
@@ -152,14 +152,14 @@ const EventsPage = () => {
               <TypeIcon className="h-3 w-3 mr-1" />
               {typeBadge.label}
             </Badge>
-            <span className="text-xs font-tactical text-gray-500">
+            <span className="text-xs font-tactical text-muted-foreground/80">
               {formatDate(event.eventDate)}
             </span>
           </div>
-          <h4 className="text-sm font-military font-bold text-white mb-2 line-clamp-2">
+          <h4 className="text-sm font-military font-bold text-foreground mb-2 line-clamp-2">
             {event.title}
           </h4>
-          <div className="flex flex-wrap items-center gap-3 text-xs font-tactical text-gray-400">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-tactical text-muted-foreground">
             {event.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -176,9 +176,9 @@ const EventsPage = () => {
 
         {/* Results section for past events */}
         {showResults && participations.length > 0 && (
-          <div className="border-t border-gray-800">
+          <div className="border-t border-border">
             <button
-              className="w-full flex items-center justify-between px-5 py-3 text-xs font-tactical text-cbt-orange hover:bg-gray-800/30 transition-colors"
+              className="w-full flex items-center justify-between px-5 py-3 text-xs font-tactical text-cbt-orange hover:bg-muted/30 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleResults(event.id);
@@ -198,7 +198,7 @@ const EventsPage = () => {
                   .map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center justify-between py-2 px-3 bg-gray-800/50 rounded-md text-xs"
+                      className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-md text-xs"
                     >
                       <div className="flex items-center gap-2">
                         {p.placement && (
@@ -206,19 +206,19 @@ const EventsPage = () => {
                             p.placement === 1
                               ? 'text-yellow-400'
                               : p.placement === 2
-                              ? 'text-gray-300'
+                              ? 'text-foreground/85'
                               : p.placement === 3
                               ? 'text-amber-600'
-                              : 'text-gray-400'
+                              : 'text-muted-foreground'
                           }`}>
                             #{p.placement}
                           </span>
                         )}
-                        <span className="font-tactical text-white">
+                        <span className="font-tactical text-foreground">
                           {p.memberName || 'Participante'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-gray-400 font-tactical">
+                      <div className="flex items-center gap-3 text-muted-foreground font-tactical">
                         {p.caliberUsed && <span>{p.caliberUsed}</span>}
                         {p.score != null && (
                           <span className="text-cbt-orange font-semibold">{p.score} pts</span>
@@ -240,17 +240,17 @@ const EventsPage = () => {
       <PageHeader title="Eventos e Competicoes" description="Calendario de eventos do clube" />
 
       <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="bg-gray-800 border border-gray-700 mb-6">
+        <TabsList className="bg-muted border border-border mb-6">
           <TabsTrigger
             value="upcoming"
-            className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-white"
+            className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground"
           >
             <Calendar className="h-4 w-4 mr-2" />
             Proximos
           </TabsTrigger>
           <TabsTrigger
             value="past"
-            className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-white"
+            className="font-tactical text-sm data-[state=active]:bg-cbt-orange data-[state=active]:text-foreground"
           >
             <Trophy className="h-4 w-4 mr-2" />
             Passados
@@ -262,9 +262,9 @@ const EventsPage = () => {
           {isLoadingUpcoming ? (
             <LoadingSpinner message="Carregando proximos eventos..." />
           ) : upcomingEvents.length === 0 ? (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+            <div className="bg-card/50 border border-border rounded-lg">
               <EmptyState
-                icon={<Calendar className="w-8 h-8 text-gray-500" />}
+                icon={<Calendar className="w-8 h-8 text-muted-foreground/80" />}
                 title="Nenhum evento proximo"
                 description="Nao ha eventos programados no momento."
               />
@@ -283,9 +283,9 @@ const EventsPage = () => {
           {isLoadingPast ? (
             <LoadingSpinner message="Carregando eventos passados..." />
           ) : pastEvents.length === 0 ? (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-lg">
+            <div className="bg-card/50 border border-border rounded-lg">
               <EmptyState
-                icon={<Trophy className="w-8 h-8 text-gray-500" />}
+                icon={<Trophy className="w-8 h-8 text-muted-foreground/80" />}
                 title="Nenhum evento passado"
                 description="Nenhum evento anterior encontrado."
               />
@@ -302,12 +302,12 @@ const EventsPage = () => {
 
       {/* ── Event detail dialog ──────────────────────────────────────────── */}
       <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-military text-lg tracking-wide text-white">
+            <DialogTitle className="font-military text-lg tracking-wide text-foreground">
               {selectedEvent?.title}
             </DialogTitle>
-            <DialogDescription className="text-gray-400 font-tactical text-xs">
+            <DialogDescription className="text-muted-foreground font-tactical text-xs">
               {selectedEvent?.eventDate ? formatDate(selectedEvent.eventDate) : ''}
               {selectedEvent?.location ? ` — ${selectedEvent.location}` : ''}
             </DialogDescription>
@@ -328,7 +328,7 @@ const EventsPage = () => {
                   );
                 })()}
                 {selectedEvent.isPublic && (
-                  <Badge variant="outline" className="bg-gray-800/50 text-gray-300 border-gray-700 text-xs font-tactical">
+                  <Badge variant="outline" className="bg-muted/50 text-foreground/85 border-border text-xs font-tactical">
                     Publico
                   </Badge>
                 )}
@@ -336,7 +336,7 @@ const EventsPage = () => {
 
               {/* Description */}
               {selectedEvent.description && (
-                <div className="text-sm font-tactical text-gray-300 leading-relaxed whitespace-pre-line">
+                <div className="text-sm font-tactical text-foreground/85 leading-relaxed whitespace-pre-line">
                   {selectedEvent.description}
                 </div>
               )}
@@ -344,26 +344,26 @@ const EventsPage = () => {
               {/* Details */}
               <div className="grid grid-cols-2 gap-3">
                 {selectedEvent.location && (
-                  <div className="bg-gray-800/50 rounded-md p-3">
-                    <p className="text-[10px] font-tactical text-gray-500 uppercase mb-1">Local</p>
-                    <p className="text-sm font-tactical text-white flex items-center gap-1.5">
+                  <div className="bg-muted/50 rounded-md p-3">
+                    <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase mb-1">Local</p>
+                    <p className="text-sm font-tactical text-foreground flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-cbt-orange" />
                       {selectedEvent.location}
                     </p>
                   </div>
                 )}
                 {selectedEvent.startTime && (
-                  <div className="bg-gray-800/50 rounded-md p-3">
-                    <p className="text-[10px] font-tactical text-gray-500 uppercase mb-1">Horario</p>
-                    <p className="text-sm font-tactical text-white">
+                  <div className="bg-muted/50 rounded-md p-3">
+                    <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase mb-1">Horario</p>
+                    <p className="text-sm font-tactical text-foreground">
                       {selectedEvent.startTime}
                       {selectedEvent.endTime ? ` - ${selectedEvent.endTime}` : ''}
                     </p>
                   </div>
                 )}
-                <div className="bg-gray-800/50 rounded-md p-3">
-                  <p className="text-[10px] font-tactical text-gray-500 uppercase mb-1">Participantes</p>
-                  <p className="text-sm font-tactical text-white flex items-center gap-1.5">
+                <div className="bg-muted/50 rounded-md p-3">
+                  <p className="text-[10px] font-tactical text-muted-foreground/80 uppercase mb-1">Participantes</p>
+                  <p className="text-sm font-tactical text-foreground flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5 text-cbt-orange" />
                     {selectedEvent.participationsCount ?? selectedEvent.participations?.length ?? 0}
                     {selectedEvent.maxParticipants ? ` / ${selectedEvent.maxParticipants}` : ''}
@@ -374,7 +374,7 @@ const EventsPage = () => {
               {/* Participants list */}
               {selectedEvent.participations && selectedEvent.participations.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-military font-bold text-white tracking-wide mb-3">
+                  <h4 className="text-sm font-military font-bold text-foreground tracking-wide mb-3">
                     Lista de Participantes
                   </h4>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -383,7 +383,7 @@ const EventsPage = () => {
                       .map((p) => (
                         <div
                           key={p.id}
-                          className="flex items-center justify-between py-2 px-3 bg-gray-800/50 rounded-md text-xs"
+                          className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-md text-xs"
                         >
                           <div className="flex items-center gap-2">
                             {p.placement && (
@@ -391,19 +391,19 @@ const EventsPage = () => {
                                 p.placement === 1
                                   ? 'text-yellow-400'
                                   : p.placement === 2
-                                  ? 'text-gray-300'
+                                  ? 'text-foreground/85'
                                   : p.placement === 3
                                   ? 'text-amber-600'
-                                  : 'text-gray-400'
+                                  : 'text-muted-foreground'
                               }`}>
                                 #{p.placement}
                               </span>
                             )}
-                            <span className="font-tactical text-white">
+                            <span className="font-tactical text-foreground">
                               {p.memberName || 'Participante'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-gray-400 font-tactical">
+                          <div className="flex items-center gap-3 text-muted-foreground font-tactical">
                             {p.caliberUsed && <span>{p.caliberUsed}</span>}
                             {p.score != null && (
                               <span className="text-cbt-orange font-semibold">{p.score} pts</span>
@@ -420,7 +420,7 @@ const EventsPage = () => {
           <div className="flex justify-end mt-2">
             <Button
               variant="outline"
-              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
               onClick={() => setSelectedEvent(null)}
             >
               Fechar

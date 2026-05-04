@@ -46,9 +46,9 @@ const initialFormData: FormData = {
 };
 
 const inputClasses =
-  'bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cbt-orange focus:ring-cbt-orange/20';
+  'bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20';
 
-const labelClasses = 'block text-sm font-tactical text-gray-300 mb-1';
+const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 
 const VisitorCreatePage = () => {
   const navigate = useNavigate();
@@ -122,7 +122,7 @@ const VisitorCreatePage = () => {
           <Button
             asChild
             variant="outline"
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             <Link to="/admin/visitantes">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -133,8 +133,8 @@ const VisitorCreatePage = () => {
       />
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
             Dados Pessoais
           </h2>
 
@@ -215,8 +215,8 @@ const VisitorCreatePage = () => {
           </div>
         </div>
 
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-          <h2 className="text-lg font-military font-bold text-white tracking-wide mb-4">
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-4">
             Endereco (opcional)
           </h2>
 
@@ -285,14 +285,14 @@ const VisitorCreatePage = () => {
             type="button"
             variant="outline"
             onClick={() => navigate('/admin/visitantes')}
-            className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
+            className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
           >
             {isSubmitting ? (
               <>

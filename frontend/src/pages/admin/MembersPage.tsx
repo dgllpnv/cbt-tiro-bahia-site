@@ -152,7 +152,7 @@ const MembersPage = () => {
         title="Associados"
         description="Gestao de membros do clube"
         actions={
-          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+          <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
             <Link to="/admin/associados/novo">
               <UserPlus className="h-4 w-4 mr-2" />
               Novo Associado
@@ -171,12 +171,12 @@ const MembersPage = () => {
       </div>
 
       {/* Content */}
-      <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-card/50 border border-border rounded-lg overflow-hidden">
         {isLoading ? (
           <LoadingSpinner message="Carregando associados..." />
         ) : users.length === 0 ? (
           <EmptyState
-            icon={<Users className="w-8 h-8 text-gray-500" />}
+            icon={<Users className="w-8 h-8 text-muted-foreground/80" />}
             title="Nenhum associado encontrado"
             description={
               search
@@ -185,7 +185,7 @@ const MembersPage = () => {
             }
             action={
               !search ? (
-                <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical">
+                <Button asChild className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical">
                   <Link to="/admin/associados/novo">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Novo Associado
@@ -198,24 +198,24 @@ const MembersPage = () => {
           <>
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-800 hover:bg-transparent">
-                  <TableHead className="text-gray-400 font-tactical">Nome</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">CPF</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">N. Associado</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">Perfil</TableHead>
-                  <TableHead className="text-gray-400 font-tactical">Status</TableHead>
-                  <TableHead className="text-gray-400 font-tactical text-right">Acoes</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground font-tactical">Nome</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">CPF</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">N. Associado</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">Perfil</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical">Status</TableHead>
+                  <TableHead className="text-muted-foreground font-tactical text-right">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user) => (
-                  <TableRow key={user.id} className="border-gray-800 hover:bg-gray-800/50">
-                    <TableCell className="text-white font-medium">{user.fullName}</TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">
+                  <TableRow key={user.id} className="border-border hover:bg-muted/50">
+                    <TableCell className="text-foreground font-medium">{user.fullName}</TableCell>
+                    <TableCell className="text-foreground/85 font-mono text-sm">
                       {formatCpf(user.cpf)}
                     </TableCell>
-                    <TableCell className="text-gray-300">{user.memberNumber || '—'}</TableCell>
-                    <TableCell className="text-gray-300">
+                    <TableCell className="text-foreground/85">{user.memberNumber || '—'}</TableCell>
+                    <TableCell className="text-foreground/85">
                       {user.role === 'admin' ? 'Admin' : 'Associado'}
                     </TableCell>
                     <TableCell>
@@ -227,7 +227,7 @@ const MembersPage = () => {
                           variant="ghost"
                           size="icon"
                           asChild
-                          className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary"
                           title="Perfil"
                         >
                           <Link to={`/admin/associados/${user.id}`}>
@@ -238,7 +238,7 @@ const MembersPage = () => {
                           variant="ghost"
                           size="icon"
                           asChild
-                          className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-secondary"
                           title="Editar"
                         >
                           <Link to={`/admin/associados/${user.id}`}>
@@ -248,7 +248,7 @@ const MembersPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-cbt-orange hover:bg-secondary"
                           title={user.status === 'ACTIVE' ? 'Desativar' : 'Ativar'}
                           onClick={() => handleToggleStatus(user)}
                         >
@@ -257,7 +257,7 @@ const MembersPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-gray-700"
+                          className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-secondary"
                           title="Excluir"
                           onClick={() => handleDelete(user)}
                         >
@@ -272,8 +272,8 @@ const MembersPage = () => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
-                <p className="text-sm text-gray-400 font-tactical">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <p className="text-sm text-muted-foreground font-tactical">
                   Mostrando {(page - 1) * ITEMS_PER_PAGE + 1} a{' '}
                   {Math.min(page * ITEMS_PER_PAGE, pagination.total)} de{' '}
                   {pagination.total} associados
@@ -284,12 +284,12 @@ const MembersPage = () => {
                     size="sm"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-gray-400 font-tactical px-2">
+                  <span className="text-sm text-muted-foreground font-tactical px-2">
                     {page} / {pagination.totalPages}
                   </span>
                   <Button
@@ -297,7 +297,7 @@ const MembersPage = () => {
                     size="sm"
                     disabled={page >= pagination.totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white disabled:opacity-50"
+                    className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     Proximo
                     <ChevronRight className="h-4 w-4 ml-1" />
