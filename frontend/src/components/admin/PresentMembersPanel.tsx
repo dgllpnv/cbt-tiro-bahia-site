@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, User, Users, Crosshair, Loader2, Plus, LogOut } from 'lucide-react';
+import { Search, X, User, Users, Crosshair, Loader2, Plus, Receipt, ShoppingCart } from 'lucide-react';
 import { GiBullets } from 'react-icons/gi';
 
 import api from '@/services/api';
@@ -10,6 +10,7 @@ import {
   type Visit,
 } from '@/services/visitsService';
 import { listLanes } from '@/services/lanesService';
+import { getDraftByVisit, type Transaction } from '@/services/transactionsService';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
@@ -22,8 +23,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import ShotEntryDialog from '@/components/admin/ShotEntryDialog';
+import OpenTabDialog from '@/components/admin/OpenTabDialog';
+import CloseTabDialog from '@/components/admin/CloseTabDialog';
 import { getCaliberColor } from '@/lib/ammunitionVisuals';
 import { getFirearmCategory, getFirearmCategoryVisual } from '@/lib/firearmsCatalog';
+import { formatCurrency } from '@/lib/formatters';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -167,15 +171,30 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
 
 // ── Member card ────────────────────────────────────────────────────────────
 
+interface TabSummary {
+  itemCount: number;
+  subtotal: number;
+}
+
 interface PresentCardProps {
   visit: Visit;
   now: number;
+  tabSummary: TabSummary | null;
+  onNewSale: (visit: Visit) => void;
   onRegisterShot: (visit: Visit) => void;
   onCheckOut: (visit: Visit) => void;
 }
 
-const PresentCard = ({ visit, now, onRegisterShot, onCheckOut }: PresentCardProps) => {
+const PresentCard = ({
+  visit,
+  now,
+  tabSummary,
+  onNewSale,
+  onRegisterShot,
+  onCheckOut,
+}: PresentCardProps) => {
   const totalShots = totalShotsFor(visit);
+  const hasTab = (tabSummary?.itemCount ?? 0) > 0;
   return (
     <div className="bg-gray-900/70 border border-gray-800 rounded-lg p-4 flex flex-col gap-3 hover:border-cbt-orange/40 hover:ring-1 hover:ring-cbt-orange/20 transition-all">
       {/* Header */}
@@ -195,6 +214,15 @@ const PresentCard = ({ visit, now, onRegisterShot, onCheckOut }: PresentCardProp
             {visit.lane && <span className="text-gray-500"> · {visit.lane.name}</span>}
           </p>
         </div>
+        {hasTab && (
+          <span
+            className="px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/40 text-green-300 font-tactical text-[10px] flex items-center gap-1"
+            title={`Comanda em aberto: ${tabSummary?.itemCount} ite${tabSummary?.itemCount === 1 ? 'm' : 'ns'} • ${formatCurrency(tabSummary?.subtotal ?? 0)}`}
+          >
+            <ShoppingCart className="h-3 w-3" />
+            {tabSummary!.itemCount} · {formatCurrency(tabSummary!.subtotal)}
+          </span>
+        )}
       </div>
 
       {/* Top-3 shots pills */}
@@ -232,13 +260,23 @@ const PresentCard = ({ visit, now, onRegisterShot, onCheckOut }: PresentCardProp
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="grid grid-cols-3 gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onNewSale(visit)}
+          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-green-500/10 hover:border-green-500/40 hover:text-green-300 font-tactical h-9"
+        >
+          <ShoppingCart className="h-3.5 w-3.5 mr-1" />
+          Venda
+        </Button>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => onRegisterShot(visit)}
-          className="flex-1 bg-gray-800 border-gray-700 text-gray-200 hover:bg-cbt-orange/10 hover:border-cbt-orange/40 hover:text-cbt-orange font-tactical h-9"
+          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-cbt-orange/10 hover:border-cbt-orange/40 hover:text-cbt-orange font-tactical h-9"
         >
           <Plus className="h-3.5 w-3.5 mr-1" />
           Tiro
@@ -248,10 +286,10 @@ const PresentCard = ({ visit, now, onRegisterShot, onCheckOut }: PresentCardProp
           variant="outline"
           size="sm"
           onClick={() => onCheckOut(visit)}
-          className="flex-1 bg-gray-800 border-gray-700 text-gray-200 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
+          className="bg-gray-800 border-gray-700 text-gray-200 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
         >
-          <LogOut className="h-3.5 w-3.5 mr-1" />
-          Sair
+          <Receipt className="h-3.5 w-3.5 mr-1" />
+          Fechar
         </Button>
       </div>
     </div>
@@ -268,16 +306,46 @@ const PresentMembersPanel = () => {
   const [now, setNow] = useState<number>(() => Date.now());
   const [capacity, setCapacity] = useState<{ occupied: number; total: number } | null>(null);
 
+  /** Resumo da comanda DRAFT por visitId. */
+  const [tabs, setTabs] = useState<Record<string, { itemCount: number; subtotal: number; draft: Transaction }>>(
+    {},
+  );
+
   // ShotEntryDialog state
   const [shotDialog, setShotDialog] = useState<{ visitId: string; memberName: string } | null>(null);
 
-  // Checkout prompt state
+  // Checkout prompt state (sem tiros + sem comanda)
   const [checkoutPrompt, setCheckoutPrompt] = useState<Visit | null>(null);
+
+  // OpenTabDialog state — adicionar itens
+  const [openTab, setOpenTab] = useState<{ visit: Visit } | null>(null);
+
+  // CloseTabDialog state — finalizar comanda
+  const [closeTab, setCloseTab] = useState<{ visit: Visit; draft: Transaction } | null>(null);
 
   // Tick clock for live duration
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(t);
+  }, []);
+
+  const refreshTab = useCallback(async (visitId: string) => {
+    const res = await getDraftByVisit(visitId);
+    if (!res.success) return;
+    const draft = res.data;
+    setTabs((prev) => {
+      const next = { ...prev };
+      if (draft && draft.items.length > 0) {
+        const subtotal = draft.items.reduce(
+          (sum, it) => sum + Number(it.subtotal ?? it.quantity * it.unitPrice),
+          0,
+        );
+        next[visitId] = { itemCount: draft.items.length, subtotal, draft };
+      } else {
+        delete next[visitId];
+      }
+      return next;
+    });
   }, []);
 
   const fetchPresent = useCallback(
@@ -286,6 +354,9 @@ const PresentMembersPanel = () => {
       const [res, lanesRes] = await Promise.all([getPresentMembers(), listLanes()]);
       if (res.success && res.data) {
         setPresent(res.data);
+        // Em paralelo, busca comanda de cada visita (lazy mas paralelizado)
+        const visits = res.data;
+        await Promise.all(visits.map((v) => refreshTab(v.id)));
       } else if (!silent) {
         toast({
           variant: 'destructive',
@@ -302,7 +373,7 @@ const PresentMembersPanel = () => {
       }
       if (!silent) setLoading(false);
     },
-    [toast],
+    [toast, refreshTab],
   );
 
   useEffect(() => {
@@ -364,12 +435,34 @@ const PresentMembersPanel = () => {
   };
 
   const handleCheckoutClick = (visit: Visit) => {
+    const tab = tabs[visit.id];
+    if (tab && tab.itemCount > 0) {
+      // Tem comanda em aberto — abrir CloseTabDialog para fechar a conta
+      setCloseTab({ visit, draft: tab.draft });
+      return;
+    }
     if ((visit.details?.length ?? 0) === 0) {
-      // No shots registered yet — prompt
+      // Sem comanda e sem tiros — prompt confirmando saída sem registro
       setCheckoutPrompt(visit);
     } else {
       performCheckOut(visit);
     }
+  };
+
+  const handleNewSale = (visit: Visit) => {
+    setOpenTab({ visit });
+  };
+
+  const handleTabFinalized = async (visit: Visit) => {
+    // Após finalize, libera a baia (checkout) e atualiza estado.
+    setTabs((prev) => {
+      const next = { ...prev };
+      delete next[visit.id];
+      return next;
+    });
+    await checkoutVisit(visit.id);
+    setPresent((p) => p.filter((v) => v.id !== visit.id));
+    fetchPresent(true);
   };
 
   return (
@@ -382,7 +475,7 @@ const PresentMembersPanel = () => {
             Presentes no Clube
           </h2>
           <p className="text-xs font-tactical text-gray-500 mt-0.5">
-            Quem está no clube agora — registre chegadas, tiros e saídas
+            Quem está no clube agora — registre chegadas, vendas, tiros e fechamento de conta
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -424,6 +517,12 @@ const PresentMembersPanel = () => {
               key={v.id}
               visit={v}
               now={now}
+              tabSummary={
+                tabs[v.id]
+                  ? { itemCount: tabs[v.id].itemCount, subtotal: tabs[v.id].subtotal }
+                  : null
+              }
+              onNewSale={handleNewSale}
               onRegisterShot={(visit) =>
                 setShotDialog({ visitId: visit.id, memberName: visit.member.fullName })
               }
@@ -449,7 +548,7 @@ const PresentMembersPanel = () => {
       >
         <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-military">Registrar tiro antes de sair?</DialogTitle>
+            <DialogTitle className="font-military">Fechar conta sem tiros registrados?</DialogTitle>
             <DialogDescription className="text-gray-400 font-tactical text-sm">
               {checkoutPrompt?.member.fullName} ainda não tem nenhum tiro registrado nesta visita.
               Quer registrar agora?
@@ -464,7 +563,7 @@ const PresentMembersPanel = () => {
               }}
               className="font-tactical text-gray-300"
             >
-              Não, só sair
+              Não, só fechar
             </Button>
             <Button
               onClick={() => {
@@ -484,6 +583,34 @@ const PresentMembersPanel = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Comanda aberta — adicionar itens */}
+      {openTab && (
+        <OpenTabDialog
+          open={!!openTab}
+          onOpenChange={(o) => {
+            if (!o) {
+              // Ao fechar o dialog, refresca o resumo da comanda no card
+              const visitId = openTab.visit.id;
+              setOpenTab(null);
+              refreshTab(visitId);
+            }
+          }}
+          memberId={openTab.visit.member.id}
+          visitId={openTab.visit.id}
+          memberName={openTab.visit.member.fullName}
+        />
+      )}
+
+      {/* Fechar conta — resumo + desconto + pagamento */}
+      <CloseTabDialog
+        open={!!closeTab}
+        onOpenChange={(o) => !o && setCloseTab(null)}
+        draft={closeTab?.draft ?? null}
+        onFinalized={async () => {
+          if (closeTab) await handleTabFinalized(closeTab.visit);
+        }}
+      />
     </div>
   );
 };

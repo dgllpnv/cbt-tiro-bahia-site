@@ -531,9 +531,49 @@ const MemberDetailPage = () => {
       <PageHeader
         title={member.fullName}
         description={
-          member.memberNumber
-            ? `Associado #${member.memberNumber}`
-            : 'Associado'
+          <div className="flex items-center gap-2 flex-wrap">
+            <span>
+              {member.memberNumber ? `Associado #${member.memberNumber}` : 'Associado'}
+            </span>
+            <span className="text-gray-700">·</span>
+            {(() => {
+              if (!member.annuityValidUntil) {
+                return (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-gray-700 bg-gray-800/60 text-gray-400 text-xs">
+                    <Calendar className="h-3 w-3" />
+                    Sem anuidade registrada
+                  </span>
+                );
+              }
+              const validUntil = new Date(member.annuityValidUntil);
+              const days = Math.ceil(
+                (validUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+              );
+              const expired = days < 0;
+              const critical = !expired && days <= 30;
+              const warn = !expired && !critical && days <= 60;
+              const tone = expired
+                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                : critical
+                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                : warn
+                ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300'
+                : 'border-green-500/40 bg-green-500/10 text-green-300';
+              const label = expired
+                ? `Anuidade vencida em ${formatDate(member.annuityValidUntil)}`
+                : days === 0
+                ? `Anuidade vence hoje`
+                : `Anuidade valida ate ${formatDate(member.annuityValidUntil)} (${days} dia${days === 1 ? '' : 's'})`;
+              return (
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs ${tone}`}
+                >
+                  <Calendar className="h-3 w-3" />
+                  {label}
+                </span>
+              );
+            })()}
+          </div>
         }
         actions={
           <div className="flex items-center gap-3">
@@ -575,13 +615,6 @@ const MemberDetailPage = () => {
           >
             <Crosshair className="h-4 w-4 mr-2" />
             Visitas
-          </TabsTrigger>
-          <TabsTrigger
-            value="financeiro"
-            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-black text-gray-400"
-          >
-            <DollarSign className="h-4 w-4 mr-2" />
-            Financeiro
           </TabsTrigger>
           <TabsTrigger
             value="emprestimos"

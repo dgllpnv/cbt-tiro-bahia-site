@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Shield,
   CalendarCheck,
   Crosshair,
   Eye,
@@ -15,6 +14,7 @@ import {
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import CbtLogo from '@/components/shared/CbtLogo';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -148,8 +148,8 @@ const PortalHomePage = () => {
       {/* Welcome banner */}
       <div className="bg-gradient-to-r from-gray-900 via-gray-900/80 to-cbt-orange/10 border border-gray-800 rounded-lg p-6 mb-6">
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex h-14 w-14 rounded-full bg-cbt-orange/20 border border-cbt-orange/30 items-center justify-center">
-            <Shield className="h-7 w-7 text-cbt-orange" />
+          <div className="hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0">
+            <CbtLogo className="h-full w-full" />
           </div>
           <div>
             <h2 className="text-xl font-military font-bold text-white tracking-wide">

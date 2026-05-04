@@ -182,7 +182,7 @@ const Contact = () => {
                     >
                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                         <img 
-                          src="/lovable-uploads/24656961-78c6-43d7-81ba-346221d29fea.png" 
+                          src="/branding/24656961-78c6-43d7-81ba-346221d29fea.png" 
                           alt="WhatsApp" 
                           className="w-5 h-5 mr-2"
                         />
@@ -237,7 +237,7 @@ const Contact = () => {
         aria-label="Conversar no WhatsApp"
       >
         <img 
-          src="/lovable-uploads/24656961-78c6-43d7-81ba-346221d29fea.png" 
+          src="/branding/24656961-78c6-43d7-81ba-346221d29fea.png" 
           alt="WhatsApp" 
           className="w-16 h-16"
         />

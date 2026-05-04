@@ -14,6 +14,9 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  Upload,
+  RefreshCw,
+  X,
 } from 'lucide-react';
 
 import PageHeader from '@/components/shared/PageHeader';
@@ -225,11 +228,14 @@ const NewsManagementPage = () => {
     }
 
     setIsSaving(true);
+    // imageUrl: enviar string vazia em vez de undefined garante que o backend
+    // receba o campo no payload (axios omite undefined do JSON). O handler do
+    // backend converte '' em null, o que limpa a coluna na edicao.
     const payload: CreateNewsData = {
       title: form.title.trim(),
       content: form.content.trim(),
       summary: form.summary.trim() || undefined,
-      imageUrl: form.imageUrl.trim() || undefined,
+      imageUrl: form.imageUrl.trim(),
       isPinned: form.isPinned,
       isPublished: form.isPublished,
     };
@@ -507,24 +513,84 @@ const NewsManagementPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">URL da imagem (opcional)</Label>
-              <Input
-                value={form.imageUrl}
-                onChange={(e) => updateField('imageUrl', e.target.value)}
-                placeholder="https://exemplo.com/imagem.jpg"
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange"
+              <Label className="text-gray-300 font-tactical text-sm">Imagem (opcional)</Label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                id="news-image-upload"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+                    toast({
+                      variant: 'destructive',
+                      title: 'Formato inválido',
+                      description: 'Use PNG ou JPG.',
+                    });
+                    e.target.value = '';
+                    return;
+                  }
+                  if (file.size > 2 * 1024 * 1024) {
+                    toast({
+                      variant: 'destructive',
+                      title: 'Arquivo muito grande',
+                      description: 'Tamanho máximo: 2 MB.',
+                    });
+                    e.target.value = '';
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => updateField('imageUrl', String(reader.result));
+                  reader.readAsDataURL(file);
+                  e.target.value = '';
+                }}
               />
-              {form.imageUrl && (
-                <div className="mt-2 h-32 rounded-md bg-gray-800 border border-gray-700 overflow-hidden">
-                  <img
-                    src={form.imageUrl}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
+              {form.imageUrl ? (
+                <div className="space-y-2">
+                  <div className="h-32 rounded-md bg-gray-800 border border-gray-700 overflow-hidden">
+                    <img
+                      src={form.imageUrl}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('news-image-upload')?.click()}
+                      className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                      Trocar imagem
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateField('imageUrl', '')}
+                      className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical"
+                    >
+                      <X className="h-3.5 w-3.5 mr-1" />
+                      Remover
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <label
+                  htmlFor="news-image-upload"
+                  className="flex flex-col items-center justify-center gap-2 h-32 rounded-md bg-gray-800/50 border border-dashed border-gray-700 cursor-pointer hover:bg-gray-800 hover:border-cbt-orange/40 transition-colors"
+                >
+                  <Upload className="h-6 w-6 text-gray-500" />
+                  <p className="text-xs font-tactical text-gray-400">
+                    Clique para enviar uma imagem (PNG ou JPG, até 2 MB)
+                  </p>
+                </label>
               )}
             </div>
 

@@ -66,6 +66,20 @@
   }
 }
 
+@layer base {
+  /* Esconde spinners nativos de input[type=number] — tema dark/tactical fica mais limpo
+     com botoes customizados (NumberStepper) ou sem incremento por scroll. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
 @layer components {
   .metal-texture {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #2c3e50 50%, #34495e 75%, #2c3e50 100%);

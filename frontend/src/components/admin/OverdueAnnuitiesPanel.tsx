@@ -1,0 +1,313 @@
+import { useEffect, useState, useCallback } from 'react';
+import {
+  AlertTriangle,
+  Loader2,
+  CalendarClock,
+  Copy,
+  Check,
+  CreditCard,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { NumberStepper } from '@/components/ui/number-stepper';
+import { useToast } from '@/hooks/use-toast';
+import { formatCurrency, formatDate } from '@/lib/formatters';
+import {
+  createAnnuityPayment,
+  getExpiringAnnuities,
+  type ExpiringAnnuity,
+} from '@/services/annuitiesService';
+import { getClubSettings } from '@/services/clubSettingsService';
+
+interface OverdueAnnuitiesPanelProps {
+  /** Disparado após registrar pagamento, para o pai refrescar KPIs/dashboard. */
+  onPaymentRegistered?: () => void;
+}
+
+const PAYMENT_METHODS = ['PIX', 'Dinheiro', 'Cartao de Credito', 'Cartao de Debito', 'Transferencia'];
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelProps) => {
+  const { toast } = useToast();
+  const [items, setItems] = useState<ExpiringAnnuity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [defaultAmount, setDefaultAmount] = useState<number>(600);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Diálogo de pagamento inline
+  const [paying, setPaying] = useState<ExpiringAnnuity | null>(null);
+  const [amount, setAmount] = useState<number>(600);
+  const [paymentMethod, setPaymentMethod] = useState('PIX');
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetch = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    const [listRes, settingsRes] = await Promise.all([
+      getExpiringAnnuities({ days: 30, includeOverdue: true }),
+      getClubSettings(),
+    ]);
+    if (listRes.success) setItems(listRes.data);
+    if (settingsRes.success) {
+      const a = Number((settingsRes.data as any).annuityAmount ?? 600);
+      if (a > 0) setDefaultAmount(a);
+    }
+    if (!silent) setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetch();
+  }, [fetch]);
+
+  const handleOpenPayment = (item: ExpiringAnnuity) => {
+    setPaying(item);
+    setAmount(defaultAmount);
+    setPaymentMethod('PIX');
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!paying) return;
+    if (amount <= 0) {
+      toast({ variant: 'destructive', title: 'Valor inválido' });
+      return;
+    }
+    setSubmitting(true);
+    const res = await createAnnuityPayment({
+      memberId: paying.id,
+      amount,
+      paymentMethod,
+      referenceYear: new Date().getFullYear(),
+    });
+    setSubmitting(false);
+    if (res.success) {
+      toast({
+        title: 'Anuidade registrada',
+        description: `${paying.fullName} · ${formatCurrency(amount)} · ${paymentMethod}`,
+      });
+      setPaying(null);
+      // Otimista: remove do painel + refetch silencioso
+      setItems((prev) => prev.filter((p) => p.id !== paying.id));
+      fetch(true);
+      onPaymentRegistered?.();
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao registrar pagamento',
+        description: res.error,
+      });
+    }
+  };
+
+  const handleCopyMessage = async (item: ExpiringAnnuity) => {
+    const isOverdue = (item.daysRemaining ?? 0) < 0;
+    const due = item.annuityValidUntil ? formatDate(item.annuityValidUntil) : '—';
+    const msg = isOverdue
+      ? `Olá ${item.fullName}, sua anuidade do Clube Baiano de Tiro venceu em ${due}. Para regularizar, fale com a administração.`
+      : `Olá ${item.fullName}, sua anuidade do Clube Baiano de Tiro vence em ${due}. Aguardamos sua renovação.`;
+    try {
+      await navigator.clipboard.writeText(msg);
+      setCopiedId(item.id);
+      setTimeout(() => setCopiedId(null), 1500);
+      toast({ title: 'Mensagem copiada para a área de transferência' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Não foi possível copiar' });
+    }
+  };
+
+  const overdueCount = items.filter((i) => (i.daysRemaining ?? 0) < 0).length;
+  const expiringCount = items.length - overdueCount;
+  const accentColor = overdueCount > 0 ? 'border-red-500/30' : 'border-yellow-500/20';
+  const accentText = overdueCount > 0 ? 'text-red-400' : 'text-yellow-400';
+
+  return (
+    <div className={`bg-gray-900/50 border ${accentColor} rounded-lg p-4`}>
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <AlertTriangle className={`h-4 w-4 ${accentText} flex-shrink-0`} />
+          <h3 className="text-sm font-military font-bold text-white tracking-wide truncate">
+            Anuidades pendentes
+          </h3>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {overdueCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-300 font-tactical text-[10px] uppercase tracking-wider">
+              {overdueCount} vencida{overdueCount === 1 ? '' : 's'}
+            </span>
+          )}
+          {expiringCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 font-tactical text-[10px] uppercase tracking-wider">
+              {expiringCount} vencendo
+            </span>
+          )}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="py-8 flex items-center justify-center">
+          <Loader2 className="h-5 w-5 text-cbt-orange animate-spin" />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-6 text-center">
+          <CalendarClock className="h-8 w-8 text-gray-600 mx-auto mb-1.5" />
+          <p className="text-sm font-tactical text-gray-400">Tudo em dia</p>
+          <p className="text-xs font-tactical text-gray-500 mt-0.5">
+            Nenhum associado com anuidade vencida ou vencendo nos próximos 30 dias.
+          </p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-800 max-h-80 overflow-y-auto">
+          {items.map((item) => {
+            const days = item.daysRemaining ?? 0;
+            const overdue = days < 0;
+            const due = item.annuityValidUntil ? formatDate(item.annuityValidUntil) : '—';
+            return (
+              <div key={item.id} className="flex items-center gap-3 py-2.5">
+                <div className="h-8 w-8 rounded-full bg-cbt-orange/15 text-cbt-orange flex items-center justify-center font-tactical text-[10px] font-bold flex-shrink-0">
+                  {getInitials(item.fullName)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-tactical text-white truncate">{item.fullName}</p>
+                  <p className="text-[10px] font-tactical text-gray-500">
+                    Nº {item.memberNumber ?? '—'} ·{' '}
+                    <span className={overdue ? 'text-red-400' : 'text-yellow-400'}>
+                      {overdue
+                        ? `Vencida há ${Math.abs(days)} dia${Math.abs(days) === 1 ? '' : 's'}`
+                        : days === 0
+                        ? 'Vence hoje'
+                        : `Vence em ${days} dia${days === 1 ? '' : 's'}`}
+                    </span>{' '}
+                    <span className="text-gray-600">· {due}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyMessage(item)}
+                    title="Copiar mensagem de cobrança"
+                    className="h-7 px-2 bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical text-xs"
+                  >
+                    {copiedId === item.id ? (
+                      <Check className="h-3 w-3 text-green-400" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleOpenPayment(item)}
+                    className="h-7 px-2 bg-cbt-orange/15 border border-cbt-orange/40 text-cbt-orange hover:bg-cbt-orange/25 font-tactical text-xs"
+                  >
+                    <CreditCard className="h-3 w-3 mr-1" />
+                    Registrar
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Diálogo de registro de pagamento (inline) */}
+      <Dialog open={!!paying} onOpenChange={(o) => !submitting && !o && setPaying(null)}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-cbt-orange" />
+              Registrar anuidade
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 font-tactical text-sm">
+              {paying?.fullName} · Nº {paying?.memberNumber ?? '—'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+                Valor
+              </Label>
+              <NumberStepper
+                value={amount}
+                onChange={(v) => setAmount(Math.max(0, v))}
+                min={0}
+                step={50}
+                decimals={2}
+                prefix="R$"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+                Forma de pagamento
+              </Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {PAYMENT_METHODS.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-[10px] font-tactical text-gray-500 leading-relaxed">
+              A anuidade será válida por 12 meses a partir da data atual e o lançamento aparecerá em{' '}
+              /admin/lancamentos e no fechamento financeiro.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setPaying(null)}
+              disabled={submitting}
+              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmPayment}
+              disabled={submitting || amount <= 0}
+              className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold"
+            >
+              {submitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-1" />
+                  Confirmar pagamento
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default OverdueAnnuitiesPanel;

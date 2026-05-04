@@ -7,6 +7,9 @@ import {
   Calendar,
   Trophy,
   Crosshair,
+  Download,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 
 import PageHeader from '@/components/shared/PageHeader';
@@ -16,11 +19,36 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import { formatDate } from '@/lib/formatters';
+import {
+  getClubSettings,
+  getMissingDeclarationFields,
+  type ClubSettings,
+} from '@/services/clubSettingsService';
+import {
+  generateHabituality,
+  getHabitualityDeclarationData,
+} from '@/services/documentsService';
+import { generateHabitualityPdf } from '@/lib/pdfHabituality';
 
 const REQUIRED_TRAININGS = 8;
 
@@ -47,7 +75,12 @@ const HabitualityPage = () => {
   const [activities, setActivities] = useState<ActivityRecord[]>([]);
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Estado do diálogo "Solicitar Declaração"
+  const [declarationOpen, setDeclarationOpen] = useState(false);
+  const [declarationYear, setDeclarationYear] = useState(currentYear);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [clubSettings, setClubSettings] = useState<ClubSettings | null>(null);
 
   // ── Fetch summary ──────────────────────────────────────────────────────
   const fetchSummary = useCallback(async () => {
@@ -93,26 +126,62 @@ const HabitualityPage = () => {
     fetchActivities();
   }, [fetchSummary, fetchActivities]);
 
-  // ── Generate declaration ───────────────────────────────────────────────
-  const handleGenerateDeclaration = async () => {
+  // ── Abrir diálogo de solicitação ───────────────────────────────────────
+  const handleOpenDeclaration = async () => {
+    setDeclarationYear(year);
+    setDeclarationOpen(true);
+    // Carrega dados do clube em paralelo (para validar prontidão)
+    const res = await getClubSettings();
+    if (res.success) setClubSettings(res.data);
+  };
+
+  // ── Baixar PDF da declaração ───────────────────────────────────────────
+  const handleDownloadDeclaration = async () => {
     if (!user) return;
-    setIsGenerating(true);
+    setIsDownloading(true);
     try {
-      await api.post(`/api/documents/generate/habituality/${user.id}`, { year });
-      toast({
-        title: 'Declaracao gerada',
-        description: 'Sua declaracao de habitualidade foi gerada com sucesso.',
+      const packetRes = await getHabitualityDeclarationData(user.id, declarationYear);
+      if (!packetRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao montar declaração',
+          description: packetRes.error,
+        });
+        return;
+      }
+      const pdf = await generateHabitualityPdf(packetRes.data);
+      const fileName = `declaracao-habitualidade-${user.memberNumber || 'cbt'}-${declarationYear}.pdf`;
+      pdf.save(fileName);
+
+      // Em paralelo: registra MemberDocument para histórico/auditoria. Não bloqueia.
+      generateHabituality(user.id, declarationYear).catch(() => {
+        // falha do registro não impede o download — apenas loga
       });
-    } catch {
+
       toast({
-        title: 'Erro ao gerar declaracao',
-        description: 'Tente novamente mais tarde.',
+        title: 'Declaração gerada',
+        description: `Salva como ${fileName}`,
+      });
+      setDeclarationOpen(false);
+    } catch (err) {
+      console.error('Erro ao gerar PDF da declaração:', err);
+      toast({
         variant: 'destructive',
+        title: 'Erro ao gerar PDF',
+        description: 'Tente novamente em instantes.',
       });
     } finally {
-      setIsGenerating(false);
+      setIsDownloading(false);
     }
   };
+
+  const declarationYearActivityCount = activities.filter((a) => {
+    const d = new Date(a.date);
+    return d.getFullYear() === declarationYear;
+  }).length;
+  const declarationYearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
+  const missingClubFields = getMissingDeclarationFields(clubSettings);
+  const clubReady = clubSettings != null && missingClubFields.length === 0;
 
   // ── Progress color helper ──────────────────────────────────────────────
   const getProgressColor = (count: number) => {
@@ -141,11 +210,10 @@ const HabitualityPage = () => {
         actions={
           <Button
             className="bg-cbt-orange hover:bg-cbt-orange/90 text-white font-tactical"
-            onClick={handleGenerateDeclaration}
-            disabled={isGenerating}
+            onClick={handleOpenDeclaration}
           >
             <FileCheck className="h-4 w-4 mr-2" />
-            Solicitar Declaracao
+            Solicitar Declaração
           </Button>
         }
       />
@@ -311,6 +379,103 @@ const HabitualityPage = () => {
           )}
         </div>
       </div>
+
+      {/* Diálogo de Solicitação de Declaração de Habitualidade */}
+      <Dialog open={declarationOpen} onOpenChange={(o) => !isDownloading && setDeclarationOpen(o)}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-cbt-orange" />
+              Solicitar Declaração de Habitualidade
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 font-tactical text-sm">
+              Documento no formato Anexo E (Portaria 166-COLOG/2023, alterada pela 260-COLOG/2025).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Selector de ano */}
+            <div className="space-y-1.5">
+              <label className="text-gray-300 font-tactical text-xs uppercase tracking-wider">
+                Ano de referência
+              </label>
+              <Select
+                value={String(declarationYear)}
+                onValueChange={(v) => setDeclarationYear(parseInt(v))}
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700">
+                  {declarationYearOptions.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Resumo */}
+            <div className="bg-gray-800/40 border border-gray-700 rounded-md p-3 space-y-1 font-tactical text-sm">
+              <p className="text-gray-300">
+                Você tem{' '}
+                <span className="text-white font-semibold">{declarationYearActivityCount}</span>{' '}
+                atividade(s) registrada(s) em {declarationYear}.
+              </p>
+              <p className="text-gray-500 text-xs">
+                Mínimo recomendado: 8 eventos por calibre (Nível 1) — verifique seu nível CR.
+              </p>
+            </div>
+
+            {/* Status dos dados do clube */}
+            {!clubReady && (
+              <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-md p-3">
+                <AlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm font-tactical text-red-300">
+                  <p className="font-semibold">Dados do clube incompletos</p>
+                  <p className="text-xs text-red-200/80 mt-0.5">
+                    O administrador precisa preencher os dados legais em{' '}
+                    <span className="font-semibold">/admin/cadastros → Dados do Clube</span> antes
+                    de emitir declarações.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Aviso geral */}
+            <p className="text-xs font-tactical text-gray-500 leading-relaxed">
+              A declaração é gerada com base nos registros oficiais deste clube. Verifique seus
+              dados pessoais e a anuidade antes de baixar.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeclarationOpen(false)}
+              disabled={isDownloading}
+              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleDownloadDeclaration}
+              disabled={isDownloading || !clubReady}
+              className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar declaração em PDF
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-16 h-16 flex items-center justify-center">
                   <img 
-                    src="/lovable-uploads/c4359ef2-4319-4738-8bd2-f0f84ababee1.png" 
+                    src="/branding/c4359ef2-4319-4738-8bd2-f0f84ababee1.png" 
                     alt="CBT - Clube Baiano de Tiro" 
                     className="w-full h-full object-contain"
                   />

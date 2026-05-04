@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -262,6 +263,21 @@ router.post('/adjust', async (req: Request, res: Response): Promise<void> => {
       });
 
       return { stockItem: updatedStockItem, movement };
+    });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'STOCK_ADJUSTMENT',
+      entityType: 'StockItem',
+      entityId: result.stockItem.id,
+      previousData: { previousStock: result.movement.previousStock },
+      newData: {
+        newStock: result.movement.newStock,
+        delta: data.type === 'ADJUSTMENT_IN' ? data.quantity : -data.quantity,
+        movementType: data.type,
+      },
+      description: `Estoque de "${result.stockItem.product.name}" ajustado (${data.type === 'ADJUSTMENT_IN' ? '+' : '-'}${data.quantity})`,
+      ipAddress: req.ip as string | undefined,
     });
 
     res.status(201).json({ success: true, data: result });

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -199,6 +200,21 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return newLoan;
     });
 
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'LOAN_ISSUED',
+      entityType: 'Loan',
+      entityId: loan.id,
+      userId: data.memberId,
+      newData: {
+        equipmentId: data.equipmentId,
+        equipmentName: equipment.name,
+        expectedReturn: data.expectedReturn ?? null,
+      },
+      description: `Emprestimo de ${equipment.name} emitido`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.status(201).json({ success: true, data: loan });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -274,6 +290,18 @@ router.patch('/:id/return', async (req: Request, res: Response): Promise<void> =
       });
 
       return updatedLoan;
+    });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'LOAN_RETURNED',
+      entityType: 'Loan',
+      entityId: loan.id,
+      userId: existing.memberId,
+      previousData: { conditionAtLoan: existing.conditionAtLoan },
+      newData: { conditionAtReturn: data.conditionAtReturn },
+      description: `Emprestimo ${loan.id} devolvido em condicao ${data.conditionAtReturn}`,
+      ipAddress: req.ip as string | undefined,
     });
 
     res.json({ success: true, data: loan });

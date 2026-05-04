@@ -134,10 +134,11 @@ router.get('/admin', requireRole('ADMIN'), async (_req: Request, res: Response):
         },
       }),
 
-      // Revenue this month
+      // Revenue this month (apenas vendas finalizadas)
       prisma.transaction.aggregate({
         where: {
           transactionDate: { gte: monthStart, lte: monthEnd },
+          status: 'COMPLETED',
         },
         _sum: { totalAmount: true },
       }),

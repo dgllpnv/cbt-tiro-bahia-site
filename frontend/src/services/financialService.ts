@@ -1,6 +1,59 @@
 import api from './api';
 
-// ── Interfaces ──────────────────────────────────────────────────────────────
+// ── Dashboard consolidado (novo endpoint /api/financial/dashboard) ─────────
+
+export interface KpiValue {
+  value: number;
+  prevValue?: number;
+  /** % de variação (ou pontos percentuais para margem). Null quando não há base de comparação. */
+  deltaPct: number | null;
+}
+
+export interface FinancialDashboard {
+  period: { startDate: string; endDate: string; days: number; granularity: 'day' | 'month' };
+  prev: { startDate: string; endDate: string };
+  kpis: {
+    revenue: KpiValue;
+    expenses: KpiValue;
+    result: KpiValue;
+    margin: KpiValue;
+    avgTicket: KpiValue;
+    txCount: KpiValue;
+    expiringCount: { value: number };
+    overdueCount: { value: number };
+  };
+  series: { date: string; revenue: number; expenses: number; result: number }[];
+  prevSeries: { date: string; revenue: number }[];
+  revenueByType: { key: string; total: number; count: number; share: number }[];
+  expensesByCategory: { key: string; total: number; count: number; share: number }[];
+  paymentMethods: { method: string; total: number; count: number; share: number }[];
+  topProducts: {
+    productId: string | null;
+    name: string;
+    qty: number;
+    revenue: number;
+    costTotal: number | null;
+    margin: number | null;
+    marginPct: number | null;
+  }[];
+}
+
+export async function getFinancialDashboard(params: { startDate: string; endDate: string }) {
+  try {
+    const response = await api.get('/api/financial/dashboard', { params });
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as FinancialDashboard };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar dashboard financeiro',
+    };
+  }
+}
+
+// ── Interfaces (legado) ─────────────────────────────────────────────────────
 
 export interface FinancialSummary {
   revenue: number;

@@ -7,6 +7,7 @@ import {
   startOfWeek, endOfWeek,
   startOfMonth, endOfMonth,
   startOfYear, endOfYear,
+  differenceInCalendarDays, addDays,
 } from 'date-fns';
 
 const router = Router();
@@ -46,6 +47,7 @@ router.get('/summary', async (req: Request, res: Response): Promise<void> => {
       prisma.transaction.aggregate({
         where: {
           transactionDate: { gte: start, lte: end },
+          status: 'COMPLETED',
         },
         _sum: { totalAmount: true },
       }),
@@ -58,6 +60,7 @@ router.get('/summary', async (req: Request, res: Response): Promise<void> => {
       prisma.transaction.count({
         where: {
           transactionDate: { gte: start, lte: end },
+          status: 'COMPLETED',
         },
       }),
     ]);
@@ -106,6 +109,7 @@ router.get('/revenue', async (req: Request, res: Response): Promise<void> => {
         by: ['type'],
         where: {
           transactionDate: { gte: start, lte: end },
+          status: 'COMPLETED',
         },
         _sum: { totalAmount: true },
         _count: { id: true },
@@ -130,6 +134,7 @@ router.get('/revenue', async (req: Request, res: Response): Promise<void> => {
                 COUNT(*)::bigint as count
          FROM "Transaction"
          WHERE "transactionDate" >= $2 AND "transactionDate" <= $3
+           AND "status" = 'COMPLETED'
          GROUP BY label
          ORDER BY label ASC`,
         dateFormat,
@@ -327,6 +332,295 @@ router.delete('/expenses/:id', async (req: Request, res: Response): Promise<void
   } catch (error) {
     console.error('Erro ao excluir despesa:', error);
     res.status(500).json({ success: false, error: 'Erro ao excluir despesa' });
+  }
+});
+
+// =====================================================
+// GET /api/financial/dashboard?startDate&endDate
+// Pacote consolidado para a tela /admin/financeiro:
+// KPIs comparativos, serie temporal, breakdowns e top produtos.
+// =====================================================
+router.get('/dashboard', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const startDate = req.query.startDate as string | undefined;
+    const endDate = req.query.endDate as string | undefined;
+    if (!startDate || !endDate) {
+      res.status(400).json({ success: false, error: 'startDate e endDate sao obrigatorios' });
+      return;
+    }
+    const start = startOfDay(new Date(startDate));
+    const end = endOfDay(new Date(endDate));
+    if (start > end) {
+      res.status(400).json({ success: false, error: 'startDate deve ser anterior a endDate' });
+      return;
+    }
+
+    // Periodo anterior (mesma duracao deslocada para tras).
+    const days = differenceInCalendarDays(end, start) + 1;
+    const prevEnd = endOfDay(addDays(start, -1));
+    const prevStart = startOfDay(addDays(prevEnd, -(days - 1)));
+
+    const COMPLETED = 'COMPLETED' as const;
+
+    // === Agregacoes do periodo atual e anterior em paralelo ===
+    const [
+      revAgg, expAgg, txCountAgg,
+      prevRevAgg, prevExpAgg, prevTxCountAgg,
+      revenueByTypeRaw, expensesByCategoryRaw,
+      paymentMethodsRaw,
+      seriesRows, prevSeriesRows,
+      topProductsRaw,
+      expiringCount, overdueCount,
+    ] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { transactionDate: { gte: start, lte: end }, status: COMPLETED },
+        _sum: { totalAmount: true },
+      }),
+      prisma.expense.aggregate({
+        where: { expenseDate: { gte: start, lte: end } },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { transactionDate: { gte: start, lte: end }, status: COMPLETED },
+      }),
+      prisma.transaction.aggregate({
+        where: { transactionDate: { gte: prevStart, lte: prevEnd }, status: COMPLETED },
+        _sum: { totalAmount: true },
+      }),
+      prisma.expense.aggregate({
+        where: { expenseDate: { gte: prevStart, lte: prevEnd } },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { transactionDate: { gte: prevStart, lte: prevEnd }, status: COMPLETED },
+      }),
+      prisma.transaction.groupBy({
+        by: ['type'],
+        where: { transactionDate: { gte: start, lte: end }, status: COMPLETED },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      prisma.expense.groupBy({
+        by: ['category'],
+        where: { expenseDate: { gte: start, lte: end } },
+        _sum: { amount: true },
+        _count: { id: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ['paymentMethod'],
+        where: { transactionDate: { gte: start, lte: end }, status: COMPLETED },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      // Serie temporal — granularidade auto: dia se <=31, mes se mais.
+      (async () => {
+        const fmt = days <= 31 ? 'YYYY-MM-DD' : 'YYYY-MM';
+        // Junta receita (Transaction COMPLETED) e despesa (Expense) por bucket
+        const rev = await prisma.$queryRawUnsafe<Array<{ label: string; total: number }>>(
+          `SELECT TO_CHAR("transactionDate", $1) as label,
+                  COALESCE(SUM("totalAmount"), 0)::float as total
+           FROM "Transaction"
+           WHERE "transactionDate" >= $2 AND "transactionDate" <= $3
+             AND "status" = 'COMPLETED'
+           GROUP BY label
+           ORDER BY label ASC`,
+          fmt, start, end,
+        );
+        const exp = await prisma.$queryRawUnsafe<Array<{ label: string; total: number }>>(
+          `SELECT TO_CHAR("expenseDate", $1) as label,
+                  COALESCE(SUM("amount"), 0)::float as total
+           FROM "Expense"
+           WHERE "expenseDate" >= $2 AND "expenseDate" <= $3
+           GROUP BY label
+           ORDER BY label ASC`,
+          fmt, start, end,
+        );
+        return { rev, exp };
+      })(),
+      (async () => {
+        const fmt = days <= 31 ? 'YYYY-MM-DD' : 'YYYY-MM';
+        const rev = await prisma.$queryRawUnsafe<Array<{ label: string; total: number }>>(
+          `SELECT TO_CHAR("transactionDate", $1) as label,
+                  COALESCE(SUM("totalAmount"), 0)::float as total
+           FROM "Transaction"
+           WHERE "transactionDate" >= $2 AND "transactionDate" <= $3
+             AND "status" = 'COMPLETED'
+           GROUP BY label
+           ORDER BY label ASC`,
+          fmt, prevStart, prevEnd,
+        );
+        return { rev };
+      })(),
+      // Top produtos — agrega itens de transacoes COMPLETED no periodo
+      prisma.transactionItem.groupBy({
+        by: ['productId'],
+        where: {
+          productId: { not: null },
+          transaction: { transactionDate: { gte: start, lte: end }, status: COMPLETED },
+        },
+        _sum: { quantity: true, subtotal: true },
+        orderBy: { _sum: { subtotal: 'desc' } },
+        take: 5,
+      }),
+      // Anuidades a vencer em 30d
+      prisma.user.count({
+        where: {
+          isActive: true,
+          annuityValidUntil: { gte: new Date(), lte: addDays(new Date(), 30) },
+        },
+      }),
+      // Anuidades vencidas (active members)
+      prisma.user.count({
+        where: {
+          isActive: true,
+          role: 'ASSOCIATE',
+          annuityValidUntil: { lt: new Date() },
+        },
+      }),
+    ]);
+
+    // Cruzar topProducts com Product (nome + costPrice)
+    const productIds = topProductsRaw
+      .map((p) => p.productId)
+      .filter((id): id is string => !!id);
+    const products = productIds.length
+      ? await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true, costPrice: true, unitPrice: true },
+        })
+      : [];
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    const topProducts = topProductsRaw.map((p) => {
+      const prod = productMap.get(p.productId!);
+      const qty = p._sum.quantity ?? 0;
+      const revenue = Number(p._sum.subtotal ?? 0);
+      const costTotal = prod?.costPrice ? Number(prod.costPrice) * qty : null;
+      const margin = costTotal != null ? revenue - costTotal : null;
+      const marginPct = costTotal != null && revenue > 0 ? (margin! / revenue) * 100 : null;
+      return {
+        productId: p.productId,
+        name: prod?.name ?? '—',
+        qty,
+        revenue,
+        costTotal,
+        margin,
+        marginPct,
+      };
+    });
+
+    // Series merge — mescla buckets de receita e despesa pelo label
+    const seriesMap = new Map<string, { date: string; revenue: number; expenses: number }>();
+    for (const r of seriesRows.rev) {
+      seriesMap.set(r.label, { date: r.label, revenue: Number(r.total) || 0, expenses: 0 });
+    }
+    for (const e of seriesRows.exp) {
+      const existing = seriesMap.get(e.label) ?? { date: e.label, revenue: 0, expenses: 0 };
+      existing.expenses = Number(e.total) || 0;
+      seriesMap.set(e.label, existing);
+    }
+    const series = Array.from(seriesMap.values())
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((s) => ({ ...s, result: s.revenue - s.expenses }));
+
+    // KPIs
+    const revenue = Number(revAgg._sum.totalAmount ?? 0);
+    const expenses = Number(expAgg._sum.amount ?? 0);
+    const result = revenue - expenses;
+    const margin = revenue > 0 ? (result / revenue) * 100 : 0;
+    const txCount = txCountAgg;
+    const avgTicket = txCount > 0 ? revenue / txCount : 0;
+
+    const prevRevenue = Number(prevRevAgg._sum.totalAmount ?? 0);
+    const prevExpenses = Number(prevExpAgg._sum.amount ?? 0);
+    const prevResult = prevRevenue - prevExpenses;
+    const prevMargin = prevRevenue > 0 ? (prevResult / prevRevenue) * 100 : 0;
+    const prevTxCount = prevTxCountAgg;
+    const prevAvgTicket = prevTxCount > 0 ? prevRevenue / prevTxCount : 0;
+
+    const pctDelta = (curr: number, prev: number): number | null => {
+      if (prev === 0) return curr === 0 ? 0 : null; // null = sem base de comparacao
+      return ((curr - prev) / Math.abs(prev)) * 100;
+    };
+
+    // revenueByType — soma + count, com totalGeral para o frontend calcular share se quiser
+    const totalRevenueByType = revenueByTypeRaw.reduce(
+      (s, r) => s + Number(r._sum.totalAmount ?? 0),
+      0,
+    );
+    const revenueByType = revenueByTypeRaw
+      .map((r) => ({
+        key: r.type as string,
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+        share: totalRevenueByType > 0 ? Number(r._sum.totalAmount ?? 0) / totalRevenueByType : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const totalExpensesByCategory = expensesByCategoryRaw.reduce(
+      (s, r) => s + Number(r._sum.amount ?? 0),
+      0,
+    );
+    const expensesByCategory = expensesByCategoryRaw
+      .map((r) => ({
+        key: r.category as string,
+        total: Number(r._sum.amount ?? 0),
+        count: r._count.id,
+        share:
+          totalExpensesByCategory > 0
+            ? Number(r._sum.amount ?? 0) / totalExpensesByCategory
+            : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const totalPaymentMethods = paymentMethodsRaw.reduce(
+      (s, r) => s + Number(r._sum.totalAmount ?? 0),
+      0,
+    );
+    const paymentMethods = paymentMethodsRaw
+      .map((r) => ({
+        method: r.paymentMethod ?? '—',
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+        share:
+          totalPaymentMethods > 0 ? Number(r._sum.totalAmount ?? 0) / totalPaymentMethods : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    res.json({
+      success: true,
+      data: {
+        period: {
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+          days,
+          granularity: days <= 31 ? 'day' : 'month',
+        },
+        prev: {
+          startDate: prevStart.toISOString(),
+          endDate: prevEnd.toISOString(),
+        },
+        kpis: {
+          revenue: { value: revenue, prevValue: prevRevenue, deltaPct: pctDelta(revenue, prevRevenue) },
+          expenses: { value: expenses, prevValue: prevExpenses, deltaPct: pctDelta(expenses, prevExpenses) },
+          result: { value: result, prevValue: prevResult, deltaPct: pctDelta(result, prevResult) },
+          margin: { value: margin, prevValue: prevMargin, deltaPct: margin - prevMargin }, // pontos pp
+          avgTicket: { value: avgTicket, prevValue: prevAvgTicket, deltaPct: pctDelta(avgTicket, prevAvgTicket) },
+          txCount: { value: txCount, prevValue: prevTxCount, deltaPct: pctDelta(txCount, prevTxCount) },
+          expiringCount: { value: expiringCount },
+          overdueCount: { value: overdueCount },
+        },
+        series,
+        prevSeries: prevSeriesRows.rev.map((r) => ({ date: r.label, revenue: Number(r.total) || 0 })),
+        revenueByType,
+        expensesByCategory,
+        paymentMethods,
+        topProducts,
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao montar dashboard financeiro:', error);
+    res.status(500).json({ success: false, error: 'Erro ao montar dashboard financeiro' });
   }
 });
 

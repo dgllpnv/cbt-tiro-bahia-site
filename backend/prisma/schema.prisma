@@ -39,6 +39,12 @@ enum TransactionType {
   OTHER_SALE
 }
 
+enum TransactionStatus {
+  DRAFT
+  COMPLETED
+  CANCELLED
+}
+
 enum LoanStatus {
   ACTIVE
   RETURNED
@@ -372,22 +378,23 @@ model EquipmentLoan {
 }
 
 model Transaction {
-  id              String          @id @default(uuid())
-  clubId          String          @default("cbt-bahia")
+  id              String            @id @default(uuid())
+  clubId          String            @default("cbt-bahia")
   memberId        String
-  member          User            @relation("TransactionMember", fields: [memberId], references: [id])
+  member          User              @relation("TransactionMember", fields: [memberId], references: [id])
   registeredById  String
-  registeredBy    User            @relation("TransactionRegisteredBy", fields: [registeredById], references: [id])
+  registeredBy    User              @relation("TransactionRegisteredBy", fields: [registeredById], references: [id])
   visitId         String?
-  visit           Visit?          @relation(fields: [visitId], references: [id])
+  visit           Visit?            @relation(fields: [visitId], references: [id])
   type            TransactionType
-  totalAmount     Decimal         @db.Decimal(10, 2)
-  discount        Decimal?        @db.Decimal(10, 2) @default(0)
+  status          TransactionStatus @default(COMPLETED)
+  totalAmount     Decimal           @db.Decimal(10, 2)
+  discount        Decimal?          @db.Decimal(10, 2) @default(0)
   paymentMethod   String?
-  notes           String?         @db.Text
-  transactionDate DateTime        @default(now())
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  notes           String?           @db.Text
+  transactionDate DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   // Relacoes
   items           TransactionItem[]
@@ -395,6 +402,8 @@ model Transaction {
   @@index([clubId, transactionDate])
   @@index([memberId])
   @@index([type])
+  @@index([status])
+  @@index([visitId, status])
 }
 
 model TransactionItem {
@@ -518,6 +527,21 @@ model ClubSettings {
   totalLanes      Int      @default(6)
   operatingHours  Json?
   logoUrl         String?  @db.Text
+
+  // Dados legais (obrigatorios na Declaracao de Habitualidade — Anexo E
+  // da Portaria 166-COLOG/2023, com alteracoes da Portaria 260-COLOG/2025)
+  cnpj            String?  @db.VarChar(20)   // 00.000.000/0001-00
+  crPj            String?  @db.VarChar(50)   // CR PJ no Exercito
+  addressLine     String?  @db.Text          // logradouro + nº + bairro
+  city            String?
+  state           String?  @default("BA")
+  zipCode         String?
+  phone           String?
+  email           String?
+  responsibleName String?
+  responsibleCpf  String?  @db.VarChar(14)
+  responsibleRole String?
+
   settings        Json?
   updatedAt       DateTime @updatedAt
 }

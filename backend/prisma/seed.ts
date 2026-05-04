@@ -4,7 +4,14 @@
 // Run with: npm run db:seed
 // =====================================================
 
-import { PrismaClient, ProductCategory, StockMovementType, LaneStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  ProductCategory,
+  StockMovementType,
+  LaneStatus,
+  EquipmentType,
+  EquipmentCondition,
+} from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -103,17 +110,52 @@ async function main() {
     sunday:    { open: null,    close: null,     closed: true  },
   };
 
-  const clubSettings = await prisma.clubSettings.upsert({
-    where: { clubId: CLUB_ID },
-    update: {},
-    create: {
-      clubId: CLUB_ID,
-      clubName: 'Clube Baiano de Tiro',
-      totalLanes: laneCount,
-      annuityAmount: 600.00,
-      operatingHours,
-    },
-  });
+  // ClubSettings: campos legais (CNPJ, CR PJ, endereco, responsavel) são populados
+  // com placeholders sintaticamente válidos. O administrador deve completar em
+  // /admin/cadastros → Dados do Clube antes de emitir Declarações de Habitualidade.
+  // Estratégia: NUNCA sobrescreve valores já preenchidos; só preenche os null.
+  const placeholders = {
+    cnpj: '00.000.000/0001-00',
+    crPj: 'CR-PJ-PENDENTE',
+    addressLine: '[Definir em /admin/cadastros]',
+    city: 'Salvador',
+    state: 'BA',
+    zipCode: '00000-000',
+    phone: '(71) 0000-0000',
+    email: 'contato@cbt.com.br',
+    responsibleName: '[Definir em /admin/cadastros]',
+    responsibleCpf: '000.000.000-00',
+    responsibleRole: 'Diretor Técnico',
+  };
+
+  const existingSettings = await prisma.clubSettings.findUnique({ where: { clubId: CLUB_ID } });
+  const clubSettings = existingSettings
+    ? await prisma.clubSettings.update({
+        where: { clubId: CLUB_ID },
+        data: {
+          cnpj: existingSettings.cnpj ?? placeholders.cnpj,
+          crPj: existingSettings.crPj ?? placeholders.crPj,
+          addressLine: existingSettings.addressLine ?? placeholders.addressLine,
+          city: existingSettings.city ?? placeholders.city,
+          state: existingSettings.state ?? placeholders.state,
+          zipCode: existingSettings.zipCode ?? placeholders.zipCode,
+          phone: existingSettings.phone ?? placeholders.phone,
+          email: existingSettings.email ?? placeholders.email,
+          responsibleName: existingSettings.responsibleName ?? placeholders.responsibleName,
+          responsibleCpf: existingSettings.responsibleCpf ?? placeholders.responsibleCpf,
+          responsibleRole: existingSettings.responsibleRole ?? placeholders.responsibleRole,
+        },
+      })
+    : await prisma.clubSettings.create({
+        data: {
+          clubId: CLUB_ID,
+          clubName: 'Clube Baiano de Tiro',
+          totalLanes: laneCount,
+          annuityAmount: 600.0,
+          operatingHours,
+          ...placeholders,
+        },
+      });
 
   console.log(`[OK] Configuracoes do clube criadas (${clubSettings.id})`);
 
@@ -255,12 +297,78 @@ async function main() {
   }
 
   // ==========================================================
+  // 6. EQUIPMENT (armas, EPIs, coldres, carregadores do clube)
+  // ==========================================================
+  interface EquipmentSeed {
+    name: string;
+    serialNumber: string;
+    equipmentType: EquipmentType;
+    caliber?: string;
+    brand?: string;
+    model?: string;
+    condition?: EquipmentCondition;
+  }
+
+  const equipments: EquipmentSeed[] = [
+    // Pistolas
+    { name: 'Glock 17 Gen 5',    serialNumber: 'CBT-GLK17-001',  equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'Glock',  model: 'G17 Gen 5',    condition: EquipmentCondition.EXCELLENT },
+    { name: 'Glock 19 Gen 5',    serialNumber: 'CBT-GLK19-001',  equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'Glock',  model: 'G19 Gen 5',    condition: EquipmentCondition.GOOD      },
+    { name: 'Taurus G2c',        serialNumber: 'CBT-TG2C-001',   equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'Taurus', model: 'G2c',          condition: EquipmentCondition.GOOD      },
+    { name: 'Taurus G3c',        serialNumber: 'CBT-TG3C-001',   equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'Taurus', model: 'G3c',          condition: EquipmentCondition.EXCELLENT },
+    { name: 'Sig Sauer P320',    serialNumber: 'CBT-P320-001',   equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'Sig Sauer', model: 'P320 Carry', condition: EquipmentCondition.EXCELLENT },
+    { name: 'CZ Shadow 2',       serialNumber: 'CBT-CZS2-001',   equipmentType: EquipmentType.FIREARM, caliber: '9mm',     brand: 'CZ',     model: 'Shadow 2',     condition: EquipmentCondition.EXCELLENT },
+    // Revolveres
+    { name: 'Taurus 856',        serialNumber: 'CBT-T856-001',   equipmentType: EquipmentType.FIREARM, caliber: '.38 SPL', brand: 'Taurus', model: '856',          condition: EquipmentCondition.GOOD      },
+    { name: 'Taurus RT 605',     serialNumber: 'CBT-T605-001',   equipmentType: EquipmentType.FIREARM, caliber: '.357 Mag', brand: 'Taurus', model: 'RT 605',      condition: EquipmentCondition.GOOD      },
+    { name: 'S&W 686',           serialNumber: 'CBT-SW686-001',  equipmentType: EquipmentType.FIREARM, caliber: '.357 Mag', brand: 'S&W',   model: '686',          condition: EquipmentCondition.EXCELLENT },
+    // Carabinas / rifles
+    { name: 'CBC 7022',          serialNumber: 'CBT-CBC7022-001', equipmentType: EquipmentType.FIREARM, caliber: '.22 LR',  brand: 'CBC',    model: '7022',         condition: EquipmentCondition.GOOD      },
+    { name: 'IMBEL IA2',         serialNumber: 'CBT-IA2-001',    equipmentType: EquipmentType.FIREARM, caliber: '.223 Rem', brand: 'IMBEL', model: 'IA2',          condition: EquipmentCondition.EXCELLENT },
+    { name: 'Ruger 10/22',       serialNumber: 'CBT-R1022-001',  equipmentType: EquipmentType.FIREARM, caliber: '.22 LR',  brand: 'Ruger',  model: '10/22',        condition: EquipmentCondition.GOOD      },
+    // Espingardas
+    { name: 'Mossberg 500',      serialNumber: 'CBT-MOSS500-001', equipmentType: EquipmentType.FIREARM, caliber: '12 GA',  brand: 'Mossberg', model: '500',        condition: EquipmentCondition.GOOD      },
+    { name: 'CBC Pump 586',      serialNumber: 'CBT-CBC586-001', equipmentType: EquipmentType.FIREARM, caliber: '12 GA',   brand: 'CBC',    model: 'Pump 586',     condition: EquipmentCondition.GOOD      },
+    // EPIs
+    { name: 'Protetor Auricular Howard Leight', serialNumber: 'CBT-EAR-001', equipmentType: EquipmentType.EAR_PROTECTION, brand: 'Howard Leight', model: 'Impact Sport', condition: EquipmentCondition.EXCELLENT },
+    { name: 'Protetor Auricular Howard Leight', serialNumber: 'CBT-EAR-002', equipmentType: EquipmentType.EAR_PROTECTION, brand: 'Howard Leight', model: 'Impact Sport', condition: EquipmentCondition.GOOD },
+    { name: 'Oculos de Tiro 3M', serialNumber: 'CBT-EYE-001',    equipmentType: EquipmentType.EYE_PROTECTION, brand: '3M',  model: 'Virtua AP',    condition: EquipmentCondition.EXCELLENT },
+    { name: 'Oculos de Tiro 3M', serialNumber: 'CBT-EYE-002',    equipmentType: EquipmentType.EYE_PROTECTION, brand: '3M',  model: 'Virtua AP',    condition: EquipmentCondition.GOOD      },
+    // Coldres
+    { name: 'Coldre Kydex 9mm',  serialNumber: 'CBT-HOL-001',    equipmentType: EquipmentType.HOLSTER, brand: 'Bravo Concealment', model: 'Torsion',         condition: EquipmentCondition.GOOD },
+    // Carregadores
+    { name: 'Carregador Glock 17 (17 tiros)', serialNumber: 'CBT-MAG-G17-001', equipmentType: EquipmentType.MAGAZINE, caliber: '9mm', brand: 'Glock', model: 'OEM 17rds', condition: EquipmentCondition.GOOD },
+    { name: 'Carregador Taurus G2c (12 tiros)', serialNumber: 'CBT-MAG-TG2C-001', equipmentType: EquipmentType.MAGAZINE, caliber: '9mm', brand: 'Taurus', model: 'OEM 12rds', condition: EquipmentCondition.GOOD },
+  ];
+
+  for (const e of equipments) {
+    const eq = await prisma.equipment.upsert({
+      where: { serialNumber: e.serialNumber },
+      update: {},
+      create: {
+        clubId: CLUB_ID,
+        name: e.name,
+        serialNumber: e.serialNumber,
+        equipmentType: e.equipmentType,
+        caliber: e.caliber ?? null,
+        brand: e.brand ?? null,
+        model: e.model ?? null,
+        condition: e.condition ?? EquipmentCondition.GOOD,
+        isAvailable: true,
+        isActive: true,
+        acquisitionDate: new Date(),
+      },
+    });
+    console.log(`[OK] Equipamento: ${eq.name} (${eq.serialNumber})`);
+  }
+
+  // ==========================================================
   // SUMMARY
   // ==========================================================
   console.log('\n--- CBT Seed: Populacao concluida com sucesso! ---');
   console.log(`  Usuarios:       2 (1 admin, 1 associado)`);
   console.log(`  Baias:          ${laneCount}`);
   console.log(`  Produtos:       ${products.length}`);
+  console.log(`  Equipamentos:   ${equipments.length}`);
   console.log(`  Config. clube:  1`);
   console.log('---------------------------------------------------\n');
 }

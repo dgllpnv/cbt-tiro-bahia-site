@@ -62,7 +62,7 @@ const Courses = () => {
             {/* Logo Image */}
             <div className="mb-8">
               <img 
-                src="/lovable-uploads/abeee9cc-0cca-420a-8cbe-2e29255c493a.png" 
+                src="/branding/abeee9cc-0cca-420a-8cbe-2e29255c493a.png" 
                 alt="CBT Logo" 
                 className="mx-auto w-32 h-32 opacity-80"
               />

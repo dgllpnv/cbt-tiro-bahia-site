@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Eye, EyeOff, Shield } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
+import CbtLogo from '@/components/shared/CbtLogo';
 
 const LoginPage = () => {
   const [identifier, setIdentifier] = useState('');
@@ -51,8 +52,8 @@ const LoginPage = () => {
         <div className="bg-gray-900/80 border border-gray-700 rounded-2xl p-8 backdrop-blur-sm tactical-shadow">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 bg-cbt-orange/10 rounded-full flex items-center justify-center border-2 border-cbt-orange/30">
-              <Shield className="w-10 h-10 text-cbt-orange" />
+            <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+              <CbtLogo className="w-full h-full" />
             </div>
             <h1 className="text-2xl font-military font-bold text-white tracking-wider">
               CLUBE BAIANO DE TIRO

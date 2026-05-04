@@ -21,6 +21,7 @@ import habitualityRoutes from './routes/habituality.routes.js';
 import documentsRoutes from './routes/documents.routes.js';
 import lanesRoutes from './routes/lanes.routes.js';
 import userStatsRoutes from './routes/userStats.routes.js';
+import clubSettingsRoutes from './routes/clubSettings.routes.js';
 
 // =====================================================
 // EXPRESS APP SETUP
@@ -59,7 +60,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 if (process.env.NODE_ENV === 'development') {
   app.use((req, _res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    // Health check costuma ser pollado a cada poucos segundos por scripts/extensions —
+    // suprimir do log evita ruido sem perder visibilidade nas rotas de negocio.
+    if (req.path !== '/health') {
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    }
     next();
   });
 }
@@ -115,6 +120,7 @@ app.use('/api/habituality', habitualityRoutes);
 app.use('/api/documents', documentsRoutes);
 app.use('/api/lanes', lanesRoutes);
 app.use('/api/users', userStatsRoutes);
+app.use('/api/club-settings', clubSettingsRoutes);
 
 // =====================================================
 // 404 HANDLER

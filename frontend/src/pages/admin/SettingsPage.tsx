@@ -31,7 +31,9 @@ import {
   Crosshair,
   Loader2,
   ImagePlus,
+  Building2,
 } from 'lucide-react';
+import ClubLegalSettings from '@/components/admin/ClubLegalSettings';
 import api from '@/services/api';
 import {
   categoryLabels,
@@ -338,6 +340,13 @@ const SettingsPage = () => {
             <Crosshair size={16} className="mr-2" />
             Equipamentos ({equipment.length})
           </TabsTrigger>
+          <TabsTrigger
+            value="club"
+            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-black font-tactical"
+          >
+            <Building2 size={16} className="mr-2" />
+            Dados do Clube
+          </TabsTrigger>
         </TabsList>
 
         {/* PRODUTOS */}
@@ -521,6 +530,11 @@ const SettingsPage = () => {
               </Table>
             </div>
           )}
+        </TabsContent>
+
+        {/* DADOS DO CLUBE (legal — para Declarações) */}
+        <TabsContent value="club" className="mt-4">
+          <ClubLegalSettings />
         </TabsContent>
       </Tabs>
 

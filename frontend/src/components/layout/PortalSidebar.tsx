@@ -16,9 +16,9 @@ import {
   IdCard,
   Target,
   FileCheck,
-  Shield,
   X,
 } from 'lucide-react';
+import CbtLogo from '@/components/shared/CbtLogo';
 
 interface NavItem {
   name: string;
@@ -73,8 +73,8 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
       {/* Logo */}
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-cbt-orange/10 rounded-lg flex items-center justify-center border border-cbt-orange/30">
-            <Shield className="w-5 h-5 text-cbt-orange" />
+          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+            <CbtLogo className="w-full h-full" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-white font-military font-bold text-sm truncate">CBT</h2>

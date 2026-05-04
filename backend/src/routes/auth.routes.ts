@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -101,6 +102,16 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
     console.log(`[AUTH] Login bem-sucedido: ${user.email} (${user.role})`);
 
+    await createAuditLog({
+      performedById: user.id,
+      action: 'LOGIN',
+      entityType: 'User',
+      entityId: user.id,
+      userId: user.id,
+      description: `Login: ${user.email}`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.json({
       success: true,
       data: {
@@ -134,6 +145,18 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 router.post('/logout', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     console.log(`[AUTH] Logout: ${req.user?.email}`);
+
+    if (req.user) {
+      await createAuditLog({
+        performedById: req.user.id,
+        action: 'LOGOUT',
+        entityType: 'User',
+        entityId: req.user.id,
+        userId: req.user.id,
+        description: `Logout: ${req.user.email}`,
+        ipAddress: req.ip as string | undefined,
+      });
+    }
 
     res.json({
       success: true,
@@ -264,6 +287,16 @@ router.put('/change-password', authMiddleware, async (req: Request, res: Respons
     });
 
     console.log(`[AUTH] Senha alterada: ${user.email}`);
+
+    await createAuditLog({
+      performedById: user.id,
+      action: 'PASSWORD_CHANGE',
+      entityType: 'User',
+      entityId: user.id,
+      userId: user.id,
+      description: `Senha alterada pelo proprio usuario: ${user.email}`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({
       success: true,

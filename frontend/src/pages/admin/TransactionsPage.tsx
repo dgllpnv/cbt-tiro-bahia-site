@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart,
   CalendarCheck,
@@ -25,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -63,6 +65,7 @@ import { listLoans, issueLoan } from '@/services/loansService';
 import { getTodayVisits, createVisit, checkoutVisit } from '@/services/visitsService';
 import { createAnnuityPayment } from '@/services/annuitiesService';
 import { listLanes, type Lane as ApiLane } from '@/services/lanesService';
+import TransactionDetailsDialog from '@/components/admin/TransactionDetailsDialog';
 
 // ── Display Types (mapped from API responses) ──────────────────────────────
 
@@ -175,6 +178,7 @@ const TransactionsPage = () => {
 
   // ── Sale Form ──────────────────────────────────────────────────────────
   const [saleMemberId, setSaleMemberId] = useState('');
+  const [saleVisitId, setSaleVisitId] = useState<string | null>(null);
   const [saleType, setSaleType] = useState('OTHER_SALE');
   const [salePaymentMethod, setSalePaymentMethod] = useState('PIX');
   const [saleItems, setSaleItems] = useState<SaleItem[]>([
@@ -190,7 +194,11 @@ const TransactionsPage = () => {
   // ── Loan Form ──────────────────────────────────────────────────────────
   const [loanMemberId, setLoanMemberId] = useState('');
   const [loanEquipmentId, setLoanEquipmentId] = useState('');
-  const [loanDueDays, setLoanDueDays] = useState(7);
+
+  // ── Details dialogs (botao Eye em cada aba) ────────────────────────────
+  const [detailTxId, setDetailTxId] = useState<string | null>(null);
+  const [detailLoan, setDetailLoan] = useState<LoanRow | null>(null);
+  const [detailVisit, setDetailVisit] = useState<VisitRow | null>(null);
 
   // ── Annuity Form ───────────────────────────────────────────────────────
   const [annuityMemberId, setAnnuityMemberId] = useState('');
@@ -297,6 +305,24 @@ const TransactionsPage = () => {
     fetchData();
   }, [fetchData]);
 
+  // ── Abrir diálogo de Venda quando navegado do dashboard ────────────────
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const s = location.state as { openSale?: { memberId: string; visitId?: string } } | null;
+    if (s?.openSale) {
+      // Reset inline (sem dependência de resetSaleForm pra não recriar o effect)
+      setSaleMemberId(s.openSale.memberId);
+      setSaleVisitId(s.openSale.visitId || null);
+      setSaleType('OTHER_SALE');
+      setSalePaymentMethod('PIX');
+      setSaleItems([{ productId: '', description: '', quantity: 1, unitPrice: 0 }]);
+      setSaleDialogOpen(true);
+      // Limpa o state pra não reabrir em F5/voltar
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
+
   // ── Sale Helpers ───────────────────────────────────────────────────────
   const addSaleItem = () => {
     setSaleItems((prev) => [...prev, { productId: '', description: '', quantity: 1, unitPrice: 0 }]);
@@ -331,6 +357,7 @@ const TransactionsPage = () => {
       memberId: saleMemberId,
       type: saleType,
       paymentMethod: salePaymentMethod,
+      visitId: saleVisitId || undefined,
       items: saleItems.map((it) => ({
         productId: it.productId || null,
         description: it.description || 'Item avulso',
@@ -394,11 +421,9 @@ const TransactionsPage = () => {
     }
 
     setIsSaving(true);
-    const expectedReturn = new Date(Date.now() + loanDueDays * 86400000).toISOString();
     const res = await issueLoan({
       memberId: loanMemberId,
       equipmentId: loanEquipmentId,
-      expectedReturn,
     });
     setIsSaving(false);
 
@@ -465,6 +490,7 @@ const TransactionsPage = () => {
   // ── Reset Forms ────────────────────────────────────────────────────────
   const resetSaleForm = () => {
     setSaleMemberId('');
+    setSaleVisitId(null);
     setSaleType('OTHER_SALE');
     setSalePaymentMethod('PIX');
     setSaleItems([{ productId: '', description: '', quantity: 1, unitPrice: 0 }]);
@@ -480,7 +506,6 @@ const TransactionsPage = () => {
   const resetLoanForm = () => {
     setLoanMemberId('');
     setLoanEquipmentId('');
-    setLoanDueDays(7);
   };
 
   const resetAnnuityForm = () => {
@@ -637,7 +662,9 @@ const TransactionsPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
+                            onClick={() => setDetailTxId(tx.id)}
+                            title="Ver resumo"
+                            className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -687,13 +714,15 @@ const TransactionsPage = () => {
                             {formatDate(loan.borrowedAt)}
                           </TableCell>
                           <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-400' : 'text-gray-400'}`}>
-                            {loan.dueDate ? formatDate(loan.dueDate) : '—'}
+                            {loan.dueDate ? formatDate(loan.dueDate) : 'Uso interno'}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700"
+                              onClick={() => setDetailLoan(loan)}
+                              title="Ver detalhes"
+                              className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -773,7 +802,9 @@ const TransactionsPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-700 flex-shrink-0"
+                        onClick={() => setDetailVisit(visit)}
+                        title="Ver detalhes"
+                        className="h-8 w-8 text-gray-400 hover:text-cbt-orange hover:bg-cbt-orange/10 flex-shrink-0"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -794,12 +825,19 @@ const TransactionsPage = () => {
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
         <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2 flex-wrap">
               <ShoppingCart className="h-5 w-5 text-green-400" />
               Nova Venda
+              {saleVisitId && (
+                <Badge variant="outline" className="ml-1 border-cbt-orange/40 bg-cbt-orange/10 text-cbt-orange font-tactical text-[10px]">
+                  Vinculada à visita
+                </Badge>
+              )}
             </DialogTitle>
             <DialogDescription className="text-gray-400 font-tactical text-sm">
-              Registre uma nova venda para um membro do clube.
+              {saleVisitId
+                ? 'Lançamento rápido vinculado à visita atual do associado.'
+                : 'Registre uma nova venda para um membro do clube.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -883,26 +921,24 @@ const TransactionsPage = () => {
                         className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
                       />
                     </div>
-                    <div className="w-20 space-y-1.5">
+                    <div className="w-32 space-y-1.5">
                       <Label className="text-xs text-gray-500">Qtd</Label>
-                      <Input
-                        type="number"
-                        min={1}
+                      <NumberStepper
                         value={item.quantity}
-                        onChange={(e) => updateSaleItem(idx, 'quantity', parseInt(e.target.value) || 1)}
-                        className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange h-9 text-sm"
+                        onChange={(v) => updateSaleItem(idx, 'quantity', Math.max(1, Math.round(v)))}
+                        min={1}
+                        step={1}
                       />
                     </div>
-                    <div className="w-28 space-y-1.5">
+                    <div className="w-44 space-y-1.5">
                       <Label className="text-xs text-gray-500">Preco Unit.</Label>
-                      <Input
-                        type="number"
+                      <NumberStepper
+                        value={item.unitPrice}
+                        onChange={(v) => updateSaleItem(idx, 'unitPrice', Math.max(0, v))}
                         min={0}
-                        step="0.01"
-                        value={item.unitPrice || ''}
-                        onChange={(e) => updateSaleItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        placeholder="0,00"
-                        className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-cbt-orange h-9 text-sm"
+                        step={0.5}
+                        decimals={2}
+                        prefix="R$"
                       />
                     </div>
                     <div className="w-24 text-right">
@@ -1073,16 +1109,9 @@ const TransactionsPage = () => {
               placeholder="Buscar arma, coldre, equipamento..."
             />
 
-            <div className="space-y-2">
-              <Label className="text-gray-300 font-tactical text-sm">Prazo (dias)</Label>
-              <Input
-                type="number"
-                min={1}
-                value={loanDueDays}
-                onChange={(e) => setLoanDueDays(parseInt(e.target.value) || 7)}
-                className="bg-gray-800 border-gray-700 text-white focus:border-cbt-orange"
-              />
-            </div>
+            <p className="text-gray-500 font-tactical text-xs">
+              Uso da arma dentro do clube — devolucao no fim do dia, sem prazo.
+            </p>
           </div>
 
           <DialogFooter className="gap-2">
@@ -1188,6 +1217,139 @@ const TransactionsPage = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white font-tactical min-w-[150px]"
             >
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Anuidade'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Detalhes da venda (botao olho) ────────────────────────────────── */}
+      <TransactionDetailsDialog
+        transactionId={detailTxId}
+        open={!!detailTxId}
+        onOpenChange={(o) => !o && setDetailTxId(null)}
+      />
+
+      {/* ── Detalhes do emprestimo ────────────────────────────────────────── */}
+      <Dialog open={!!detailLoan} onOpenChange={(o) => !o && setDetailLoan(null)}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+              <Package className="h-5 w-5 text-orange-400" />
+              Detalhes do emprestimo
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 font-tactical text-sm">
+              Informacoes do emprestimo de equipamento.
+            </DialogDescription>
+          </DialogHeader>
+          {detailLoan && (
+            <div className="space-y-3 py-2">
+              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-4 space-y-2.5 font-tactical text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Membro</span>
+                  <span className="text-white text-right">{detailLoan.memberName}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Item</span>
+                  <span className="text-white text-right">{detailLoan.itemName}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Status</span>
+                  <Badge className={statusBadge(
+                    detailLoan.dueDate && new Date(detailLoan.dueDate) < new Date() && detailLoan.status === 'ACTIVE'
+                      ? 'OVERDUE'
+                      : detailLoan.status,
+                  )}>
+                    {detailLoan.dueDate && new Date(detailLoan.dueDate) < new Date() && detailLoan.status === 'ACTIVE'
+                      ? 'Atrasado'
+                      : loanStatusLabels[detailLoan.status] || detailLoan.status}
+                  </Badge>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Emprestado em</span>
+                  <span className="text-white text-right">{formatDateTime(detailLoan.borrowedAt)}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Devolucao prevista</span>
+                  <span className="text-white text-right">
+                    {detailLoan.dueDate ? formatDate(detailLoan.dueDate) : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Quantidade</span>
+                  <span className="text-white text-right">{detailLoan.quantity}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDetailLoan(null)}
+              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Detalhes da visita ────────────────────────────────────────────── */}
+      <Dialog open={!!detailVisit} onOpenChange={(o) => !o && setDetailVisit(null)}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white font-military tracking-wide flex items-center gap-2">
+              <Crosshair className="h-5 w-5 text-violet-400" />
+              Detalhes da visita
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 font-tactical text-sm">
+              Sessao do associado registrada hoje.
+            </DialogDescription>
+          </DialogHeader>
+          {detailVisit && (
+            <div className="space-y-3 py-2">
+              <div className="bg-gray-800/40 border border-gray-700 rounded-md p-4 space-y-2.5 font-tactical text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Membro</span>
+                  <span className="text-white text-right">{detailVisit.memberName}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Baia</span>
+                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20">
+                    {detailVisit.laneName}
+                  </Badge>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Proposito</span>
+                  <span className="text-white text-right">{detailVisit.purpose}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Check-in</span>
+                  <span className="text-white text-right">{formatDateTime(detailVisit.checkIn)}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500 uppercase text-xs tracking-wider">Check-out</span>
+                  <span className={`text-right ${detailVisit.checkOut ? 'text-green-400' : 'text-cbt-orange'}`}>
+                    {detailVisit.checkOut ? formatDateTime(detailVisit.checkOut) : 'Em andamento'}
+                  </span>
+                </div>
+                {detailVisit.notes && (
+                  <div className="pt-2 border-t border-gray-700">
+                    <span className="text-gray-500 uppercase text-xs tracking-wider block mb-1">
+                      Observacoes
+                    </span>
+                    <p className="text-gray-300 whitespace-pre-line">{detailVisit.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDetailVisit(null)}
+              className="bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white font-tactical"
+            >
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>

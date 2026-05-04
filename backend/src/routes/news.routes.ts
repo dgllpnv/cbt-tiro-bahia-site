@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -90,11 +91,19 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 // =====================================================
 // POST /api/news — Create news (ADMIN only)
 // =====================================================
+// imageUrl aceita data URI (upload local em base64) ou URL http(s).
+const imageUrlSchema = z
+  .string()
+  .refine(
+    (v) => v === '' || v.startsWith('data:image/') || /^https?:\/\//.test(v),
+    { message: 'imageUrl deve ser http(s) ou data URI de imagem' },
+  );
+
 const createNewsSchema = z.object({
   title: z.string().min(3, 'Titulo deve ter pelo menos 3 caracteres'),
   content: z.string().min(10, 'Conteudo deve ter pelo menos 10 caracteres'),
   summary: z.string().optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: imageUrlSchema.optional(),
   isPinned: z.boolean().optional(),
   isPublished: z.boolean().optional(),
 });
@@ -121,6 +130,16 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
       },
     });
 
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'News',
+      entityId: news.id,
+      newData: { title: news.title, isPinned: news.isPinned, isPublished: news.isPublished },
+      description: `Noticia criada: "${news.title}"`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.status(201).json({ success: true, data: news });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -139,7 +158,7 @@ const updateNewsSchema = z.object({
   title: z.string().min(3).optional(),
   content: z.string().min(10).optional(),
   summary: z.string().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable().or(z.literal('')),
+  imageUrl: imageUrlSchema.optional().nullable(),
   isPinned: z.boolean().optional(),
   isPublished: z.boolean().optional(),
 });
@@ -167,6 +186,17 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
       },
     });
 
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'UPDATE',
+      entityType: 'News',
+      entityId: news.id,
+      previousData: { title: existing.title, isPinned: existing.isPinned, isPublished: existing.isPublished },
+      newData: { title: news.title, isPinned: news.isPinned, isPublished: news.isPublished },
+      description: `Noticia atualizada: "${news.title}"`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.json({ success: true, data: news });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -190,6 +220,16 @@ router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response):
     }
 
     await prisma.news.delete({ where: { id: req.params.id } });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'DELETE',
+      entityType: 'News',
+      entityId: existing.id,
+      previousData: { title: existing.title },
+      description: `Noticia excluida: "${existing.title}"`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, message: 'Noticia excluida com sucesso' });
   } catch (error) {

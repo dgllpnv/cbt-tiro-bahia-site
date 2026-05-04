@@ -72,7 +72,7 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<void> => {
       }),
       prisma.transactionItem.findMany({
         where: {
-          transaction: { memberId: id },
+          transaction: { memberId: id, status: 'COMPLETED' },
           product: { category: 'AMMUNITION' },
         },
         select: {

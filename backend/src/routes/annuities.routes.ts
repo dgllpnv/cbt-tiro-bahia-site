@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -64,18 +65,22 @@ router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promi
 router.get('/expiring', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
   try {
     const days = Math.max(1, parseInt(req.query.days as string) || 30);
+    const includeOverdue = req.query.includeOverdue === 'true';
 
     const now = new Date();
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + days);
 
+    // Quando includeOverdue=true, retorna tambem quem ja venceu (annuityValidUntil < now).
+    const annuityFilter = includeOverdue
+      ? { lte: futureDate }
+      : { gte: now, lte: futureDate };
+
     const users = await prisma.user.findMany({
       where: {
         isActive: true,
-        annuityValidUntil: {
-          gte: now,
-          lte: futureDate,
-        },
+        role: 'ASSOCIATE',
+        annuityValidUntil: annuityFilter,
       },
       select: {
         id: true,
@@ -88,7 +93,16 @@ router.get('/expiring', requireRole('ADMIN'), async (req: Request, res: Response
       orderBy: { annuityValidUntil: 'asc' },
     });
 
-    res.json({ success: true, data: users });
+    // Anexa daysRemaining (negativo = vencida)
+    const enriched = users.map((u) => {
+      const validUntil = u.annuityValidUntil ? new Date(u.annuityValidUntil) : null;
+      const daysRemaining = validUntil
+        ? Math.ceil((validUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      return { ...u, daysRemaining };
+    });
+
+    res.json({ success: true, data: enriched });
   } catch (error) {
     console.error('Erro ao buscar anuidades vencendo:', error);
     res.status(500).json({ success: false, error: 'Erro ao buscar anuidades vencendo' });
@@ -167,8 +181,11 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
     const validUntil = new Date(validFrom);
     validUntil.setFullYear(validUntil.getFullYear() + 1);
 
-    // Create payment and update member atomically
-    const payment = await prisma.$transaction(async (tx) => {
+    // Cria pagamento + atualiza user + cria Transaction COMPLETED de forma atomica.
+    // O Transaction garante que a anuidade aparece em /admin/lancamentos, dashboard
+    // (monthRevenue) e /admin/financeiro (summary/revenue), que so agregam Transaction.
+    const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+    const result = await prisma.$transaction(async (tx) => {
       const newPayment = await tx.annuityPayment.create({
         data: {
           memberId: data.memberId,
@@ -187,13 +204,77 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
         },
       });
 
-      // Update user's annuityValidUntil
+      // Atualiza User.annuityValidUntil
       await tx.user.update({
         where: { id: data.memberId },
         data: { annuityValidUntil: validUntil },
       });
 
-      return newPayment;
+      // Cria Transaction espelhada (lancamento financeiro) com 1 item descritivo
+      const txDescription = `Anuidade ${data.referenceYear}`;
+      const txNotes =
+        data.notes ||
+        `Vigencia ${fmtDate(validFrom)} a ${fmtDate(validUntil)}`;
+      const newTransaction = await tx.transaction.create({
+        data: {
+          memberId: data.memberId,
+          registeredById: req.user!.id,
+          type: 'ANNUITY_PAYMENT',
+          status: 'COMPLETED',
+          totalAmount: data.amount,
+          paymentMethod: data.paymentMethod || null,
+          notes: txNotes,
+          transactionDate: new Date(),
+          items: {
+            create: [
+              {
+                description: txDescription,
+                quantity: 1,
+                unitPrice: data.amount,
+                subtotal: data.amount,
+              },
+            ],
+          },
+        },
+      });
+
+      return { payment: newPayment, transaction: newTransaction };
+    });
+    const payment = result.payment;
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'PAYMENT_RECEIVED',
+      entityType: 'Annuity',
+      entityId: payment.id,
+      userId: data.memberId,
+      newData: {
+        amount: data.amount,
+        referenceYear: data.referenceYear,
+        validFrom,
+        validUntil,
+        paymentMethod: data.paymentMethod ?? null,
+        transactionId: result.transaction.id,
+      },
+      description: `Anuidade ${data.referenceYear} paga (R$ ${data.amount.toFixed(2)})`,
+      ipAddress: req.ip as string | undefined,
+    });
+
+    // Registra tambem CREATE/Transaction para coerencia com vendas regulares
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'Transaction',
+      entityId: result.transaction.id,
+      userId: data.memberId,
+      newData: {
+        type: 'ANNUITY_PAYMENT',
+        totalAmount: data.amount,
+        paymentMethod: data.paymentMethod ?? null,
+        annuityPaymentId: payment.id,
+      },
+      description: `Lancamento de anuidade ${data.referenceYear} (R$ ${data.amount.toFixed(2)})`,
+      ipAddress: req.ip as string | undefined,
     });
 
     res.status(201).json({ success: true, data: payment });

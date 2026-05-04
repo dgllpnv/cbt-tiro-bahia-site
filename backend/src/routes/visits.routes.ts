@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
@@ -306,6 +307,17 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
 
     console.log(`[VISITS] Visita criada para ${member.fullName} por ${req.user!.email}`);
 
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'Visit',
+      entityId: visit.id,
+      userId: data.memberId,
+      newData: { laneId: data.laneId, purpose: data.purpose, isGuestVisit: data.isGuestVisit },
+      description: `Visita criada para ${member.fullName}`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.status(201).json({ success: true, data: visit });
   } catch (error) {
     console.error('[VISITS] Erro ao criar visita:', error);
@@ -365,6 +377,18 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
     });
 
     console.log(`[VISITS] Visita ${id} atualizada por ${req.user!.email}`);
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'UPDATE',
+      entityType: 'Visit',
+      entityId: id,
+      userId: existing.memberId,
+      previousData: existing,
+      newData: updateData,
+      description: `Visita ${id} atualizada`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, data: visit });
   } catch (error) {
@@ -426,6 +450,18 @@ router.patch('/:id/checkout', requireRole('ADMIN'), async (req: Request, res: Re
 
     console.log(`[VISITS] Check-out registrado para visita ${id} por ${req.user!.email}`);
 
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'STATUS_CHANGE',
+      entityType: 'Visit',
+      entityId: id,
+      userId: existing.memberId,
+      previousData: { checkOutTime: null },
+      newData: { checkOutTime: visit.checkOutTime },
+      description: `Check-out registrado para visita ${id}`,
+      ipAddress: req.ip as string | undefined,
+    });
+
     res.json({ success: true, data: visit });
   } catch (error) {
     console.error('[VISITS] Erro ao registrar check-out:', error);
@@ -465,6 +501,17 @@ router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response):
     await prisma.visit.delete({ where: { id } });
 
     console.log(`[VISITS] Visita ${id} excluida por ${req.user!.email}`);
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'DELETE',
+      entityType: 'Visit',
+      entityId: id,
+      userId: existing.memberId,
+      previousData: { memberId: existing.memberId, visitDate: existing.visitDate },
+      description: `Visita ${id} excluida`,
+      ipAddress: req.ip as string | undefined,
+    });
 
     res.json({ success: true, data: { message: 'Visita excluida com sucesso' } });
   } catch (error) {

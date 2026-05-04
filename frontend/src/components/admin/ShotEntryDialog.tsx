@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -361,13 +362,11 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
           {/* Quantity */}
           <div className="space-y-2">
             <Label className="text-gray-300 font-tactical text-sm">Quantidade *</Label>
-            <Input
-              type="number"
-              min="1"
-              placeholder="Disparos"
-              value={shotsFired}
-              onChange={(e) => setShotsFired(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white font-tactical"
+            <NumberStepper
+              value={parseInt(shotsFired) || 0}
+              onChange={(v) => setShotsFired(String(Math.max(0, Math.round(v))))}
+              min={0}
+              step={5}
             />
             <div className="flex flex-wrap gap-2 pt-1">
               {QUICK_QTY.map((q) => (

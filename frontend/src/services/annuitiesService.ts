@@ -61,13 +61,31 @@ export async function getMemberAnnuities(memberId: string) {
   }
 }
 
-export async function getExpiringAnnuities(days?: number) {
+export interface ExpiringAnnuity {
+  id: string;
+  fullName: string;
+  memberNumber: string | null;
+  email: string | null;
+  phone: string | null;
+  annuityValidUntil: string | null;
+  daysRemaining: number | null;
+}
+
+export async function getExpiringAnnuities(opts?: { days?: number; includeOverdue?: boolean }) {
   try {
-    const response = await api.get('/api/annuities/expiring', { params: days ? { days } : undefined });
-    if (response.data.success) return { success: true, data: response.data.data };
-    return { success: false, error: response.data.error };
+    const params: any = {};
+    if (opts?.days) params.days = opts.days;
+    if (opts?.includeOverdue) params.includeOverdue = 'true';
+    const response = await api.get('/api/annuities/expiring', { params });
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as ExpiringAnnuity[] };
+    }
+    return { success: false as const, error: response.data.error };
   } catch (error: any) {
-    return { success: false, error: error.response?.data?.error || 'Erro ao buscar anuidades vencendo' };
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar anuidades vencendo',
+    };
   }
 }
 
