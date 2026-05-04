@@ -49,10 +49,10 @@ const MemberLoanedEquipmentList = ({ loans, onReturn, compact = false, disabled 
         return (
           <div
             key={loan.id}
-            className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/30 text-blue-200 font-tactical text-xs"
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/15 dark:bg-blue-500/10 border border-blue-600/50 dark:border-blue-500/30 text-blue-800 dark:text-blue-200 font-tactical text-xs"
             title={titleText}
           >
-            <Icon className="h-3.5 w-3.5 text-blue-300 flex-shrink-0" />
+            <Icon className="h-3.5 w-3.5 text-blue-700 dark:text-blue-300 flex-shrink-0" />
             <span className="truncate max-w-[140px]">{loan.equipment.name}</span>
             <button
               type="button"
@@ -62,7 +62,7 @@ const MemberLoanedEquipmentList = ({ loans, onReturn, compact = false, disabled 
               }}
               disabled={disabled}
               title="Devolver equipamento"
-              className="ml-1 p-0.5 rounded hover:bg-red-500/20 hover:text-red-300 text-blue-300 transition-colors disabled:opacity-50"
+              className="ml-1 p-0.5 rounded text-blue-700 dark:text-blue-300 hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-300 transition-colors disabled:opacity-50"
             >
               <X className="h-3 w-3" />
             </button>

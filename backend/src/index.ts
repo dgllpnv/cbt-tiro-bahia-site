@@ -24,6 +24,7 @@ import userStatsRoutes from './routes/userStats.routes.js';
 import clubSettingsRoutes from './routes/clubSettings.routes.js';
 import visitorsRoutes from './routes/visitors.routes.js';
 import faceProfilesRoutes from './routes/faceProfiles.routes.js';
+import reportsRoutes from './routes/reports.routes.js';
 
 // =====================================================
 // EXPRESS APP SETUP
@@ -125,6 +126,7 @@ app.use('/api/users', userStatsRoutes);
 app.use('/api/club-settings', clubSettingsRoutes);
 app.use('/api/visitors', visitorsRoutes);
 app.use('/api/face-profiles', faceProfilesRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // =====================================================
 // 404 HANDLER

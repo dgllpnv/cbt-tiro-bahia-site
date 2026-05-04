@@ -66,9 +66,9 @@ const ProfilePage = () => {
 
   const getAnnuityStatus = () => {
     const days = getDaysRemaining();
-    if (days < 0) return { label: 'VENCIDA', color: 'bg-red-500/20 text-red-400 border-red-500/30', borderColor: 'border-red-500/40' };
-    if (days <= 30) return { label: 'VENCENDO', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', borderColor: 'border-yellow-500/40' };
-    return { label: 'ATIVA', color: 'bg-green-500/20 text-green-400 border-green-500/30', borderColor: 'border-green-500/40' };
+    if (days < 0) return { label: 'VENCIDA', color: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30', borderColor: 'border-red-500/40' };
+    if (days <= 30) return { label: 'VENCENDO', color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30', borderColor: 'border-yellow-500/40' };
+    return { label: 'ATIVA', color: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30', borderColor: 'border-green-500/40' };
   };
 
   // ── Fetch attachments ──────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ const ProfilePage = () => {
                 {daysRemaining} dias restantes
               </p>
             ) : (
-              <p className="text-xs font-tactical text-red-400 mt-1">
+              <p className="text-xs font-tactical text-red-700 dark:text-red-400 mt-1">
                 Anuidade vencida
               </p>
             )}
@@ -351,7 +351,7 @@ const ProfilePage = () => {
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange"
               />
               {confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-red-400 font-tactical">As senhas nao coincidem</p>
+                <p className="text-xs text-red-700 dark:text-red-400 font-tactical">As senhas nao coincidem</p>
               )}
             </div>
           </div>

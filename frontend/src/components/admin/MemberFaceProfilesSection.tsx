@@ -134,7 +134,7 @@ const MemberFaceProfilesSection = ({ memberId, memberName }: MemberFaceProfilesS
                 size="sm"
                 variant="outline"
                 onClick={() => handleDelete(p.id)}
-                className="bg-card border-border text-muted-foreground hover:text-red-300 hover:border-red-500/50 hover:bg-red-500/10 font-tactical h-8 w-full"
+                className="bg-card border-border text-muted-foreground hover:text-red-700 dark:text-red-300 hover:border-red-500/50 hover:bg-red-500/10 font-tactical h-8 w-full"
               >
                 <Trash2 className="h-3 w-3 mr-1" />
                 Remover

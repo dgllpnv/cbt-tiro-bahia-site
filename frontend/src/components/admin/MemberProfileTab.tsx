@@ -84,7 +84,7 @@ const PodiumCard = ({
   iconColor,
 }: PodiumCardProps) => {
   const accents = [
-    { bg: 'bg-yellow-500/15', border: 'border-yellow-500/40', text: 'text-yellow-400', label: 'Ouro' },
+    { bg: 'bg-yellow-500/15', border: 'border-yellow-500/40', text: 'text-yellow-700 dark:text-yellow-400', label: 'Ouro' },
     { bg: 'bg-gray-400/15', border: 'border-gray-400/40', text: 'text-foreground/85', label: 'Prata' },
     { bg: 'bg-amber-700/15', border: 'border-amber-700/50', text: 'text-amber-500', label: 'Bronze' },
   ];
@@ -214,12 +214,12 @@ const MemberProfileTab = ({
               </span>
             )}
             {cr && (
-              <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 font-tactical text-xs">
+              <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 font-tactical text-xs">
                 CR {cr} {crLevel ? `· Nível ${crLevel}` : ''}
               </span>
             )}
             {membershipTier && (
-              <span className="px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 font-tactical text-xs">
+              <span className="px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-700 dark:text-violet-300 font-tactical text-xs">
                 {membershipTier}
               </span>
             )}

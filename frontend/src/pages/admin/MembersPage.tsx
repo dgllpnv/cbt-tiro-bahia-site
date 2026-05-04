@@ -257,7 +257,7 @@ const MembersPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-secondary"
+                          className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-400 hover:bg-secondary"
                           title="Excluir"
                           onClick={() => handleDelete(user)}
                         >

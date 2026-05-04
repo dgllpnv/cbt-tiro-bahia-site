@@ -278,7 +278,7 @@ const InventoryPage = () => {
             onClick={() => setShowLowOnly((v) => !v)}
             className={
               showLowOnly
-                ? 'bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 font-tactical'
+                ? 'bg-yellow-500/20 border border-yellow-500/40 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/30 font-tactical'
                 : 'bg-muted border-border text-foreground/85 hover:bg-secondary font-tactical'
             }
           >
@@ -347,10 +347,10 @@ const InventoryPage = () => {
               const isEmpty = item.currentStock === 0;
               const isLow = item.currentStock <= item.minimumStock && !isEmpty;
               const stockChip = isEmpty
-                ? 'bg-red-500/15 text-red-300 border-red-500/40'
+                ? 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/40'
                 : isLow
-                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
-                  : 'bg-green-500/15 text-green-300 border-green-500/40';
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40'
+                  : 'bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/40';
               const stockLabel = isEmpty ? 'Esgotado' : isLow ? 'Baixo' : 'OK';
 
               return (
@@ -419,7 +419,7 @@ const InventoryPage = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => openAdjust(item, 'ADJUSTMENT_IN')}
-                      className="h-8 w-8 text-green-400 hover:bg-green-500/10"
+                      className="h-8 w-8 text-green-700 dark:text-green-400 hover:bg-green-500/10"
                       title="Entrada"
                     >
                       <ArrowUpCircle className="h-4 w-4" />
@@ -429,7 +429,7 @@ const InventoryPage = () => {
                       size="icon"
                       onClick={() => openAdjust(item, 'ADJUSTMENT_OUT')}
                       disabled={isEmpty}
-                      className="h-8 w-8 text-red-400 hover:bg-red-500/10 disabled:opacity-40"
+                      className="h-8 w-8 text-red-700 dark:text-red-400 hover:bg-red-500/10 disabled:opacity-40"
                       title="Saída"
                     >
                       <ArrowDownCircle className="h-4 w-4" />
@@ -481,7 +481,7 @@ const InventoryPage = () => {
                 ))}
               </div>
               {overWithdrawal && (
-                <p className="text-xs font-tactical text-red-400 mt-1">
+                <p className="text-xs font-tactical text-red-700 dark:text-red-400 mt-1">
                   Estoque insuficiente. Disponível: {selectedItem?.currentStock}.
                 </p>
               )}

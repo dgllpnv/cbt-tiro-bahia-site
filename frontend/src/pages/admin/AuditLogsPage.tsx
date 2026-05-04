@@ -13,14 +13,14 @@ import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import api from '@/services/api';
 
 const actionColors: Record<string, string> = {
-  CREATE: 'bg-green-900/50 text-green-400 border-green-700/50',
-  UPDATE: 'bg-blue-900/50 text-blue-400 border-blue-700/50',
-  DELETE: 'bg-red-900/50 text-red-400 border-red-700/50',
-  LOGIN: 'bg-purple-900/50 text-purple-400 border-purple-700/50',
-  PASSWORD_CHANGE: 'bg-yellow-900/50 text-yellow-400 border-yellow-700/50',
-  STATUS_CHANGE: 'bg-orange-900/50 text-orange-400 border-orange-700/50',
-  STOCK_ADJUSTMENT: 'bg-cyan-900/50 text-cyan-400 border-cyan-700/50',
-  PAYMENT_RECEIVED: 'bg-emerald-900/50 text-emerald-400 border-emerald-700/50',
+  CREATE: 'bg-green-900/50 text-green-700 dark:text-green-400 border-green-700/50',
+  UPDATE: 'bg-blue-900/50 text-blue-700 dark:text-blue-400 border-blue-700/50',
+  DELETE: 'bg-red-900/50 text-red-700 dark:text-red-400 border-red-700/50',
+  LOGIN: 'bg-purple-900/50 text-purple-700 dark:text-purple-400 border-purple-700/50',
+  PASSWORD_CHANGE: 'bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 border-yellow-700/50',
+  STATUS_CHANGE: 'bg-orange-900/50 text-orange-700 dark:text-orange-400 border-orange-700/50',
+  STOCK_ADJUSTMENT: 'bg-cyan-900/50 text-cyan-700 dark:text-cyan-400 border-cyan-700/50',
+  PAYMENT_RECEIVED: 'bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-700/50',
 };
 
 const AuditLogsPage = () => {
@@ -99,7 +99,7 @@ const AuditLogsPage = () => {
               </div>
               <p className="text-foreground font-tactical text-sm">{selectedLog.description}</p>
               {selectedLog.previousData && <div><span className="text-muted-foreground/80 text-sm font-tactical">Antes:</span><pre className="bg-muted border border-border rounded p-3 text-xs text-foreground/85 mt-1 overflow-x-auto">{JSON.stringify(selectedLog.previousData, null, 2)}</pre></div>}
-              {selectedLog.newData && <div><span className="text-muted-foreground/80 text-sm font-tactical">Depois:</span><pre className="bg-muted border border-border rounded p-3 text-xs text-green-300 mt-1 overflow-x-auto">{JSON.stringify(selectedLog.newData, null, 2)}</pre></div>}
+              {selectedLog.newData && <div><span className="text-muted-foreground/80 text-sm font-tactical">Depois:</span><pre className="bg-muted border border-border rounded p-3 text-xs text-green-700 dark:text-green-300 mt-1 overflow-x-auto">{JSON.stringify(selectedLog.newData, null, 2)}</pre></div>}
             </div>
           )}
         </DialogContent>

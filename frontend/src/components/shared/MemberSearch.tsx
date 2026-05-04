@@ -49,8 +49,15 @@ const MemberSearch = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Busca o nome do membro/visitante selecionado quando o componente monta com value
+  // Busca o nome do membro/visitante selecionado quando o componente monta com value.
+  // Quando value e limpo externamente (ex: pai reseta), zera tambem selectedName para
+  // evitar exibir o nome antigo sem associado selecionado.
   useEffect(() => {
+    if (!value) {
+      if (selectedName) setSelectedName('');
+      if (selectedIsVisitor) setSelectedIsVisitor(false);
+      return;
+    }
     if (value && !selectedName) {
       // /api/users/:id retorna usuarios de qualquer role (inclusive VISITOR).
       // Se for visitante, sinalizamos com badge azul.
@@ -71,7 +78,7 @@ const MemberSearch = ({
         })
         .catch(() => {});
     }
-  }, [value, selectedName]);
+  }, [value, selectedName, selectedIsVisitor]);
 
   const handleSearch = (text: string) => {
     setQuery(text);
@@ -181,7 +188,7 @@ const MemberSearch = ({
             className={`flex items-center gap-2 h-10 px-3 bg-muted border rounded-md ${selectedIsVisitor ? 'border-blue-500/50' : 'border-cbt-orange/50'}`}
           >
             {selectedIsVisitor ? (
-              <UserCheck size={14} className="text-blue-400 flex-shrink-0" />
+              <UserCheck size={14} className="text-blue-700 dark:text-blue-400 flex-shrink-0" />
             ) : (
               <User size={14} className="text-cbt-orange flex-shrink-0" />
             )}
@@ -223,7 +230,7 @@ const MemberSearch = ({
                   className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${member.isVisitor ? 'bg-blue-500/20' : 'bg-secondary'}`}
                 >
                   {member.isVisitor ? (
-                    <UserCheck size={14} className="text-blue-400" />
+                    <UserCheck size={14} className="text-blue-700 dark:text-blue-400" />
                   ) : (
                     <User size={14} className="text-muted-foreground" />
                   )}
@@ -232,7 +239,7 @@ const MemberSearch = ({
                   <div className="flex items-center gap-2">
                     <p className="text-foreground font-tactical text-sm truncate">{member.fullName}</p>
                     {member.isVisitor && (
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 flex-shrink-0">
                         Visitante
                       </span>
                     )}

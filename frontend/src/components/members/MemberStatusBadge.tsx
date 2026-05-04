@@ -8,7 +8,7 @@ interface MemberStatusBadgeProps {
 const statusConfig: Record<string, { label: string; className: string }> = {
   ACTIVE: {
     label: 'Ativo',
-    className: 'bg-green-900/50 text-green-400 border-green-800 hover:bg-green-900/70',
+    className: 'bg-green-900/50 text-green-700 dark:text-green-400 border-green-800 hover:bg-green-900/70',
   },
   INACTIVE: {
     label: 'Inativo',
@@ -16,7 +16,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   },
   SUSPENDED: {
     label: 'Suspenso',
-    className: 'bg-red-900/50 text-red-400 border-red-800 hover:bg-red-900/70',
+    className: 'bg-red-900/50 text-red-700 dark:text-red-400 border-red-800 hover:bg-red-900/70',
   },
 };
 

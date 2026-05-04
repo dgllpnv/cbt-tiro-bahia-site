@@ -599,12 +599,12 @@ const FinancialPage = () => {
                         </TableCell>
                         <TableCell
                           className={`text-right font-tactical text-sm ${
-                            discount > 0 ? 'text-amber-400' : 'text-muted-foreground/60'
+                            discount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground/60'
                           }`}
                         >
                           {discount > 0 ? formatCurrency(discount) : '—'}
                         </TableCell>
-                        <TableCell className="text-green-400 font-tactical font-bold text-right">
+                        <TableCell className="text-green-700 dark:text-green-400 font-tactical font-bold text-right">
                           {formatCurrency(Number(t.totalAmount))}
                         </TableCell>
                         <TableCell className="text-muted-foreground font-tactical text-sm">
@@ -695,7 +695,7 @@ const FinancialPage = () => {
                       <TableCell className="text-foreground font-tactical text-sm">
                         {e.description}
                       </TableCell>
-                      <TableCell className="text-red-400 font-tactical font-bold text-right">
+                      <TableCell className="text-red-700 dark:text-red-400 font-tactical font-bold text-right">
                         {formatCurrency(Number(e.amount))}
                       </TableCell>
                       <TableCell className="text-muted-foreground font-tactical text-sm">

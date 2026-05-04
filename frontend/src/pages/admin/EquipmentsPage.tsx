@@ -420,7 +420,7 @@ const EquipmentsPage = () => {
                                   ? `/admin/visitantes/${holder.id}`
                                   : `/admin/associados/${holder.id}`
                               }
-                              className="inline-flex items-center gap-2 text-blue-300 hover:text-blue-200 font-tactical text-sm"
+                              className="inline-flex items-center gap-2 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:text-blue-200 font-tactical text-sm"
                             >
                               {holder.fullName}
                               {holder.role === 'VISITOR' && (
@@ -430,7 +430,7 @@ const EquipmentsPage = () => {
                               )}
                             </Link>
                           ) : eq.isAvailable ? (
-                            <span className="inline-flex items-center gap-1 text-green-400 font-tactical text-xs">
+                            <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 font-tactical text-xs">
                               <CheckCircle2 className="h-3 w-3" />
                               Disponível
                             </span>
@@ -445,7 +445,7 @@ const EquipmentsPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
+                                  className="h-8 w-8 text-muted-foreground hover:text-blue-700 dark:text-blue-300 hover:bg-secondary"
                                   title="Transferir"
                                   onClick={() => setTransferLoan(activeLoan)}
                                 >
@@ -454,7 +454,7 @@ const EquipmentsPage = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-300 hover:bg-secondary"
                                   title="Devolver"
                                   onClick={() => setReturnLoan(activeLoan)}
                                 >

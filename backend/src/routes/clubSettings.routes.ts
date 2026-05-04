@@ -45,6 +45,11 @@ const updateSchema = z.object({
     .nullable()
     .optional(),
   crPj: z.string().max(50).nullable().optional(),
+  crPjIssueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}/, 'Data invalida')
+    .nullable()
+    .optional(),
   addressLine: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
   state: z.string().length(2, 'UF deve ter 2 caracteres').nullable().optional(),
@@ -74,9 +79,14 @@ router.patch('/', requireRole('ADMIN'), async (req: Request, res: Response): Pro
       return;
     }
 
+    const updateData: any = { ...data };
+    if (data.crPjIssueDate !== undefined) {
+      updateData.crPjIssueDate = data.crPjIssueDate ? new Date(data.crPjIssueDate) : null;
+    }
+
     const updated = await prisma.clubSettings.update({
       where: { clubId: CLUB_ID },
-      data,
+      data: updateData,
     });
 
     await createAuditLog({

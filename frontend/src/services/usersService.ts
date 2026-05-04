@@ -13,12 +13,22 @@ export interface CreateUserData {
   dateOfBirth?: string;
   phone?: string;
   address?: string;
+  neighborhood?: string;
   city?: string;
   state?: string;
   zipCode?: string;
   cr?: string;
   crLevel?: number;
   membershipTier?: string;
+  // Dados civis usados em declaracoes oficiais (DGA, DSA, DIC, etc.)
+  rg?: string;
+  rgIssuer?: string;
+  nationality?: string;
+  naturality?: string;
+  fatherName?: string;
+  motherName?: string;
+  profession?: string;
+  maritalStatus?: string;
 }
 
 export interface UpdateUserData {
@@ -29,6 +39,19 @@ export interface UpdateUserData {
   cr?: string;
   crLevel?: number;
   annuityValidUntil?: string;
+  address?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  rg?: string | null;
+  rgIssuer?: string | null;
+  nationality?: string | null;
+  naturality?: string | null;
+  fatherName?: string | null;
+  motherName?: string | null;
+  profession?: string | null;
+  maritalStatus?: string | null;
 }
 
 export interface PaginationMeta {

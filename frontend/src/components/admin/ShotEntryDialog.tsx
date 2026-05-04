@@ -230,7 +230,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                     <button
                       type="button"
                       onClick={() => handleDelete(d)}
-                      className="text-muted-foreground/80 hover:text-red-400 transition-colors flex-shrink-0"
+                      className="text-muted-foreground/80 hover:text-red-700 dark:text-red-400 transition-colors flex-shrink-0"
                       title="Remover"
                       aria-label="Remover tiro"
                     >

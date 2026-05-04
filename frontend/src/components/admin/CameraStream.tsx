@@ -102,7 +102,7 @@ const CameraStream = forwardRef<CameraStreamHandle, CameraStreamProps>(
         )}
         {status === 'error' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-foreground gap-3 p-6 text-center">
-            <AlertCircle className="h-10 w-10 text-red-400" />
+            <AlertCircle className="h-10 w-10 text-red-700 dark:text-red-400" />
             <p className="text-sm font-tactical">{errorMsg}</p>
             <button
               type="button"

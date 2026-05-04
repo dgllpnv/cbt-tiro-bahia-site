@@ -20,20 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/formatters';
 import {
   Plus,
   Pencil,
   Trash2,
-  Package,
   Crosshair,
   Loader2,
   ImagePlus,
-  Building2,
 } from 'lucide-react';
-import ClubLegalSettings from '@/components/admin/ClubLegalSettings';
 import api from '@/services/api';
 import {
   categoryLabels,
@@ -316,43 +312,29 @@ const SettingsPage = () => {
   if (loading)
     return (
       <div>
-        <PageHeader title="Cadastros Gerais" />
+        <PageHeader title="Cadastro de Produtos" />
         <LoadingSpinner />
       </div>
     );
 
   return (
     <div>
-      <PageHeader title="Cadastros Gerais" description="Produtos, equipamentos e categorias" />
-      <Tabs defaultValue="products">
-        <TabsList className="bg-muted border border-border">
-          <TabsTrigger
-            value="products"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
+      <PageHeader
+        title="Cadastro de Produtos"
+        description="Cadastre municoes, alvos, EPIs e demais itens vendaveis"
+        actions={
+          <Button
+            onClick={openNewProduct}
+            className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
           >
-            <Package size={16} className="mr-2" />
-            Produtos ({products.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="club"
-            className="data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground font-tactical"
-          >
-            <Building2 size={16} className="mr-2" />
-            Dados do Clube
-          </TabsTrigger>
-        </TabsList>
+            <Plus size={16} className="mr-2" />
+            Novo Produto
+          </Button>
+        }
+      />
 
-        {/* PRODUTOS */}
-        <TabsContent value="products" className="mt-4">
-          <div className="flex justify-end mb-4">
-            <Button
-              onClick={openNewProduct}
-              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
-            >
-              <Plus size={16} className="mr-2" />
-              Novo Produto
-            </Button>
-          </div>
+      <div className="mt-2">
+        <div>
           {products.length === 0 ? (
             <EmptyState
               title="Nenhum produto cadastrado"
@@ -418,7 +400,7 @@ const SettingsPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-red-400"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-400"
                             title="Remover"
                             onClick={() =>
                               setDeleteConfirm({
@@ -439,13 +421,8 @@ const SettingsPage = () => {
               </Table>
             </div>
           )}
-        </TabsContent>
-
-        {/* DADOS DO CLUBE (legal — para Declarações) */}
-        <TabsContent value="club" className="mt-4">
-          <ClubLegalSettings />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

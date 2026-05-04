@@ -37,10 +37,10 @@ interface MemberDocument {
 
 const getDocumentTypeBadge = (type: string) => {
   const map: Record<string, { label: string; className: string }> = {
-    FILIATION: { label: 'Filiacao', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
-    HABITUALITY: { label: 'Habitualidade', className: 'bg-green-500/15 text-green-400 border-green-500/30' },
+    FILIATION: { label: 'Filiacao', className: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30' },
+    HABITUALITY: { label: 'Habitualidade', className: 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30' },
     MEMBERSHIP_CARD: { label: 'Carteirinha', className: 'bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30' },
-    DECLARATION: { label: 'Declaracao', className: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
+    DECLARATION: { label: 'Declaracao', className: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30' },
   };
   return map[type] || { label: type, className: 'bg-muted-foreground/20 text-muted-foreground border-muted-foreground/40' };
 };
@@ -155,7 +155,7 @@ const DocumentsPage = () => {
             {isGeneratingFiliation ? (
               <Loader2 className="h-4 w-4 mr-3 animate-spin" />
             ) : (
-              <FileCheck className="h-4 w-4 mr-3 text-blue-400" />
+              <FileCheck className="h-4 w-4 mr-3 text-blue-700 dark:text-blue-400" />
             )}
             <div className="text-left">
               <p className="text-sm font-medium">Declaracao de Filiacao</p>
@@ -172,7 +172,7 @@ const DocumentsPage = () => {
             {isGeneratingHabituality ? (
               <Loader2 className="h-4 w-4 mr-3 animate-spin" />
             ) : (
-              <ScrollText className="h-4 w-4 mr-3 text-green-400" />
+              <ScrollText className="h-4 w-4 mr-3 text-green-700 dark:text-green-400" />
             )}
             <div className="text-left">
               <p className="text-sm font-medium">Declaracao de Habitualidade</p>

@@ -148,7 +148,7 @@ const OpenTabDialog = ({
       <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-green-400" />
+            <ShoppingCart className="h-5 w-5 text-green-700 dark:text-green-400" />
             Comanda — {memberName}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -197,7 +197,7 @@ const OpenTabDialog = ({
                           size="icon"
                           onClick={() => handleRemove(it.id)}
                           disabled={removingItemId === it.id}
-                          className="h-7 w-7 text-muted-foreground/80 hover:text-red-400 hover:bg-red-500/10"
+                          className="h-7 w-7 text-muted-foreground/80 hover:text-red-700 dark:text-red-400 hover:bg-red-500/10"
                         >
                           {removingItemId === it.id ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />

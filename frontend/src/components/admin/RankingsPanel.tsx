@@ -28,7 +28,7 @@ function getInitials(name: string): string {
 }
 
 function rankAccent(idx: number): { ring: string; text: string; bg: string; label: string } {
-  if (idx === 0) return { ring: 'ring-yellow-500/60', text: 'text-yellow-400', bg: 'bg-yellow-500/10', label: '1°' };
+  if (idx === 0) return { ring: 'ring-yellow-500/60', text: 'text-yellow-700 dark:text-yellow-400', bg: 'bg-yellow-500/10', label: '1°' };
   if (idx === 1) return { ring: 'ring-gray-400/50', text: 'text-foreground/85', bg: 'bg-gray-400/10', label: '2°' };
   if (idx === 2) return { ring: 'ring-amber-700/60', text: 'text-amber-500', bg: 'bg-amber-700/10', label: '3°' };
   return { ring: 'ring-gray-700', text: 'text-muted-foreground/80', bg: 'bg-muted/40', label: `${idx + 1}°` };

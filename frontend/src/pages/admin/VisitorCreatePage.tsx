@@ -141,7 +141,7 @@ const VisitorCreatePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="fullName" className={labelClasses}>
-                Nome Completo <span className="text-red-400">*</span>
+                Nome Completo <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="fullName"
@@ -156,7 +156,7 @@ const VisitorCreatePage = () => {
 
             <div>
               <label htmlFor="cpf" className={labelClasses}>
-                CPF <span className="text-red-400">*</span>
+                CPF <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="cpf"
@@ -171,7 +171,7 @@ const VisitorCreatePage = () => {
 
             <div>
               <label htmlFor="phone" className={labelClasses}>
-                Telefone <span className="text-red-400">*</span>
+                Telefone <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="phone"

@@ -42,6 +42,8 @@ import VisitorDetailPage from "./pages/admin/VisitorDetailPage";
 import EquipmentsPage from "./pages/admin/EquipmentsPage";
 import EquipmentCreatePage from "./pages/admin/EquipmentCreatePage";
 import EquipmentDetailPage from "./pages/admin/EquipmentDetailPage";
+import ClubDataPage from "./pages/admin/ClubDataPage";
+import ReportsPage from "./pages/admin/ReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -105,7 +107,9 @@ const App = () => (
               <Route path="equipamentos/novo" element={<EquipmentCreatePage />} />
               <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
               <Route path="financeiro" element={<FinancialPage />} />
+              <Route path="relatorios" element={<ReportsPage />} />
               <Route path="cadastros" element={<SettingsPage />} />
+              <Route path="dados-clube" element={<ClubDataPage />} />
               <Route path="estoque" element={<InventoryPage />} />
               <Route path="logs" element={<AuditLogsPage />} />
               <Route path="noticias" element={<NewsManagementPage />} />

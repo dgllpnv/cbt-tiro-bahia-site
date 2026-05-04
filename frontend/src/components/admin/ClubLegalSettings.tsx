@@ -71,6 +71,7 @@ const ClubLegalSettings = () => {
           clubName: res.data.clubName,
           cnpj: res.data.cnpj,
           crPj: res.data.crPj,
+          crPjIssueDate: res.data.crPjIssueDate,
           addressLine: res.data.addressLine,
           city: res.data.city,
           state: res.data.state,
@@ -144,8 +145,8 @@ const ClubLegalSettings = () => {
       <div
         className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${
           ready
-            ? 'bg-green-500/10 border-green-500/30 text-green-300'
-            : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300'
+            ? 'bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300'
+            : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-300'
         }`}
       >
         {ready ? (
@@ -194,6 +195,14 @@ const ClubLegalSettings = () => {
             />
           </Field>
         </div>
+        <Field label="Validade do CR PJ">
+          <Input
+            type="date"
+            value={form.crPjIssueDate ? form.crPjIssueDate.slice(0, 10) : ''}
+            onChange={(e) => update('crPjIssueDate', e.target.value || null)}
+            className="bg-muted border-border text-foreground font-tactical"
+          />
+        </Field>
       </Section>
 
       {/* Endereco */}

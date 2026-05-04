@@ -7,6 +7,7 @@ import {
   UserCheck,
   DollarSign,
   Settings,
+  Building2,
   Package,
   Crosshair,
   FileText,
@@ -18,6 +19,7 @@ import {
   IdCard,
   Target,
   FileCheck,
+  FileBarChart,
   X,
 } from 'lucide-react';
 import CbtLogo from '@/components/shared/CbtLogo';
@@ -46,7 +48,9 @@ const navItems: NavItem[] = [
   { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin'] },
   { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin'] },
   { name: 'Financeiro', href: '/admin/financeiro', icon: <DollarSign size={20} />, roles: ['admin'] },
-  { name: 'Cadastros', href: '/admin/cadastros', icon: <Settings size={20} />, roles: ['admin'] },
+  { name: 'Relatorios', href: '/admin/relatorios', icon: <FileBarChart size={20} />, roles: ['admin'] },
+  { name: 'Cadastro de Produtos', href: '/admin/cadastros', icon: <Settings size={20} />, roles: ['admin'] },
+  { name: 'Dados do Clube', href: '/admin/dados-clube', icon: <Building2 size={20} />, roles: ['admin'] },
   { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin'] },
   { name: 'Estoque', href: '/admin/estoque', icon: <Package size={20} />, roles: ['admin'] },
   { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },

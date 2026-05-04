@@ -137,7 +137,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
   const overdueCount = items.filter((i) => (i.daysRemaining ?? 0) < 0).length;
   const expiringCount = items.length - overdueCount;
   const accentColor = overdueCount > 0 ? 'border-red-500/30' : 'border-yellow-500/20';
-  const accentText = overdueCount > 0 ? 'text-red-400' : 'text-yellow-400';
+  const accentText = overdueCount > 0 ? 'text-red-700 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400';
 
   return (
     <div className={`bg-card/50 border ${accentColor} rounded-lg p-4`}>
@@ -150,12 +150,12 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {overdueCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-300 font-tactical text-[10px] uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-300 font-tactical text-[10px] uppercase tracking-wider">
               {overdueCount} vencida{overdueCount === 1 ? '' : 's'}
             </span>
           )}
           {expiringCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 font-tactical text-[10px] uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-700 dark:text-yellow-300 font-tactical text-[10px] uppercase tracking-wider">
               {expiringCount} vencendo
             </span>
           )}
@@ -189,7 +189,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                   <p className="text-sm font-tactical text-foreground truncate">{item.fullName}</p>
                   <p className="text-[10px] font-tactical text-muted-foreground/80">
                     Nº {item.memberNumber ?? '—'} ·{' '}
-                    <span className={overdue ? 'text-red-400' : 'text-yellow-400'}>
+                    <span className={overdue ? 'text-red-700 dark:text-red-400' : 'text-yellow-700 dark:text-yellow-400'}>
                       {overdue
                         ? `Vencida há ${Math.abs(days)} dia${Math.abs(days) === 1 ? '' : 's'}`
                         : days === 0
@@ -209,7 +209,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                     className="h-7 px-2 bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical text-xs"
                   >
                     {copiedId === item.id ? (
-                      <Check className="h-3 w-3 text-green-400" />
+                      <Check className="h-3 w-3 text-green-700 dark:text-green-400" />
                     ) : (
                       <Copy className="h-3 w-3" />
                     )}

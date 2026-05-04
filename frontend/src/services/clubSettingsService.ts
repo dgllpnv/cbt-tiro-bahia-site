@@ -10,6 +10,7 @@ export interface ClubSettings {
 
   cnpj: string | null;
   crPj: string | null;
+  crPjIssueDate: string | null;
   addressLine: string | null;
   city: string | null;
   state: string | null;
@@ -31,6 +32,7 @@ export type UpdateClubSettingsData = Partial<
     | 'logoUrl'
     | 'cnpj'
     | 'crPj'
+    | 'crPjIssueDate'
     | 'addressLine'
     | 'city'
     | 'state'

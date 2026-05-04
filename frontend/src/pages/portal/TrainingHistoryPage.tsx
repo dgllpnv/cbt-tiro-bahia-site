@@ -165,7 +165,7 @@ const TrainingHistoryPage = () => {
   const getStatusBadge = (visit: Visit) => {
     if (visit.checkOutTime) {
       return (
-        <Badge variant="outline" className="text-[10px] font-tactical bg-green-500/10 text-green-400 border-green-500/30">
+        <Badge variant="outline" className="text-[10px] font-tactical bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
           <DoorClosed className="h-3 w-3 mr-1" />
           Checkout
         </Badge>

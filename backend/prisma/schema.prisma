@@ -119,6 +119,7 @@ enum AuditAction {
   FACE_REGISTERED
   FACE_VERIFIED
   FACE_DELETED
+  REPORT_GENERATED
 }
 
 enum FaceCaptureSource {
@@ -178,10 +179,21 @@ model User {
   dateOfBirth     DateTime?  @db.Date
   phone           String?
   address         String?    @db.Text
+  neighborhood    String?
   city            String?
   state           String?    @default("BA")
   zipCode         String?
   photoUrl        String?    @db.Text
+
+  // Dados civis (usados em declaracoes oficiais — DGA, DSA, DIC, DC, etc.)
+  rg              String?
+  rgIssuer        String?    // ex: SSP/BA
+  nationality     String?    @default("BRASILEIRA")
+  naturality      String?    // cidade natal
+  fatherName      String?
+  motherName      String?
+  profession      String?
+  maritalStatus   String?    // SOLTEIRO, CASADO, DIVORCIADO, VIUVO, UNIAO_ESTAVEL
 
   // Dados do clube
   memberNumber    String?    @unique
@@ -559,6 +571,7 @@ model ClubSettings {
   // da Portaria 166-COLOG/2023, com alteracoes da Portaria 260-COLOG/2025)
   cnpj            String?  @db.VarChar(20)   // 00.000.000/0001-00
   crPj            String?  @db.VarChar(50)   // CR PJ no Exercito
+  crPjIssueDate   DateTime? @db.Date          // Data de validade/emissao do CR PJ
   addressLine     String?  @db.Text          // logradouro + nº + bairro
   city            String?
   state           String?  @default("BA")

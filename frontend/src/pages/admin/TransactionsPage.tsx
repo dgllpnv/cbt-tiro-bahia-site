@@ -559,10 +559,10 @@ const TransactionsPage = () => {
   // ── Status badge color ─────────────────────────────────────────────────
   const statusBadge = (status: string) => {
     const config: Record<string, string> = {
-      COMPLETED: 'bg-green-500/10 text-green-400 border-green-500/20',
-      PENDING: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-      ACTIVE: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-      OVERDUE: 'bg-red-500/10 text-red-400 border-red-500/20',
+      COMPLETED: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+      PENDING: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
+      ACTIVE: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+      OVERDUE: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
       RETURNED: 'bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30',
     };
     return config[status] || config['PENDING'];
@@ -685,7 +685,7 @@ const TransactionsPage = () => {
                         <TableCell className="text-foreground/85 text-xs font-tactical">
                           {saleTypeLabel[tx.type] || tx.type}
                         </TableCell>
-                        <TableCell className="text-green-400 font-mono text-sm font-medium">
+                        <TableCell className="text-green-700 dark:text-green-400 font-mono text-sm font-medium">
                           {formatCurrency(tx.total)}
                         </TableCell>
                         <TableCell className="text-foreground/85 text-sm">
@@ -754,7 +754,7 @@ const TransactionsPage = () => {
                           <TableCell className="text-muted-foreground text-sm font-tactical">
                             {formatDate(loan.borrowedAt)}
                           </TableCell>
-                          <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
+                          <TableCell className={`text-sm font-tactical ${isOverdue ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'}`}>
                             {loan.dueDate ? formatDate(loan.dueDate) : 'Uso interno'}
                           </TableCell>
                           <TableCell className="text-right">
@@ -769,7 +769,7 @@ const TransactionsPage = () => {
                                       if (res.success && res.data) setLoanTransferTarget(res.data);
                                     }}
                                     title="Transferir"
-                                    className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
+                                    className="h-8 w-8 text-muted-foreground hover:text-blue-700 dark:text-blue-300 hover:bg-secondary"
                                   >
                                     <UserCheck className="h-4 w-4" />
                                   </Button>
@@ -781,7 +781,7 @@ const TransactionsPage = () => {
                                       if (res.success && res.data) setLoanReturnTarget(res.data);
                                     }}
                                     title="Devolver"
-                                    className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
+                                    className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-300 hover:bg-secondary"
                                   >
                                     <Receipt className="h-4 w-4" />
                                   </Button>
@@ -821,12 +821,12 @@ const TransactionsPage = () => {
                   {visits.map((visit) => (
                     <div key={visit.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
                       <div className="p-2.5 rounded-lg bg-violet-500/10 flex-shrink-0">
-                        <Crosshair className="h-4 w-4 text-violet-400" />
+                        <Crosshair className="h-4 w-4 text-violet-700 dark:text-violet-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-foreground font-medium text-sm">{visit.memberName}</span>
-                          <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20 text-xs">
+                          <Badge className="bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20 text-xs">
                             {visit.laneName}
                           </Badge>
                           <Badge className="bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30 text-xs">
@@ -858,7 +858,7 @@ const TransactionsPage = () => {
                           disabled={checkoutLoadingId === visit.id}
                           variant="outline"
                           size="sm"
-                          className="bg-muted border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200 flex-shrink-0"
+                          className="bg-muted border-red-500/40 text-red-700 dark:text-red-300 hover:bg-red-500/10 hover:text-red-800 dark:text-red-200 flex-shrink-0"
                         >
                           {checkoutLoadingId === visit.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -897,7 +897,7 @@ const TransactionsPage = () => {
         <DialogContent className="bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2 flex-wrap">
-              <ShoppingCart className="h-5 w-5 text-green-400" />
+              <ShoppingCart className="h-5 w-5 text-green-700 dark:text-green-400" />
               Nova Venda
               {saleVisitId && (
                 <Badge variant="outline" className="ml-1 border-cbt-orange/40 bg-cbt-orange/10 text-cbt-orange font-tactical text-[10px]">
@@ -982,7 +982,7 @@ const TransactionsPage = () => {
                       size="icon"
                       onClick={() => removeSaleItem(idx)}
                       disabled={saleItems.length <= 1}
-                      className="h-9 w-9 text-muted-foreground/80 hover:text-red-400 hover:bg-secondary flex-shrink-0 mt-7"
+                      className="h-9 w-9 text-muted-foreground/80 hover:text-red-700 dark:text-red-400 hover:bg-secondary flex-shrink-0 mt-7"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -1020,7 +1020,7 @@ const TransactionsPage = () => {
                     </div>
                     <div className="w-24 text-right">
                       <Label className="text-xs text-muted-foreground/80 block mb-1.5">Subtotal</Label>
-                      <span className="text-green-400 font-mono text-sm font-medium">
+                      <span className="text-green-700 dark:text-green-400 font-mono text-sm font-medium">
                         {formatCurrency(item.quantity * item.unitPrice)}
                       </span>
                     </div>
@@ -1049,7 +1049,7 @@ const TransactionsPage = () => {
             {/* Total */}
             <div className="flex items-center justify-between p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
               <span className="text-foreground/85 font-tactical text-sm">Total da Venda</span>
-              <span className="text-green-400 font-military text-lg font-bold">
+              <span className="text-green-700 dark:text-green-400 font-military text-lg font-bold">
                 {formatCurrency(saleTotal)}
               </span>
             </div>
@@ -1080,7 +1080,7 @@ const TransactionsPage = () => {
         <DialogContent className="bg-card border-border text-foreground max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-              <CalendarCheck className="h-5 w-5 text-violet-400" />
+              <CalendarCheck className="h-5 w-5 text-violet-700 dark:text-violet-400" />
               Nova Visita
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -1202,7 +1202,7 @@ const TransactionsPage = () => {
         <DialogContent className="bg-card border-border text-foreground max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-blue-400" />
+              <DollarSign className="h-5 w-5 text-blue-700 dark:text-blue-400" />
               Nova Anuidade
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -1224,10 +1224,10 @@ const TransactionsPage = () => {
 
             {annuityIsVisitor ? (
               <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-start gap-3">
-                <UserCheck className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm font-tactical text-blue-100 space-y-1">
+                <UserCheck className="h-5 w-5 text-blue-700 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm font-tactical text-blue-800 dark:text-blue-100 space-y-1">
                   <p className="font-semibold">Visitante selecionado.</p>
-                  <p className="text-blue-200/80">
+                  <p className="text-blue-800 dark:text-blue-200/80">
                     Para pagar anuidade, o visitante precisa virar associado. Ao continuar, abriremos
                     a tela de conversao para completar o cadastro (e-mail, senha, n. de associado) e
                     registrar o pagamento da anuidade na mesma operacao.
@@ -1281,7 +1281,7 @@ const TransactionsPage = () => {
                 {annuityAmount && (
                   <div className="flex items-center justify-between p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
                     <span className="text-foreground/85 font-tactical text-sm">Valor da Anuidade</span>
-                    <span className="text-blue-400 font-military text-lg font-bold">
+                    <span className="text-blue-700 dark:text-blue-400 font-military text-lg font-bold">
                       {formatCurrency(parseFloat(annuityAmount) || 0)}
                     </span>
                   </div>
@@ -1347,7 +1347,7 @@ const TransactionsPage = () => {
         <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-              <Package className="h-5 w-5 text-orange-400" />
+              <Package className="h-5 w-5 text-orange-700 dark:text-orange-400" />
               Detalhes do emprestimo
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -1411,7 +1411,7 @@ const TransactionsPage = () => {
         <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-              <Crosshair className="h-5 w-5 text-violet-400" />
+              <Crosshair className="h-5 w-5 text-violet-700 dark:text-violet-400" />
               Detalhes da visita
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -1427,7 +1427,7 @@ const TransactionsPage = () => {
                 </div>
                 <div className="flex justify-between gap-3">
                   <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Baia</span>
-                  <Badge className="bg-violet-500/10 text-violet-400 border-violet-500/20">
+                  <Badge className="bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20">
                     {detailVisit.laneName}
                   </Badge>
                 </div>
@@ -1441,7 +1441,7 @@ const TransactionsPage = () => {
                 </div>
                 <div className="flex justify-between gap-3">
                   <span className="text-muted-foreground/80 uppercase text-xs tracking-wider">Check-out</span>
-                  <span className={`text-right ${detailVisit.checkOut ? 'text-green-400' : 'text-cbt-orange'}`}>
+                  <span className={`text-right ${detailVisit.checkOut ? 'text-green-700 dark:text-green-400' : 'text-cbt-orange'}`}>
                     {detailVisit.checkOut ? formatDateTime(detailVisit.checkOut) : 'Em andamento'}
                   </span>
                 </div>

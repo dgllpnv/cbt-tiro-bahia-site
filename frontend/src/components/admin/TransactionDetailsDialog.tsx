@@ -34,9 +34,9 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  COMPLETED: 'bg-green-500/10 text-green-300 border-green-500/30',
-  DRAFT: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30',
-  CANCELLED: 'bg-red-500/10 text-red-300 border-red-500/30',
+  COMPLETED: 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30',
+  DRAFT: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/30',
+  CANCELLED: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -219,7 +219,7 @@ const TransactionDetailsDialog = ({
               {discount > 0 && (
                 <div className="flex justify-between text-sm font-tactical">
                   <span className="text-muted-foreground">Desconto</span>
-                  <span className="text-red-300">- {formatCurrency(discount)}</span>
+                  <span className="text-red-700 dark:text-red-300">- {formatCurrency(discount)}</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-border">

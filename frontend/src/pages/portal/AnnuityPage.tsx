@@ -60,27 +60,27 @@ const AnnuityPage = () => {
     if (days < 0) {
       return {
         label: 'VENCIDA',
-        badgeClass: 'bg-red-500/20 text-red-400 border-red-500/30',
+        badgeClass: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30',
         borderClass: 'border-red-500/40',
         bgClass: 'bg-red-500/5',
-        textClass: 'text-red-400',
+        textClass: 'text-red-700 dark:text-red-400',
       };
     }
     if (days <= 30) {
       return {
         label: 'VENCENDO',
-        badgeClass: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        badgeClass: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30',
         borderClass: 'border-yellow-500/40',
         bgClass: 'bg-yellow-500/5',
-        textClass: 'text-yellow-400',
+        textClass: 'text-yellow-700 dark:text-yellow-400',
       };
     }
     return {
       label: 'ATIVA',
-      badgeClass: 'bg-green-500/20 text-green-400 border-green-500/30',
+      badgeClass: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30',
       borderClass: 'border-green-500/40',
       bgClass: 'bg-green-500/5',
-      textClass: 'text-green-400',
+      textClass: 'text-green-700 dark:text-green-400',
     };
   };
 
@@ -156,7 +156,7 @@ const AnnuityPage = () => {
               </>
             ) : user?.annuityValidUntil ? (
               <>
-                <p className="text-3xl font-military font-bold text-red-400">
+                <p className="text-3xl font-military font-bold text-red-700 dark:text-red-400">
                   {Math.abs(daysRemaining)}
                 </p>
                 <p className="text-xs font-tactical text-muted-foreground">dias vencida</p>
@@ -201,7 +201,7 @@ const AnnuityPage = () => {
                     <TableCell className="text-foreground font-tactical text-sm">
                       {formatDate(payment.paymentDate)}
                     </TableCell>
-                    <TableCell className="text-green-400 font-tactical text-sm font-semibold">
+                    <TableCell className="text-green-700 dark:text-green-400 font-tactical text-sm font-semibold">
                       {formatCurrency(payment.amount)}
                     </TableCell>
                     <TableCell className="text-foreground font-tactical text-sm">

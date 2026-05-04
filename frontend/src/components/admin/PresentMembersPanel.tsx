@@ -182,7 +182,7 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
               className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-secondary transition-colors border-b border-border/50 last:border-0"
             >
               <div
-                className={`h-9 w-9 rounded-full flex items-center justify-center font-tactical text-xs font-bold ${m.isVisitor ? 'bg-blue-500/20 text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
+                className={`h-9 w-9 rounded-full flex items-center justify-center font-tactical text-xs font-bold ${m.isVisitor ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
               >
                 {getInitials(m.fullName)}
               </div>
@@ -190,7 +190,7 @@ const CheckInSearch = ({ onPick, excludeIds, disabled }: CheckInSearchProps) => 
                 <div className="flex items-center gap-2">
                   <p className="text-foreground font-tactical text-sm truncate">{m.fullName}</p>
                   {m.isVisitor && (
-                    <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+                    <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 flex-shrink-0">
                       Visitante
                     </span>
                   )}
@@ -252,7 +252,7 @@ const PresentCard = ({
       {/* Header */}
       <div className="flex items-start gap-3">
         <div
-          className={`h-12 w-12 rounded-full flex items-center justify-center font-tactical text-sm font-bold flex-shrink-0 ${isVisitor ? 'bg-blue-500/20 text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
+          className={`h-12 w-12 rounded-full flex items-center justify-center font-tactical text-sm font-bold flex-shrink-0 ${isVisitor ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
         >
           {getInitials(visit.member.fullName)}
         </div>
@@ -262,7 +262,7 @@ const PresentCard = ({
               {visit.member.fullName}
             </p>
             {isVisitor && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30 flex-shrink-0">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-tactical bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 flex-shrink-0">
                 <UserCheck className="h-2.5 w-2.5" />
                 Visitante
               </span>
@@ -272,7 +272,7 @@ const PresentCard = ({
             {isVisitor ? 'Visitante' : `Nº ${visit.member.memberNumber ?? '—'}`} · entrou {formatTime(visit.checkInTime)}
           </p>
           <p className="text-foreground/85 font-tactical text-xs mt-0.5">
-            <span className={isVisitor ? 'text-blue-300' : 'text-cbt-orange'}>
+            <span className={isVisitor ? 'text-blue-700 dark:text-blue-300' : 'text-cbt-orange'}>
               {formatDuration(visit.checkInTime, now)}
             </span>
             {visit.lane && <span className="text-muted-foreground/80"> · {visit.lane.name}</span>}
@@ -280,7 +280,7 @@ const PresentCard = ({
         </div>
         {hasTab && (
           <span
-            className="px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/40 text-green-300 font-tactical text-[10px] flex items-center gap-1"
+            className="px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/40 text-green-700 dark:text-green-300 font-tactical text-[10px] flex items-center gap-1"
             title={`Comanda em aberto: ${tabSummary?.itemCount} ite${tabSummary?.itemCount === 1 ? 'm' : 'ns'} • ${formatCurrency(tabSummary?.subtotal ?? 0)}`}
           >
             <ShoppingCart className="h-3 w-3" />
@@ -330,7 +330,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onNewSale(visit)}
-          className="bg-muted border-border text-foreground hover:bg-green-500/10 hover:border-green-500/40 hover:text-green-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-green-500/10 hover:border-green-500/40 hover:text-green-700 dark:text-green-300 font-tactical h-9"
         >
           <ShoppingCart className="h-3.5 w-3.5 mr-1" />
           Venda
@@ -350,7 +350,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onIssueLoan(visit)}
-          className="bg-muted border-border text-foreground hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-700 dark:text-blue-300 font-tactical h-9"
         >
           <Package className="h-3.5 w-3.5 mr-1" />
           Empréstimo
@@ -360,7 +360,7 @@ const PresentCard = ({
           variant="outline"
           size="sm"
           onClick={() => onCheckOut(visit)}
-          className="bg-muted border-border text-foreground hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical h-9"
+          className="bg-muted border-border text-foreground hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-700 dark:text-red-300 font-tactical h-9"
         >
           <Receipt className="h-3.5 w-3.5 mr-1" />
           Fechar
@@ -709,12 +709,12 @@ const PresentMembersPanel = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 font-tactical text-xs flex items-center gap-1.5">
+          <span className="px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 font-tactical text-xs flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
             {present.length} {present.length === 1 ? 'presente' : 'presentes'}
           </span>
           {capacity && (
-            <span className="px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 font-tactical text-xs flex items-center gap-1.5">
+            <span className="px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 font-tactical text-xs flex items-center gap-1.5">
               <Crosshair className="h-3 w-3" />
               {capacity.occupied}/{capacity.total} baias
             </span>

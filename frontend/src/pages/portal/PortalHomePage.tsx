@@ -66,10 +66,10 @@ const PortalHomePage = () => {
 
   const getAnnuityColor = () => {
     const days = getDaysRemaining();
-    if (days < 0) return 'text-red-400 border-red-500/40 bg-red-500/10';
-    if (days < 30) return 'text-red-400 border-red-500/40 bg-red-500/10';
-    if (days <= 60) return 'text-yellow-400 border-yellow-500/40 bg-yellow-500/10';
-    return 'text-green-400 border-green-500/40 bg-green-500/10';
+    if (days < 0) return 'text-red-700 dark:text-red-400 border-red-500/40 bg-red-500/10';
+    if (days < 30) return 'text-red-700 dark:text-red-400 border-red-500/40 bg-red-500/10';
+    if (days <= 60) return 'text-yellow-700 dark:text-yellow-400 border-yellow-500/40 bg-yellow-500/10';
+    return 'text-green-700 dark:text-green-400 border-green-500/40 bg-green-500/10';
   };
 
   const getAnnuityLabel = () => {
@@ -158,7 +158,7 @@ const PortalHomePage = () => {
       <PageHeader title="Inicio" description="Painel do associado" />
 
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-900/80 to-cbt-orange/10 border border-border rounded-lg p-6 mb-6">
+      <div className="bg-gradient-to-r from-card via-card/80 to-cbt-orange/10 border border-border rounded-lg p-6 mb-6">
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0">
             <CbtLogo className="h-full w-full" />

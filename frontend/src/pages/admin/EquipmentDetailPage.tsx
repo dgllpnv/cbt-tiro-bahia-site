@@ -163,12 +163,12 @@ const EquipmentDetailPage = () => {
   }
 
   const statusBadge = equipment.isAvailable ? (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-tactical bg-green-500/15 border border-green-500/30 text-green-300">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-tactical bg-green-500/15 border border-green-500/30 text-green-700 dark:text-green-300">
       <CheckCircle2 className="h-3 w-3" />
       Disponível
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-tactical bg-orange-500/15 border border-orange-500/30 text-orange-300">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-tactical bg-orange-500/15 border border-orange-500/30 text-orange-700 dark:text-orange-300">
       <Activity className="h-3 w-3" />
       Em uso
     </span>
@@ -282,7 +282,7 @@ const EquipmentDetailPage = () => {
             <Button
               variant="outline"
               onClick={handleDelete}
-              className="bg-muted border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+              className="bg-muted border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Desativar Equipamento
@@ -324,13 +324,13 @@ const EquipmentDetailPage = () => {
                     const isActive = loan.status === 'ACTIVE';
                     const statusColor =
                       loan.status === 'ACTIVE'
-                        ? 'bg-orange-500/15 text-orange-300 border-orange-500/30'
+                        ? 'bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30'
                         : loan.status === 'TRANSFERRED'
-                          ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                          ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
                           : loan.status === 'RETURNED'
-                            ? 'bg-green-500/15 text-green-300 border-green-500/30'
+                            ? 'bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30'
                             : loan.status === 'OVERDUE'
-                              ? 'bg-red-500/15 text-red-300 border-red-500/30'
+                              ? 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30'
                               : 'bg-secondary/50 text-foreground/85 border-input/30';
                     return (
                       <TableRow key={loan.id} className="border-border hover:bg-muted/50">
@@ -346,7 +346,7 @@ const EquipmentDetailPage = () => {
                             {loan.member?.fullName || '—'}
                           </Link>
                           {loan.member?.role === 'VISITOR' && (
-                            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-blue-500/20 border border-blue-500/30 text-blue-300">
+                            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-blue-500/20 border border-blue-500/30 text-blue-700 dark:text-blue-300">
                               Visitante
                             </span>
                           )}
@@ -363,7 +363,7 @@ const EquipmentDetailPage = () => {
                         </TableCell>
                         <TableCell className="text-foreground/85 font-mono text-xs">
                           {loan.actualReturn ? formatDateTime(loan.actualReturn) : (
-                            <span className="text-amber-400">Em aberto</span>
+                            <span className="text-amber-700 dark:text-amber-400">Em aberto</span>
                           )}
                         </TableCell>
                         <TableCell className="text-foreground/85 text-xs">
@@ -377,7 +377,7 @@ const EquipmentDetailPage = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">
                           {loan.transferredFrom ? (
-                            <span className="text-blue-300">
+                            <span className="text-blue-700 dark:text-blue-300">
                               ← {loan.transferredFrom.member?.fullName || '—'}
                             </span>
                           ) : '—'}
@@ -388,7 +388,7 @@ const EquipmentDetailPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
+                                className="h-8 w-8 text-muted-foreground hover:text-blue-700 dark:text-blue-300 hover:bg-secondary"
                                 title="Transferir"
                                 onClick={() => setTransferLoan(loan)}
                               >
@@ -397,7 +397,7 @@ const EquipmentDetailPage = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
+                                className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-300 hover:bg-secondary"
                                 title="Devolver"
                                 onClick={() => setReturnLoan(loan)}
                               >

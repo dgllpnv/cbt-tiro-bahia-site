@@ -135,8 +135,8 @@ const AdminDashboardPage = () => {
         actions={
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
-              <Activity className="h-3 w-3 text-green-400 animate-pulse" />
-              <span className="text-xs font-tactical text-green-400">Sistema Operacional</span>
+              <Activity className="h-3 w-3 text-green-700 dark:text-green-400 animate-pulse" />
+              <span className="text-xs font-tactical text-green-700 dark:text-green-400">Sistema Operacional</span>
             </div>
           </div>
         }

@@ -3,6 +3,7 @@ import { User, Download, RefreshCw, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { useTheme } from 'next-themes';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -18,12 +19,62 @@ import { maskCpf, formatDate } from '@/lib/formatters';
 const MembershipCardPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { theme, resolvedTheme } = useTheme();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const isActive = user?.status === 'ACTIVE';
+  const isDark = (theme === 'system' ? resolvedTheme : theme) === 'dark';
+
+  // Estilos visuais da carteirinha por tema. Mantem branding laranja em ambos
+  // e adapta fundo, sombras, texturas e cores de texto para legibilidade.
+  const cardStyles = isDark
+    ? {
+        background:
+          'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #0a0a0a 100%)',
+        border: '1px solid rgba(255, 140, 0, 0.25)',
+        shadow: 'shadow-2xl shadow-black/60',
+        hatchOpacity: 0.06,
+        hatchColor: 'rgba(255,255,255,0.6)',
+        haloColor: 'rgba(255,140,0,0.18)',
+        logoBoxBg: 'rgba(0,0,0,0.4)',
+        logoBoxBorder: 'rgba(255,140,0,0.3)',
+        nameColor: '#fafafa',
+        labelColor: 'rgba(250,250,250,0.6)',
+        valueColor: '#fafafa',
+        dividerVia: 'rgba(255,140,0,0.3)',
+        footerBorder: 'rgba(255,255,255,0.1)',
+        footerColor: 'rgba(250,250,250,0.45)',
+        photoBg: '#1a1a1a',
+        photoIconColor: 'rgba(250,250,250,0.5)',
+        memberSinceColor: '#fafafa',
+        pdfBg: '#0b0b0b' as const,
+        pdfBgRgb: [11, 11, 11] as [number, number, number],
+      }
+    : {
+        background:
+          'linear-gradient(135deg, #ffffff 0%, #fafafa 40%, #f5f5f5 100%)',
+        border: '1px solid rgba(255, 140, 0, 0.45)',
+        shadow: 'shadow-2xl shadow-black/15',
+        hatchOpacity: 0.04,
+        hatchColor: 'rgba(0,0,0,0.6)',
+        haloColor: 'rgba(255,140,0,0.22)',
+        logoBoxBg: 'rgba(255,140,0,0.08)',
+        logoBoxBorder: 'rgba(255,140,0,0.4)',
+        nameColor: '#0a0a0a',
+        labelColor: 'rgba(60,60,60,0.75)',
+        valueColor: '#0a0a0a',
+        dividerVia: 'rgba(255,140,0,0.45)',
+        footerBorder: 'rgba(0,0,0,0.1)',
+        footerColor: 'rgba(60,60,60,0.7)',
+        photoBg: '#f0f0f0',
+        photoIconColor: 'rgba(60,60,60,0.5)',
+        memberSinceColor: '#0a0a0a',
+        pdfBg: '#fafafa' as const,
+        pdfBgRgb: [250, 250, 250] as [number, number, number],
+      };
 
   const handleDownload = async () => {
     if (!cardRef.current || !user) return;
@@ -31,7 +82,7 @@ const MembershipCardPage = () => {
     try {
       // Captura a carteira em alta resolucao para impressao nitida.
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#0b0b0b',
+        backgroundColor: cardStyles.pdfBg,
         scale: 3,
         useCORS: true,
         logging: false,
@@ -63,8 +114,9 @@ const MembershipCardPage = () => {
       const x = (pageW - drawW) / 2;
       const y = (pageH - drawH) / 2;
 
-      // Fundo preto do PDF para combinar com o tema da carteira.
-      pdf.setFillColor(11, 11, 11);
+      // Fundo do PDF combina com o tema da carteira (dark ou light).
+      const [r, g, b] = cardStyles.pdfBgRgb;
+      pdf.setFillColor(r, g, b);
       pdf.rect(0, 0, pageW, pageH, 'F');
       pdf.addImage(imgData, 'PNG', x, y, drawW, drawH);
 
@@ -164,20 +216,19 @@ const MembershipCardPage = () => {
           {/* Card capturavel pelo PDF */}
           <div
             ref={cardRef}
-            className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/60"
+            className={`relative rounded-2xl overflow-hidden ${cardStyles.shadow}`}
             style={{
-              background:
-                'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #0a0a0a 100%)',
-              border: '1px solid rgba(255, 140, 0, 0.25)',
+              background: cardStyles.background,
+              border: cardStyles.border,
             }}
           >
             {/* Hairline metalico decorativo */}
             <div
               aria-hidden
-              className="absolute inset-0 opacity-[0.06] pointer-events-none"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage:
-                  'repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(255,255,255,0.6) 3px, rgba(255,255,255,0.6) 4px)',
+                opacity: cardStyles.hatchOpacity,
+                backgroundImage: `repeating-linear-gradient(45deg, transparent 0, transparent 3px, ${cardStyles.hatchColor} 3px, ${cardStyles.hatchColor} 4px)`,
               }}
             />
             {/* Halo laranja superior */}
@@ -185,8 +236,7 @@ const MembershipCardPage = () => {
               aria-hidden
               className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none"
               style={{
-                background:
-                  'radial-gradient(circle, rgba(255,140,0,0.18) 0%, transparent 70%)',
+                background: `radial-gradient(circle, ${cardStyles.haloColor} 0%, transparent 70%)`,
               }}
             />
 
@@ -197,14 +247,23 @@ const MembershipCardPage = () => {
               {/* Header com logo + nome do clube + status */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 flex items-center justify-center bg-black/40 rounded-lg p-1.5 border border-cbt-orange/30">
+                  <div
+                    className="h-12 w-12 flex items-center justify-center rounded-lg p-1.5"
+                    style={{
+                      backgroundColor: cardStyles.logoBoxBg,
+                      border: `1px solid ${cardStyles.logoBoxBorder}`,
+                    }}
+                  >
                     <CbtLogo className="h-full w-full" />
                   </div>
                   <div>
                     <p className="text-[11px] font-tactical text-cbt-orange tracking-[0.25em] uppercase font-semibold">
                       Clube Baiano de Tiro
                     </p>
-                    <p className="text-[9px] font-tactical text-muted-foreground/80 tracking-[0.18em] uppercase">
+                    <p
+                      className="text-[9px] font-tactical tracking-[0.18em] uppercase"
+                      style={{ color: cardStyles.labelColor }}
+                    >
                       Associacao Desportiva · Salvador / BA
                     </p>
                   </div>
@@ -212,8 +271,8 @@ const MembershipCardPage = () => {
                 <div
                   className={`px-2.5 py-1 rounded-full text-[10px] font-tactical font-bold tracking-wider uppercase ${
                     isActive
-                      ? 'bg-green-500/15 text-green-400 border border-green-500/30'
-                      : 'bg-red-500/15 text-red-400 border border-red-500/30'
+                      ? 'bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/40'
+                      : 'bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/40'
                   }`}
                 >
                   {isActive ? 'ATIVO' : 'INATIVO'}
@@ -234,28 +293,38 @@ const MembershipCardPage = () => {
                     />
                   ) : (
                     <div
-                      className="rounded-md bg-muted border-2 border-cbt-orange/30 flex items-center justify-center"
-                      style={{ width: 88, height: 112 }}
+                      className="rounded-md border-2 border-cbt-orange/30 flex items-center justify-center"
+                      style={{
+                        width: 88,
+                        height: 112,
+                        backgroundColor: cardStyles.photoBg,
+                      }}
                     >
-                      <User className="h-10 w-10 text-muted-foreground/80" />
+                      <User className="h-10 w-10" style={{ color: cardStyles.photoIconColor }} />
                     </div>
                   )}
                 </div>
 
                 {/* Nome + matricula + CR */}
                 <div className="flex-1 min-w-0 pt-1">
-                  <p className="text-[10px] font-tactical text-muted-foreground/80 tracking-[0.2em] uppercase">
+                  <p
+                    className="text-[10px] font-tactical tracking-[0.2em] uppercase"
+                    style={{ color: cardStyles.labelColor }}
+                  >
                     Associado
                   </p>
                   <p
-                    className="text-lg font-military font-bold text-foreground tracking-wide leading-tight mt-0.5 break-words"
-                    style={{ wordBreak: 'break-word' }}
+                    className="text-lg font-military font-bold tracking-wide leading-tight mt-0.5 break-words"
+                    style={{ wordBreak: 'break-word', color: cardStyles.nameColor }}
                   >
                     {user.fullName}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
                     <div>
-                      <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
+                      <p
+                        className="text-[9px] font-tactical uppercase tracking-wider"
+                        style={{ color: cardStyles.labelColor }}
+                      >
                         Nº Matricula
                       </p>
                       <p className="text-sm font-tactical font-semibold text-cbt-orange">
@@ -263,10 +332,16 @@ const MembershipCardPage = () => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-wider">
+                      <p
+                        className="text-[9px] font-tactical uppercase tracking-wider"
+                        style={{ color: cardStyles.labelColor }}
+                      >
                         Filiado desde
                       </p>
-                      <p className="text-sm font-tactical text-foreground">
+                      <p
+                        className="text-sm font-tactical"
+                        style={{ color: cardStyles.memberSinceColor }}
+                      >
                         {user.memberSince ? formatDate(user.memberSince) : '—'}
                       </p>
                     </div>
@@ -274,7 +349,7 @@ const MembershipCardPage = () => {
                 </div>
 
                 {/* QR Code real */}
-                <div className="flex-shrink-0 bg-white p-1.5 rounded-md hidden sm:block">
+                <div className="flex-shrink-0 bg-white p-1.5 rounded-md hidden sm:block border border-cbt-orange/30">
                   <QRCodeSVG
                     value={qrPayload}
                     size={84}
@@ -286,39 +361,64 @@ const MembershipCardPage = () => {
               </div>
 
               {/* Divider sutil */}
-              <div className="h-px bg-gradient-to-r from-transparent via-cbt-orange/30 to-transparent mb-4" />
+              <div
+                className="h-px mb-4"
+                style={{
+                  background: `linear-gradient(to right, transparent, ${cardStyles.dividerVia}, transparent)`,
+                }}
+              />
 
               {/* Grid de dados */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <InfoField label="CPF" value={user.cpf ? maskCpf(user.cpf) : '—'} />
+                <InfoField
+                  label="CPF"
+                  value={user.cpf ? maskCpf(user.cpf) : '—'}
+                  labelColor={cardStyles.labelColor}
+                  valueColor={cardStyles.valueColor}
+                />
                 <InfoField
                   label="CR (Certificado de Registro)"
                   value={user.cr || '—'}
+                  labelColor={cardStyles.labelColor}
+                  valueColor={cardStyles.valueColor}
                 />
                 <InfoField
                   label="Nivel CR"
                   value={user.crLevel ? `Nivel ${user.crLevel}` : '—'}
+                  labelColor={cardStyles.labelColor}
+                  valueColor={cardStyles.valueColor}
                 />
                 <InfoField
                   label="Validade da Anuidade"
                   value={user.annuityValidUntil ? formatDate(user.annuityValidUntil) : '—'}
                   highlight
+                  labelColor={cardStyles.labelColor}
+                  valueColor={cardStyles.valueColor}
                 />
               </div>
 
               {/* QR fallback mobile */}
               <div className="flex sm:hidden justify-center mt-5">
-                <div className="bg-white p-1.5 rounded-md">
+                <div className="bg-white p-1.5 rounded-md border border-cbt-orange/30">
                   <QRCodeSVG value={qrPayload} size={96} level="M" bgColor="#ffffff" fgColor="#000000" />
                 </div>
               </div>
 
               {/* Footer institucional */}
-              <div className="mt-5 pt-3 border-t border-border flex items-center justify-between">
-                <p className="text-[9px] font-tactical text-muted-foreground/60 tracking-[0.18em] uppercase">
+              <div
+                className="mt-5 pt-3 flex items-center justify-between"
+                style={{ borderTop: `1px solid ${cardStyles.footerBorder}` }}
+              >
+                <p
+                  className="text-[9px] font-tactical tracking-[0.18em] uppercase"
+                  style={{ color: cardStyles.footerColor }}
+                >
                   Documento de identificacao do clube
                 </p>
-                <p className="text-[9px] font-tactical text-muted-foreground/60 tracking-wider">
+                <p
+                  className="text-[9px] font-tactical tracking-wider"
+                  style={{ color: cardStyles.footerColor }}
+                >
                   cbt.com.br
                 </p>
               </div>
@@ -351,19 +451,25 @@ const InfoField = ({
   label,
   value,
   highlight = false,
+  labelColor,
+  valueColor,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
+  labelColor: string;
+  valueColor: string;
 }) => (
   <div>
-    <p className="text-[9px] font-tactical text-muted-foreground/80 uppercase tracking-[0.18em] mb-0.5">
+    <p
+      className="text-[9px] font-tactical uppercase tracking-[0.18em] mb-0.5"
+      style={{ color: labelColor }}
+    >
       {label}
     </p>
     <p
-      className={`text-sm font-tactical font-medium ${
-        highlight ? 'text-cbt-orange' : 'text-foreground'
-      }`}
+      className="text-sm font-tactical font-medium"
+      style={{ color: highlight ? '#FF8C00' : valueColor }}
     >
       {value}
     </p>

@@ -191,9 +191,9 @@ const HabitualityPage = () => {
   };
 
   const getStatusLabel = (count: number) => {
-    if (count >= REQUIRED_TRAININGS) return { text: 'Completo', className: 'bg-green-500/20 text-green-400 border-green-500/30' };
-    if (count >= 4) return { text: 'Em progresso', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
-    return { text: 'Pendente', className: 'bg-red-500/20 text-red-400 border-red-500/30' };
+    if (count >= REQUIRED_TRAININGS) return { text: 'Completo', className: 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30' };
+    if (count >= 4) return { text: 'Em progresso', className: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30' };
+    return { text: 'Pendente', className: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30' };
   };
 
   const getActivityIcon = (type: string) => {
@@ -339,7 +339,7 @@ const HabitualityPage = () => {
                     <div
                       className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                         activity.type === 'COMPETITION'
-                          ? 'bg-yellow-500/15 text-yellow-400'
+                          ? 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400'
                           : 'bg-cbt-orange/15 text-cbt-orange'
                       }`}
                     >
@@ -354,7 +354,7 @@ const HabitualityPage = () => {
                           variant="outline"
                           className={`text-[10px] font-tactical ${
                             activity.type === 'COMPETITION'
-                              ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
+                              ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/30'
                               : 'bg-cbt-orange/10 text-cbt-orange border-cbt-orange/30'
                           }`}
                         >
@@ -431,10 +431,10 @@ const HabitualityPage = () => {
             {/* Status dos dados do clube */}
             {!clubReady && (
               <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-md p-3">
-                <AlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm font-tactical text-red-300">
+                <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm font-tactical text-red-700 dark:text-red-300">
                   <p className="font-semibold">Dados do clube incompletos</p>
-                  <p className="text-xs text-red-200/80 mt-0.5">
+                  <p className="text-xs text-red-800 dark:text-red-200/80 mt-0.5">
                     O administrador precisa preencher os dados legais em{' '}
                     <span className="font-semibold">/admin/cadastros → Dados do Clube</span> antes
                     de emitir declarações.

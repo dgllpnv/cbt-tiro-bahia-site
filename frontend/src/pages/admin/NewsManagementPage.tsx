@@ -574,7 +574,7 @@ const NewsManagementPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => updateField('imageUrl', '')}
-                      className="bg-muted border-border text-foreground/85 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 font-tactical"
+                      className="bg-muted border-border text-foreground/85 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-700 dark:text-red-300 font-tactical"
                     >
                       <X className="h-3.5 w-3.5 mr-1" />
                       Remover
@@ -738,7 +738,7 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
           variant="ghost"
           size="sm"
           onClick={onDelete}
-          className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-secondary font-tactical text-xs ml-auto"
+          className="h-8 px-2 text-muted-foreground hover:text-red-700 dark:text-red-400 hover:bg-secondary font-tactical text-xs ml-auto"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -779,7 +779,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         {news.isPinned && <Pin className="h-3.5 w-3.5 text-cbt-orange flex-shrink-0" />}
         <h3 className="text-foreground font-tactical text-sm truncate">{news.title}</h3>
         {!news.isPublished && (
-          <Badge className="bg-yellow-500/15 text-yellow-400 border-yellow-500/30 text-[10px] font-tactical h-5">
+          <Badge className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 text-[10px] font-tactical h-5">
             <EyeOff className="h-2.5 w-2.5 mr-1" />
             Rascunho
           </Badge>
@@ -818,7 +818,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onTogglePublish}
         title={news.isPublished ? 'Despublicar' : 'Publicar'}
-        className={`h-8 w-8 ${news.isPublished ? 'text-green-400' : 'text-muted-foreground'} hover:text-green-400 hover:bg-secondary`}
+        className={`h-8 w-8 ${news.isPublished ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'} hover:text-green-700 dark:text-green-400 hover:bg-secondary`}
       >
         {news.isPublished ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
       </Button>
@@ -836,7 +836,7 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
         size="icon"
         onClick={onDelete}
         title="Excluir"
-        className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-secondary"
+        className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-400 hover:bg-secondary"
       >
         <Trash2 className="h-4 w-4" />
       </Button>

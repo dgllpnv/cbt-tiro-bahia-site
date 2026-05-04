@@ -94,7 +94,7 @@ const LoanIssueDialog = ({
       <DialogContent className="bg-card border-border text-foreground max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-            <Package className="h-5 w-5 text-blue-400" />
+            <Package className="h-5 w-5 text-blue-700 dark:text-blue-400" />
             Novo Empréstimo
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-tactical text-sm">

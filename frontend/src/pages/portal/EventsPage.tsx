@@ -61,10 +61,10 @@ interface Event {
 
 const getEventTypeBadge = (type: string) => {
   const map: Record<string, { label: string; className: string; icon: React.ElementType }> = {
-    TRAINING: { label: 'Treino', className: 'bg-blue-500/15 text-blue-400 border-blue-500/30', icon: Target },
+    TRAINING: { label: 'Treino', className: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30', icon: Target },
     COMPETITION: { label: 'Competicao', className: 'bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30', icon: Trophy },
-    COURSE: { label: 'Curso', className: 'bg-green-500/15 text-green-400 border-green-500/30', icon: BookOpen },
-    WORKSHOP: { label: 'Workshop', className: 'bg-purple-500/15 text-purple-400 border-purple-500/30', icon: Wrench },
+    COURSE: { label: 'Curso', className: 'bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30', icon: BookOpen },
+    WORKSHOP: { label: 'Workshop', className: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30', icon: Wrench },
   };
   return map[type] || { label: type, className: 'bg-muted-foreground/20 text-muted-foreground border-muted-foreground/40', icon: Calendar };
 };
@@ -204,7 +204,7 @@ const EventsPage = () => {
                         {p.placement && (
                           <span className={`font-military font-bold ${
                             p.placement === 1
-                              ? 'text-yellow-400'
+                              ? 'text-yellow-700 dark:text-yellow-400'
                               : p.placement === 2
                               ? 'text-foreground/85'
                               : p.placement === 3
@@ -389,7 +389,7 @@ const EventsPage = () => {
                             {p.placement && (
                               <span className={`font-military font-bold ${
                                 p.placement === 1
-                                  ? 'text-yellow-400'
+                                  ? 'text-yellow-700 dark:text-yellow-400'
                                   : p.placement === 2
                                   ? 'text-foreground/85'
                                   : p.placement === 3

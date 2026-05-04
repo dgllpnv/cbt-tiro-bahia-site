@@ -180,7 +180,7 @@ const FaceVerifyDialog = ({
 
           {/* Status */}
           {phase === 'scanning' && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded text-blue-200 text-sm font-tactical">
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded text-blue-800 dark:text-blue-200 text-sm font-tactical">
               <Loader2 className="h-4 w-4 animate-spin" />
               Procurando rosto...
             </div>
@@ -210,7 +210,7 @@ const FaceVerifyDialog = ({
                 )}
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`font-tactical text-xs uppercase tracking-wider flex items-center gap-1 ${isAlreadyPresent ? 'text-blue-300' : 'text-green-300'}`}
+                    className={`font-tactical text-xs uppercase tracking-wider flex items-center gap-1 ${isAlreadyPresent ? 'text-blue-700 dark:text-blue-300' : 'text-green-700 dark:text-green-300'}`}
                   >
                     <CheckCircle2 className="h-3 w-3" /> Identificado
                     {isAlreadyPresent && (
@@ -236,7 +236,7 @@ const FaceVerifyDialog = ({
 
           {phase === 'no-match' && result && !result.matched && (
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded space-y-3">
-              <div className="flex items-start gap-2 text-yellow-200">
+              <div className="flex items-start gap-2 text-yellow-800 dark:text-yellow-200">
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <p className="font-tactical text-sm">
                   Ninguém identificado com confiança. Use a busca manual ou tente novamente.
@@ -254,7 +254,7 @@ const FaceVerifyDialog = ({
                         <span className="text-foreground text-xs font-tactical truncate">
                           {s.member.fullName}
                           {s.member.role === 'VISITOR' && (
-                            <span className="ml-1 text-blue-300">(visitante)</span>
+                            <span className="ml-1 text-blue-700 dark:text-blue-300">(visitante)</span>
                           )}
                         </span>
                         <span className="text-muted-foreground/80 text-xs font-mono">
@@ -333,7 +333,7 @@ const FaceThumbnailById = ({
     }`}
     title={`Profile ${profileId.slice(0, 8)}`}
   >
-    <ScanFace className={`h-5 w-5 ${accent === 'blue' ? 'text-blue-300' : 'text-green-300'}`} />
+    <ScanFace className={`h-5 w-5 ${accent === 'blue' ? 'text-blue-700 dark:text-blue-300' : 'text-green-700 dark:text-green-300'}`} />
   </div>
 );
 

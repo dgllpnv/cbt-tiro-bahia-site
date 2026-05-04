@@ -41,9 +41,18 @@ interface FormData {
   crLevel: string;
   membershipTier: string;
   address: string;
+  neighborhood: string;
   city: string;
   state: string;
   zipCode: string;
+  rg: string;
+  rgIssuer: string;
+  nationality: string;
+  naturality: string;
+  fatherName: string;
+  motherName: string;
+  profession: string;
+  maritalStatus: string;
 }
 
 const initialFormData: FormData = {
@@ -59,9 +68,18 @@ const initialFormData: FormData = {
   crLevel: '',
   membershipTier: 'STANDARD',
   address: '',
+  neighborhood: '',
   city: '',
   state: 'BA',
   zipCode: '',
+  rg: '',
+  rgIssuer: '',
+  nationality: 'BRASILEIRA',
+  naturality: '',
+  fatherName: '',
+  motherName: '',
+  profession: '',
+  maritalStatus: '',
 };
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -136,9 +154,18 @@ const MemberCreatePage = () => {
     if (form.crLevel) payload.crLevel = Number(form.crLevel);
     if (form.membershipTier) payload.membershipTier = form.membershipTier;
     if (form.address.trim()) payload.address = form.address.trim();
+    if (form.neighborhood.trim()) payload.neighborhood = form.neighborhood.trim();
     if (form.city.trim()) payload.city = form.city.trim();
     if (form.state.trim()) payload.state = form.state.trim().toUpperCase().slice(0, 2);
     if (form.zipCode.trim()) payload.zipCode = form.zipCode.trim();
+    if (form.rg.trim()) payload.rg = form.rg.trim();
+    if (form.rgIssuer.trim()) payload.rgIssuer = form.rgIssuer.trim();
+    if (form.nationality.trim()) payload.nationality = form.nationality.trim();
+    if (form.naturality.trim()) payload.naturality = form.naturality.trim();
+    if (form.fatherName.trim()) payload.fatherName = form.fatherName.trim();
+    if (form.motherName.trim()) payload.motherName = form.motherName.trim();
+    if (form.profession.trim()) payload.profession = form.profession.trim();
+    if (form.maritalStatus) payload.maritalStatus = form.maritalStatus;
 
     // ── Submit ───────────────────────────────────────────────────────────
     setIsSubmitting(true);
@@ -204,7 +231,7 @@ const MemberCreatePage = () => {
             {/* fullName */}
             <div>
               <label htmlFor="fullName" className={labelClasses}>
-                Nome Completo <span className="text-red-400">*</span>
+                Nome Completo <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="fullName"
@@ -220,7 +247,7 @@ const MemberCreatePage = () => {
             {/* cpf */}
             <div>
               <label htmlFor="cpf" className={labelClasses}>
-                CPF <span className="text-red-400">*</span>
+                CPF <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="cpf"
@@ -236,7 +263,7 @@ const MemberCreatePage = () => {
             {/* email */}
             <div>
               <label htmlFor="email" className={labelClasses}>
-                E-mail <span className="text-red-400">*</span>
+                E-mail <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="email"
@@ -253,7 +280,7 @@ const MemberCreatePage = () => {
             {/* password */}
             <div>
               <label htmlFor="password" className={labelClasses}>
-                Senha <span className="text-red-400">*</span>
+                Senha <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="password"
@@ -310,7 +337,7 @@ const MemberCreatePage = () => {
             {/* memberNumber */}
             <div>
               <label htmlFor="memberNumber" className={labelClasses}>
-                Numero de Associado <span className="text-red-400">*</span>
+                Numero de Associado <span className="text-red-700 dark:text-red-400">*</span>
               </label>
               <Input
                 id="memberNumber"
@@ -416,6 +443,21 @@ const MemberCreatePage = () => {
               />
             </div>
 
+            {/* neighborhood */}
+            <div>
+              <label htmlFor="neighborhood" className={labelClasses}>
+                Bairro
+              </label>
+              <Input
+                id="neighborhood"
+                name="neighborhood"
+                placeholder="Bairro"
+                value={form.neighborhood}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </div>
+
             {/* city */}
             <div>
               <label htmlFor="city" className={labelClasses}>
@@ -460,6 +502,58 @@ const MemberCreatePage = () => {
                 onChange={handleChange}
                 className={inputClasses}
               />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section: Dados Civis (Declarações) ───────────────────────── */}
+        <div className="bg-card/50 border border-border rounded-lg p-6">
+          <h2 className="text-lg font-military font-bold text-foreground tracking-wide mb-1">
+            Dados Civis
+          </h2>
+          <p className="text-xs text-muted-foreground font-tactical mb-4">
+            Usados nas declarações oficiais (DGA, DSA, DIC, FILIAÇÃO, etc.). Opcionais, mas recomendados.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="rg" className={labelClasses}>RG (Identidade)</label>
+              <Input id="rg" name="rg" placeholder="Numero da identidade" value={form.rg} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="rgIssuer" className={labelClasses}>Órgão Emissor</label>
+              <Input id="rgIssuer" name="rgIssuer" placeholder="Ex: SSP/BA" value={form.rgIssuer} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="nationality" className={labelClasses}>Nacionalidade</label>
+              <Input id="nationality" name="nationality" placeholder="Ex: BRASILEIRA" value={form.nationality} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="naturality" className={labelClasses}>Naturalidade (cidade natal)</label>
+              <Input id="naturality" name="naturality" placeholder="Cidade onde nasceu" value={form.naturality} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="fatherName" className={labelClasses}>Nome do Pai</label>
+              <Input id="fatherName" name="fatherName" placeholder="Nome completo" value={form.fatherName} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="motherName" className={labelClasses}>Nome da Mãe</label>
+              <Input id="motherName" name="motherName" placeholder="Nome completo" value={form.motherName} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="profession" className={labelClasses}>Profissão</label>
+              <Input id="profession" name="profession" placeholder="Ex: Empresário" value={form.profession} onChange={handleChange} className={inputClasses} />
+            </div>
+            <div>
+              <label htmlFor="maritalStatus" className={labelClasses}>Estado Civil</label>
+              <select id="maritalStatus" name="maritalStatus" value={form.maritalStatus} onChange={handleChange} className={selectClasses}>
+                <option value="">Selecione</option>
+                <option value="SOLTEIRO">Solteiro(a)</option>
+                <option value="CASADO">Casado(a)</option>
+                <option value="DIVORCIADO">Divorciado(a)</option>
+                <option value="VIUVO">Viúvo(a)</option>
+                <option value="UNIAO_ESTAVEL">União estável</option>
+              </select>
             </div>
           </div>
         </div>
@@ -515,7 +609,7 @@ const MemberCreatePage = () => {
                       <p className="text-muted-foreground/80 font-tactical text-xs">{(f.size / 1024).toFixed(0)} KB</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-400">
+                  <button type="button" onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-700 dark:text-red-400">
                     <X size={14} />
                   </button>
                 </div>

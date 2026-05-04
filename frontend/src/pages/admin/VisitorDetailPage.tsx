@@ -232,7 +232,7 @@ const VisitorDetailPage = () => {
         title={visitor.fullName}
         description={
           <span className="flex items-center gap-2">
-            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-tactical bg-blue-500/20 text-blue-300 border border-blue-500/30">
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-tactical bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30">
               Visitante
             </span>
             <span>CPF {formatCpf(visitor.cpf)}</span>
@@ -286,7 +286,7 @@ const VisitorDetailPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="fullName" className={labelClasses}>
-                    Nome Completo <span className="text-red-400">*</span>
+                    Nome Completo <span className="text-red-700 dark:text-red-400">*</span>
                   </label>
                   <Input
                     id="fullName"
@@ -299,7 +299,7 @@ const VisitorDetailPage = () => {
                 </div>
                 <div>
                   <label htmlFor="cpf" className={labelClasses}>
-                    CPF <span className="text-red-400">*</span>
+                    CPF <span className="text-red-700 dark:text-red-400">*</span>
                   </label>
                   <Input
                     id="cpf"
@@ -312,7 +312,7 @@ const VisitorDetailPage = () => {
                 </div>
                 <div>
                   <label htmlFor="phone" className={labelClasses}>
-                    Telefone <span className="text-red-400">*</span>
+                    Telefone <span className="text-red-700 dark:text-red-400">*</span>
                   </label>
                   <Input
                     id="phone"
@@ -414,7 +414,7 @@ const VisitorDetailPage = () => {
                 type="button"
                 variant="outline"
                 onClick={handleDelete}
-                className="bg-muted border-red-900/50 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+                className="bg-muted border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Excluir Visitante
@@ -474,7 +474,7 @@ const VisitorDetailPage = () => {
                       </TableCell>
                       <TableCell className="text-foreground/85 font-mono text-sm">
                         {v.checkOutTime ? formatDateTime(v.checkOutTime) : (
-                          <span className="text-amber-400">Em andamento</span>
+                          <span className="text-amber-700 dark:text-amber-400">Em andamento</span>
                         )}
                       </TableCell>
                       <TableCell className="text-foreground/85">
@@ -521,7 +521,7 @@ const VisitorDetailPage = () => {
                       <TableCell className="text-foreground/85 text-sm">
                         {t.paymentMethod || '—'}
                       </TableCell>
-                      <TableCell className="text-right text-green-400 font-mono">
+                      <TableCell className="text-right text-green-700 dark:text-green-400 font-mono">
                         {formatCurrency(Number(t.totalAmount))}
                       </TableCell>
                     </TableRow>

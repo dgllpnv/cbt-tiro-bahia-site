@@ -133,9 +133,18 @@ interface MemberFormData {
   cr: string;
   crLevel: string;
   address: string;
+  neighborhood: string;
   city: string;
   state: string;
   zipCode: string;
+  rg: string;
+  rgIssuer: string;
+  nationality: string;
+  naturality: string;
+  fatherName: string;
+  motherName: string;
+  profession: string;
+  maritalStatus: string;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -161,9 +170,18 @@ const MemberDetailPage = () => {
     cr: '',
     crLevel: '',
     address: '',
+    neighborhood: '',
     city: '',
     state: '',
     zipCode: '',
+    rg: '',
+    rgIssuer: '',
+    nationality: '',
+    naturality: '',
+    fatherName: '',
+    motherName: '',
+    profession: '',
+    maritalStatus: '',
   });
 
   // ── Password Dialog State ────────────────────────────────────────────────
@@ -222,9 +240,18 @@ const MemberDetailPage = () => {
         cr: m.cr || '',
         crLevel: m.crLevel?.toString() || '',
         address: (m as any).address || '',
+        neighborhood: (m as any).neighborhood || '',
         city: (m as any).city || '',
         state: (m as any).state || '',
         zipCode: (m as any).zipCode || '',
+        rg: (m as any).rg || '',
+        rgIssuer: (m as any).rgIssuer || '',
+        nationality: (m as any).nationality || '',
+        naturality: (m as any).naturality || '',
+        fatherName: (m as any).fatherName || '',
+        motherName: (m as any).motherName || '',
+        profession: (m as any).profession || '',
+        maritalStatus: (m as any).maritalStatus || '',
       });
       setAttachments((m as any).attachments || []);
     } else {
@@ -325,6 +352,19 @@ const MemberDetailPage = () => {
       phone: form.phone || undefined,
       cr: form.cr || undefined,
       crLevel: form.crLevel ? Number(form.crLevel) : undefined,
+      address: form.address || null,
+      neighborhood: form.neighborhood || null,
+      city: form.city || null,
+      state: form.state || null,
+      zipCode: form.zipCode || null,
+      rg: form.rg || null,
+      rgIssuer: form.rgIssuer || null,
+      nationality: form.nationality || null,
+      naturality: form.naturality || null,
+      fatherName: form.fatherName || null,
+      motherName: form.motherName || null,
+      profession: form.profession || null,
+      maritalStatus: form.maritalStatus || null,
     });
 
     if (result.success && result.data) {
@@ -457,15 +497,15 @@ const MemberDetailPage = () => {
     let bgColor: string;
     let borderColor: string;
     if (daysRemaining <= 0) {
-      color = 'text-red-400';
+      color = 'text-red-700 dark:text-red-400';
       bgColor = 'bg-red-900/30';
       borderColor = 'border-red-800';
     } else if (daysRemaining <= 30) {
-      color = 'text-yellow-400';
+      color = 'text-yellow-700 dark:text-yellow-400';
       bgColor = 'bg-yellow-900/30';
       borderColor = 'border-yellow-800';
     } else {
-      color = 'text-green-400';
+      color = 'text-green-700 dark:text-green-400';
       bgColor = 'bg-green-900/30';
       borderColor = 'border-green-800';
     }
@@ -478,19 +518,19 @@ const MemberDetailPage = () => {
     switch (status) {
       case 'ACTIVE':
         return (
-          <Badge variant="outline" className="bg-orange-900/50 text-orange-400 border-orange-800 font-tactical text-xs">
+          <Badge variant="outline" className="bg-orange-900/50 text-orange-700 dark:text-orange-400 border-orange-800 font-tactical text-xs">
             Em uso
           </Badge>
         );
       case 'RETURNED':
         return (
-          <Badge variant="outline" className="bg-green-900/50 text-green-400 border-green-800 font-tactical text-xs">
+          <Badge variant="outline" className="bg-green-900/50 text-green-700 dark:text-green-400 border-green-800 font-tactical text-xs">
             Devolvido
           </Badge>
         );
       case 'OVERDUE':
         return (
-          <Badge variant="outline" className="bg-red-900/50 text-red-400 border-red-800 font-tactical text-xs">
+          <Badge variant="outline" className="bg-red-900/50 text-red-700 dark:text-red-400 border-red-800 font-tactical text-xs">
             Atrasado
           </Badge>
         );
@@ -561,12 +601,12 @@ const MemberDetailPage = () => {
               const critical = !expired && days <= 30;
               const warn = !expired && !critical && days <= 60;
               const tone = expired
-                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                ? 'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300'
                 : critical
-                ? 'border-red-500/40 bg-red-500/10 text-red-300'
+                ? 'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300'
                 : warn
-                ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300'
-                : 'border-green-500/40 bg-green-500/10 text-green-300';
+                ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300'
+                : 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-300';
               const label = expired
                 ? `Anuidade vencida em ${formatDate(member.annuityValidUntil)}`
                 : days === 0
@@ -731,7 +771,7 @@ const MemberDetailPage = () => {
                       className={
                         member.role === 'admin'
                           ? 'bg-cbt-orange/20 text-cbt-orange border-cbt-orange/50 font-tactical'
-                          : 'bg-blue-900/30 text-blue-400 border-blue-800 font-tactical'
+                          : 'bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-800 font-tactical'
                       }
                     >
                       {member.role === 'admin' ? 'Administrador' : 'Associado'}
@@ -779,6 +819,15 @@ const MemberDetailPage = () => {
                     placeholder="Rua, numero, complemento"
                   />
                 </div>
+                <div className="lg:col-span-2">
+                  <label className={labelClass}>Bairro</label>
+                  <Input
+                    value={form.neighborhood}
+                    onChange={(e) => handleFormChange('neighborhood', e.target.value)}
+                    className={inputClass}
+                    placeholder="Bairro"
+                  />
+                </div>
                 <div>
                   <label className={labelClass}>Cidade</label>
                   <Input
@@ -806,6 +855,59 @@ const MemberDetailPage = () => {
                     className={inputClass}
                     placeholder="00000-000"
                   />
+                </div>
+              </div>
+
+              {/* Dados Civis (Declaracoes) */}
+              <h3 className="text-md font-military font-bold text-foreground mt-6 mb-1 tracking-wide">
+                Dados Civis
+              </h3>
+              <p className="text-xs text-muted-foreground font-tactical mb-3">
+                Usados nas declaracoes oficiais (DGA, DSA, DIC, FILIACAO, etc.).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className={labelClass}>RG (Identidade)</label>
+                  <Input value={form.rg} onChange={(e) => handleFormChange('rg', e.target.value)} className={inputClass} placeholder="Numero" />
+                </div>
+                <div>
+                  <label className={labelClass}>Orgao Emissor</label>
+                  <Input value={form.rgIssuer} onChange={(e) => handleFormChange('rgIssuer', e.target.value)} className={inputClass} placeholder="SSP/BA" />
+                </div>
+                <div>
+                  <label className={labelClass}>Nacionalidade</label>
+                  <Input value={form.nationality} onChange={(e) => handleFormChange('nationality', e.target.value)} className={inputClass} placeholder="BRASILEIRA" />
+                </div>
+                <div>
+                  <label className={labelClass}>Naturalidade</label>
+                  <Input value={form.naturality} onChange={(e) => handleFormChange('naturality', e.target.value)} className={inputClass} placeholder="Cidade natal" />
+                </div>
+                <div className="lg:col-span-2">
+                  <label className={labelClass}>Nome do Pai</label>
+                  <Input value={form.fatherName} onChange={(e) => handleFormChange('fatherName', e.target.value)} className={inputClass} placeholder="Nome completo" />
+                </div>
+                <div className="lg:col-span-2">
+                  <label className={labelClass}>Nome da Mae</label>
+                  <Input value={form.motherName} onChange={(e) => handleFormChange('motherName', e.target.value)} className={inputClass} placeholder="Nome completo" />
+                </div>
+                <div>
+                  <label className={labelClass}>Profissao</label>
+                  <Input value={form.profession} onChange={(e) => handleFormChange('profession', e.target.value)} className={inputClass} placeholder="Ex: Empresario" />
+                </div>
+                <div>
+                  <label className={labelClass}>Estado Civil</label>
+                  <select
+                    value={form.maritalStatus}
+                    onChange={(e) => handleFormChange('maritalStatus', e.target.value)}
+                    className="w-full rounded-md bg-muted border border-input text-foreground px-3 py-2 text-sm focus:outline-none focus:border-cbt-orange focus:ring-1 focus:ring-cbt-orange/20"
+                  >
+                    <option value="">Selecione</option>
+                    <option value="SOLTEIRO">Solteiro(a)</option>
+                    <option value="CASADO">Casado(a)</option>
+                    <option value="DIVORCIADO">Divorciado(a)</option>
+                    <option value="VIUVO">Viuvo(a)</option>
+                    <option value="UNIAO_ESTAVEL">Uniao estavel</option>
+                  </select>
                 </div>
               </div>
 
@@ -848,8 +950,8 @@ const MemberDetailPage = () => {
                   onClick={handleToggleStatus}
                   className={
                     member.status === 'ACTIVE'
-                      ? 'bg-muted border-yellow-700 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 font-tactical'
-                      : 'bg-muted border-green-700 text-green-400 hover:bg-green-900/30 hover:text-green-300 font-tactical'
+                      ? 'bg-muted border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-700 dark:text-yellow-300 font-tactical'
+                      : 'bg-muted border-green-700 text-green-700 dark:text-green-400 hover:bg-green-900/30 hover:text-green-700 dark:text-green-300 font-tactical'
                   }
                 >
                   {member.status === 'ACTIVE' ? (
@@ -869,7 +971,7 @@ const MemberDetailPage = () => {
                 <Button
                   variant="outline"
                   onClick={handleDelete}
-                  className="bg-muted border-red-800 text-red-400 hover:bg-red-900/30 hover:text-red-300 font-tactical"
+                  className="bg-muted border-red-800 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir Associado
@@ -1045,7 +1147,7 @@ const MemberDetailPage = () => {
                             {visit.checkOutTime ? (
                               formatDateTime(visit.checkOutTime).split(' ')[1]
                             ) : (
-                              <Badge variant="outline" className="bg-green-900/50 text-green-400 border-green-800 font-tactical text-xs">
+                              <Badge variant="outline" className="bg-green-900/50 text-green-700 dark:text-green-400 border-green-800 font-tactical text-xs">
                                 Em andamento
                               </Badge>
                             )}
@@ -1199,9 +1301,9 @@ const MemberDetailPage = () => {
                           variant="outline"
                           className={
                             ann.status === 'PAID'
-                              ? 'bg-green-900/50 text-green-400 border-green-800 font-tactical text-xs'
+                              ? 'bg-green-900/50 text-green-700 dark:text-green-400 border-green-800 font-tactical text-xs'
                               : ann.status === 'PENDING'
-                              ? 'bg-yellow-900/50 text-yellow-400 border-yellow-800 font-tactical text-xs'
+                              ? 'bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 border-yellow-800 font-tactical text-xs'
                               : 'bg-muted/50 text-muted-foreground border-border font-tactical text-xs'
                           }
                         >
@@ -1325,7 +1427,7 @@ const MemberDetailPage = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-blue-300 hover:bg-secondary"
+                              className="h-8 w-8 text-muted-foreground hover:text-blue-700 dark:text-blue-300 hover:bg-secondary"
                               title="Transferir"
                               onClick={async () => {
                                 const res = await getLoanById(loan.id);
@@ -1337,7 +1439,7 @@ const MemberDetailPage = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-red-300 hover:bg-secondary"
+                              className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-300 hover:bg-secondary"
                               title="Devolver"
                               onClick={async () => {
                                 const res = await getLoanById(loan.id);

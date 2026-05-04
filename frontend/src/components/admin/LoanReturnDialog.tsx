@@ -75,7 +75,7 @@ const LoanReturnDialog = ({ open, onOpenChange, activeLoan, onReturned }: LoanRe
       <DialogContent className="bg-card border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-red-400" />
+            <Receipt className="h-5 w-5 text-red-700 dark:text-red-400" />
             Devolver Equipamento
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-tactical text-sm">
@@ -92,7 +92,7 @@ const LoanReturnDialog = ({ open, onOpenChange, activeLoan, onReturned }: LoanRe
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div>
             <label htmlFor="return-condition" className={labelClasses}>
-              Condição na Devolução <span className="text-red-400">*</span>
+              Condição na Devolução <span className="text-red-700 dark:text-red-400">*</span>
             </label>
             <select
               id="return-condition"

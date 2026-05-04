@@ -145,10 +145,10 @@ const TYPE_VISUALS: Record<EventTypeKey, {
   pillBg: string;
   icon: React.ElementType;
 }> = {
-  TRAINING:    { label: 'Treino',     hex: '#3b82f6', bg: 'bg-blue-500/15',   border: 'border-blue-500/40',   text: 'text-blue-300',   pillBg: 'bg-blue-500/80',   icon: Target },
+  TRAINING:    { label: 'Treino',     hex: '#3b82f6', bg: 'bg-blue-500/15',   border: 'border-blue-500/40',   text: 'text-blue-700 dark:text-blue-300',   pillBg: 'bg-blue-500/80',   icon: Target },
   COMPETITION: { label: 'Competição', hex: '#f97316', bg: 'bg-cbt-orange/15', border: 'border-cbt-orange/40', text: 'text-cbt-orange', pillBg: 'bg-cbt-orange/80', icon: Trophy },
-  COURSE:      { label: 'Curso',      hex: '#22c55e', bg: 'bg-green-500/15',  border: 'border-green-500/40',  text: 'text-green-300',  pillBg: 'bg-green-500/80',  icon: BookOpen },
-  WORKSHOP:    { label: 'Workshop',   hex: '#a855f7', bg: 'bg-purple-500/15', border: 'border-purple-500/40', text: 'text-purple-300', pillBg: 'bg-purple-500/80', icon: Wrench },
+  COURSE:      { label: 'Curso',      hex: '#22c55e', bg: 'bg-green-500/15',  border: 'border-green-500/40',  text: 'text-green-700 dark:text-green-300',  pillBg: 'bg-green-500/80',  icon: BookOpen },
+  WORKSHOP:    { label: 'Workshop',   hex: '#a855f7', bg: 'bg-purple-500/15', border: 'border-purple-500/40', text: 'text-purple-700 dark:text-purple-300', pillBg: 'bg-purple-500/80', icon: Wrench },
 };
 
 const TYPE_KEYS: EventTypeKey[] = ['TRAINING', 'COMPETITION', 'COURSE', 'WORKSHOP'];
@@ -739,7 +739,7 @@ const EventsManagementPage = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleDelete(detailEvent)}
-                  className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 font-tactical"
+                  className="w-full text-red-700 dark:text-red-400 hover:text-red-700 dark:text-red-300 hover:bg-red-500/10 font-tactical"
                 >
                   <Trash2 className="h-4 w-4 mr-1.5" />
                   Excluir evento

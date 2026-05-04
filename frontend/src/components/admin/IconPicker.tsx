@@ -277,7 +277,7 @@ const IconPicker = ({
               variant="ghost"
               size="sm"
               onClick={handleClear}
-              className="text-muted-foreground hover:text-red-400 font-tactical h-8"
+              className="text-muted-foreground hover:text-red-700 dark:text-red-400 font-tactical h-8"
             >
               <X className="h-3.5 w-3.5 mr-1" />
               Limpar

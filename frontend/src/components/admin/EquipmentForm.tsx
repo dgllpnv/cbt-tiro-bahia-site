@@ -91,13 +91,13 @@ const EquipmentForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className={labelClasses}>
-              Nome <span className="text-red-400">*</span>
+              Nome <span className="text-red-700 dark:text-red-400">*</span>
             </label>
             <Input id="name" name="name" placeholder="Ex: Glock 17 Nº 42" value={form.name} onChange={handleChange} className={inputClasses} required />
           </div>
           <div>
             <label htmlFor="equipmentType" className={labelClasses}>
-              Tipo <span className="text-red-400">*</span>
+              Tipo <span className="text-red-700 dark:text-red-400">*</span>
             </label>
             <select id="equipmentType" name="equipmentType" value={form.equipmentType} onChange={handleChange} className={selectClasses}>
               {Object.entries(equipmentTypeLabels).map(([value, label]) => (

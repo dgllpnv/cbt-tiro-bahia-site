@@ -114,7 +114,7 @@ const EquipmentSearch = ({ value, onChange, placeholder = 'Buscar equipamento...
                   <p className="text-foreground font-tactical text-sm truncate">{eq.name}{eq.caliber ? ` (${eq.caliber})` : ''}</p>
                   <p className="text-muted-foreground/80 font-tactical text-xs">{equipmentTypeLabels[eq.equipmentType] || eq.equipmentType}{eq.serialNumber ? ` — ${eq.serialNumber}` : ''}</p>
                 </div>
-                <span className={`text-xs font-tactical ${eq.isAvailable ? 'text-green-400' : 'text-red-400'}`}>
+                <span className={`text-xs font-tactical ${eq.isAvailable ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                   {eq.isAvailable ? 'Livre' : 'Em uso'}
                 </span>
               </button>

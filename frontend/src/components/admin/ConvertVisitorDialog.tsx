@@ -168,7 +168,7 @@ const ConvertVisitorDialog = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="conv-email" className={labelClasses}>
-                  E-mail <span className="text-red-400">*</span>
+                  E-mail <span className="text-red-700 dark:text-red-400">*</span>
                 </label>
                 <Input
                   id="conv-email"
@@ -181,7 +181,7 @@ const ConvertVisitorDialog = ({
               </div>
               <div>
                 <label htmlFor="conv-password" className={labelClasses}>
-                  Senha <span className="text-red-400">*</span>
+                  Senha <span className="text-red-700 dark:text-red-400">*</span>
                 </label>
                 <Input
                   id="conv-password"
@@ -196,7 +196,7 @@ const ConvertVisitorDialog = ({
               </div>
               <div>
                 <label htmlFor="conv-member-number" className={labelClasses}>
-                  Numero de Associado <span className="text-red-400">*</span>
+                  Numero de Associado <span className="text-red-700 dark:text-red-400">*</span>
                 </label>
                 <Input
                   id="conv-member-number"
@@ -270,7 +270,7 @@ const ConvertVisitorDialog = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label htmlFor="conv-amount" className={labelClasses}>
-                  Valor (R$) <span className="text-red-400">*</span>
+                  Valor (R$) <span className="text-red-700 dark:text-red-400">*</span>
                 </label>
                 <Input
                   id="conv-amount"
@@ -286,7 +286,7 @@ const ConvertVisitorDialog = ({
               </div>
               <div>
                 <label htmlFor="conv-year" className={labelClasses}>
-                  Ano de Referencia <span className="text-red-400">*</span>
+                  Ano de Referencia <span className="text-red-700 dark:text-red-400">*</span>
                 </label>
                 <Input
                   id="conv-year"

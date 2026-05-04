@@ -45,9 +45,9 @@ const KpiCard = ({
   const negative = goodIfUp ? isDown : isUp;
 
   const deltaColor = positive
-    ? 'text-green-400'
+    ? 'text-green-700 dark:text-green-400'
     : negative
-    ? 'text-red-400'
+    ? 'text-red-700 dark:text-red-400'
     : 'text-muted-foreground/80';
   const DeltaIcon = isUp ? TrendingUp : isDown ? TrendingDown : Minus;
 
