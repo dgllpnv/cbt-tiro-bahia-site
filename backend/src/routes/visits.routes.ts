@@ -136,6 +136,14 @@ router.get('/today', requireRole('ADMIN'), async (req: Request, res: Response): 
             memberNumber: true,
             photoUrl: true,
             role: true,
+            // Thumbnail mais recente do FaceProfile — usado pelo card de presentes
+            // do dashboard para exibir o mesmo avatar da identidade facial.
+            faceProfiles: {
+              where: { isActive: true },
+              orderBy: { createdAt: 'desc' as const },
+              take: 1,
+              select: { thumbnail: true },
+            },
             // Equipamentos atualmente emprestados ao membro — alimenta a lista
             // "Equipamentos em uso" no PresentCard do dashboard.
             loansReceived: {
@@ -185,7 +193,19 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       where: { id },
       include: {
         member: {
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true, role: true },
+          select: {
+            id: true,
+            fullName: true,
+            memberNumber: true,
+            photoUrl: true,
+            role: true,
+            faceProfiles: {
+              where: { isActive: true },
+              orderBy: { createdAt: 'desc' as const },
+              take: 1,
+              select: { thumbnail: true },
+            },
+          },
         },
         lane: {
           select: { id: true, number: true, name: true, status: true },

@@ -29,6 +29,7 @@ import OpenTabDialog from '@/components/admin/OpenTabDialog';
 import CloseTabDialog from '@/components/admin/CloseTabDialog';
 import LoanIssueDialog from '@/components/admin/LoanIssueDialog';
 import MemberLoanedEquipmentList from '@/components/admin/MemberLoanedEquipmentList';
+import MemberAvatar from '@/components/admin/MemberAvatar';
 import FaceVerifyDialog from '@/components/admin/FaceVerifyDialog';
 import FaceCheckoutDialog, { type FaceCheckoutTarget } from '@/components/admin/FaceCheckoutDialog';
 import FaceRegisterPromptDialog from '@/components/admin/FaceRegisterPromptDialog';
@@ -251,11 +252,14 @@ const PresentCard = ({
     >
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div
-          className={`h-12 w-12 rounded-full flex items-center justify-center font-tactical text-sm font-bold flex-shrink-0 ${isVisitor ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300' : 'bg-cbt-orange/20 text-cbt-orange'}`}
-        >
-          {getInitials(visit.member.fullName)}
-        </div>
+        <MemberAvatar
+          size="md"
+          fullName={visit.member.fullName}
+          facePhoto={visit.member.faceProfiles?.[0]?.thumbnail ?? null}
+          ringClassName={
+            isVisitor ? 'ring-2 ring-blue-500/40' : 'ring-2 ring-cbt-orange/40'
+          }
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-foreground font-tactical text-sm font-semibold truncate">

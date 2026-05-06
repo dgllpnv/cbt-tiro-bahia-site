@@ -14,6 +14,7 @@ import { getMemberStats, type MemberStats } from '@/services/memberStatsService'
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import MemberAvatar from '@/components/admin/MemberAvatar';
 import {
   FIREARM_CATEGORIES,
   type FirearmCategory,
@@ -21,12 +22,6 @@ import {
 import { getCaliberColor } from '@/lib/ammunitionVisuals';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 function tenureLabel(months: number): string {
   if (months <= 0) return 'Recém-cadastrado';
@@ -131,7 +126,8 @@ interface MemberProfileTabProps {
   cr?: string | null;
   crLevel?: number | null;
   membershipTier?: string | null;
-  photoUrl?: string | null;
+  /** thumbnail base64 do FaceProfile mais recente (mesma foto da identidade facial) */
+  facePhoto?: string | null;
   onGoToVisits?: () => void;
 }
 
@@ -142,7 +138,7 @@ const MemberProfileTab = ({
   cr,
   crLevel,
   membershipTier,
-  photoUrl,
+  facePhoto,
   onGoToVisits,
 }: MemberProfileTabProps) => {
   const { toast } = useToast();
@@ -188,17 +184,7 @@ const MemberProfileTab = ({
     <div className="space-y-6">
       {/* Hero */}
       <div className="bg-card/50 border border-border rounded-lg p-6 flex items-center gap-5 flex-wrap">
-        {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={fullName}
-            className="h-24 w-24 rounded-full object-cover ring-2 ring-cbt-orange/40"
-          />
-        ) : (
-          <div className="h-24 w-24 rounded-full bg-cbt-orange/20 text-cbt-orange flex items-center justify-center font-military text-2xl font-bold ring-2 ring-cbt-orange/40">
-            {getInitials(fullName)}
-          </div>
-        )}
+        <MemberAvatar size="lg" fullName={fullName} facePhoto={facePhoto ?? null} />
         <div className="min-w-0 flex-1 space-y-2">
           <h2 className="text-2xl font-military font-bold text-foreground tracking-wide">{fullName}</h2>
           <div className="flex items-center gap-2 flex-wrap">

@@ -18,6 +18,7 @@ import {
   Calendar,
   AlertTriangle,
   Upload,
+  Download,
   X,
   IdCard,
   ArrowRight,
@@ -682,7 +683,7 @@ const MemberDetailPage = () => {
             cr={member.cr ?? null}
             crLevel={member.crLevel ?? null}
             membershipTier={(member as any).membershipTier ?? null}
-            photoUrl={member.photoUrl ?? null}
+            facePhoto={member.faceProfiles?.[0]?.thumbnail ?? null}
             onGoToVisits={() => setActiveTab('visitas')}
           />
         </TabsContent>
@@ -928,56 +929,8 @@ const MemberDetailPage = () => {
               </div>
             </div>
 
-            {/* Actions Section */}
-            <div className="bg-card/50 border border-border rounded-lg p-6">
-              <h2 className="text-lg font-military font-bold text-foreground mb-4 tracking-wide">
-                Acoes
-              </h2>
-              <div className="flex flex-wrap gap-3">
-                {/* Change Password */}
-                <Button
-                  variant="outline"
-                  onClick={() => setPasswordDialogOpen(true)}
-                  className="bg-muted border-input text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
-                >
-                  <Key className="h-4 w-4 mr-2" />
-                  Alterar Senha
-                </Button>
-
-                {/* Toggle Status */}
-                <Button
-                  variant="outline"
-                  onClick={handleToggleStatus}
-                  className={
-                    member.status === 'ACTIVE'
-                      ? 'bg-muted border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-700 dark:text-yellow-300 font-tactical'
-                      : 'bg-muted border-green-700 text-green-700 dark:text-green-400 hover:bg-green-900/30 hover:text-green-700 dark:text-green-300 font-tactical'
-                  }
-                >
-                  {member.status === 'ACTIVE' ? (
-                    <>
-                      <UserX className="h-4 w-4 mr-2" />
-                      Desativar
-                    </>
-                  ) : (
-                    <>
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Ativar
-                    </>
-                  )}
-                </Button>
-
-                {/* Delete */}
-                <Button
-                  variant="outline"
-                  onClick={handleDelete}
-                  className="bg-muted border-red-800 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir Associado
-                </Button>
-              </div>
-            </div>
+            {/* Identidade Facial */}
+            <MemberFaceProfilesSection memberId={member.id} memberName={member.fullName} />
 
             {/* Attachments Section */}
             <div className="bg-card/50 border border-border rounded-lg p-6">
@@ -1050,15 +1003,59 @@ const MemberDetailPage = () => {
                             {formatDateTime(att.uploadedAt)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => window.open(att.fileUrl, '_blank')}
-                              className="text-muted-foreground hover:text-foreground hover:bg-secondary font-tactical text-xs"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Visualizar
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  // Baixa o arquivo via data URL — cria um link
+                                  // temporário para forcar download com o nome original.
+                                  const link = document.createElement('a');
+                                  link.href = att.fileUrl;
+                                  link.download = att.fileName;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                                className="text-muted-foreground hover:text-cbt-orange hover:bg-secondary font-tactical text-xs"
+                                title="Baixar"
+                              >
+                                <Download className="h-4 w-4 mr-1" />
+                                Baixar
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setConfirmDialog({
+                                    open: true,
+                                    title: 'Excluir anexo',
+                                    description: `Tem certeza que deseja excluir o anexo "${att.fileName}"? Esta acao nao pode ser desfeita.`,
+                                    variant: 'destructive',
+                                    confirmLabel: 'Excluir',
+                                    onConfirm: async () => {
+                                      setIsActionLoading(true);
+                                      try {
+                                        await api.delete(`/api/users/${id}/attachments/${att.id}`);
+                                        toast({ title: 'Anexo excluido com sucesso' });
+                                        setConfirmDialog((p) => ({ ...p, open: false }));
+                                        fetchMember();
+                                      } catch {
+                                        toast({
+                                          title: 'Erro ao excluir anexo',
+                                          variant: 'destructive',
+                                        });
+                                      }
+                                      setIsActionLoading(false);
+                                    },
+                                  });
+                                }}
+                                className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:hover:text-red-400 hover:bg-secondary"
+                                title="Excluir"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -1079,10 +1076,57 @@ const MemberDetailPage = () => {
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="mt-6">
-            <MemberFaceProfilesSection memberId={member.id} memberName={member.fullName} />
+            {/* Actions Section */}
+            <div className="bg-card/50 border border-border rounded-lg p-6">
+              <h2 className="text-lg font-military font-bold text-foreground mb-4 tracking-wide">
+                Acoes
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {/* Change Password */}
+                <Button
+                  variant="outline"
+                  onClick={() => setPasswordDialogOpen(true)}
+                  className="bg-muted border-input text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  Alterar Senha
+                </Button>
+
+                {/* Toggle Status */}
+                <Button
+                  variant="outline"
+                  onClick={handleToggleStatus}
+                  className={
+                    member.status === 'ACTIVE'
+                      ? 'bg-muted border-yellow-700 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-700 dark:text-yellow-300 font-tactical'
+                      : 'bg-muted border-green-700 text-green-700 dark:text-green-400 hover:bg-green-900/30 hover:text-green-700 dark:text-green-300 font-tactical'
+                  }
+                >
+                  {member.status === 'ACTIVE' ? (
+                    <>
+                      <UserX className="h-4 w-4 mr-2" />
+                      Desativar
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Ativar
+                    </>
+                  )}
+                </Button>
+
+                {/* Delete */}
+                <Button
+                  variant="outline"
+                  onClick={handleDelete}
+                  className="bg-muted border-red-800 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir Associado
+                </Button>
+              </div>
+            </div>
           </div>
         </TabsContent>
 

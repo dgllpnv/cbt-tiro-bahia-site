@@ -23,6 +23,9 @@ export interface Visit {
     memberNumber: string | null;
     photoUrl: string | null;
     role?: 'ADMIN' | 'ASSOCIATE' | 'VISITOR';
+    // Thumbnail do FaceProfile mais recente (max 1 elemento). Vem populado em
+    // /api/visits/today para exibir avatar igual ao da listagem de associados.
+    faceProfiles?: Array<{ thumbnail: string | null }>;
     // Empréstimos atualmente ativos do membro (vem populado em GET /api/visits/today)
     loansReceived?: Array<{
       id: string;

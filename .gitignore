@@ -23,6 +23,7 @@ build
 # Backend
 backend/dist
 backend/node_modules
+backend/data/
 
 # Frontend
 frontend/dist

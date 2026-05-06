@@ -37,8 +37,9 @@
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 88%;
-    --input: 214.3 31.8% 88%;
+    /* Bordas mais escuras no light mode para contraste e separacao visual */
+    --border: 214 18% 72%;
+    --input: 214 18% 72%;
     --ring: 32 100% 50%;
 
     --radius: 0.5rem;
@@ -49,7 +50,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 40% 96.1%;
     --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 214.3 31.8% 88%;
+    --sidebar-border: 214 18% 72%;
     --sidebar-ring: 32 100% 50%;
 
     /* Padrão de pontos do background (light) */

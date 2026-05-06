@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -29,8 +29,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import TransactionsPage from "./pages/admin/TransactionsPage";
 import MembersPage from "./pages/admin/MembersPage";
 import FinancialPage from "./pages/admin/FinancialPage";
-import SettingsPage from "./pages/admin/SettingsPage";
-import InventoryPage from "./pages/admin/InventoryPage";
+import ProductsPage from "./pages/admin/ProductsPage";
 import AuditLogsPage from "./pages/admin/AuditLogsPage";
 import NewsManagementPage from "./pages/admin/NewsManagementPage";
 import EventsManagementPage from "./pages/admin/EventsManagementPage";
@@ -108,9 +107,11 @@ const App = () => (
               <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
               <Route path="financeiro" element={<FinancialPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
-              <Route path="cadastros" element={<SettingsPage />} />
+              <Route path="produtos" element={<ProductsPage />} />
+              {/* Compat: redireciona rotas antigas para a tela unificada */}
+              <Route path="cadastros" element={<Navigate to="/admin/produtos" replace />} />
+              <Route path="estoque" element={<Navigate to="/admin/produtos" replace />} />
               <Route path="dados-clube" element={<ClubDataPage />} />
-              <Route path="estoque" element={<InventoryPage />} />
               <Route path="logs" element={<AuditLogsPage />} />
               <Route path="noticias" element={<NewsManagementPage />} />
               <Route path="eventos" element={<EventsManagementPage />} />

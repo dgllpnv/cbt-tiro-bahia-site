@@ -17,18 +17,21 @@
     "db:seed:financial": "tsx prisma/seed-financial.ts",
     "db:seed:all": "npm run db:seed && npm run db:seed:demo && npm run db:seed:news-events && npm run db:seed:financial",
     "db:studio": "prisma studio",
-    "db:reset": "prisma db push --force-reset && npm run db:seed:all"
+    "db:reset": "prisma db push --force-reset && npm run db:seed:all",
+    "migrate:adm:dry-run": "tsx scripts/migrate-adm-clube.ts --dry-run",
+    "migrate:adm:apply": "tsx scripts/migrate-adm-clube.ts --apply",
+    "migrate:adm:cleanup": "tsx scripts/migrate-adm-clube.ts --cleanup-only"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "iconv-lite": "^0.6.3",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -36,7 +39,6 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/multer": "^1.4.12",
     "@types/node": "^22.9.0",
     "prisma": "^5.22.0",
     "tsx": "^4.19.2",

@@ -166,14 +166,6 @@ export function getIconEntry(key: string | null | undefined): IconEntry | null {
   return REGISTRY_MAP[key] ?? null;
 }
 
-export function getIcon(key: string | null | undefined): IconType | null {
-  return getIconEntry(key)?.Icon ?? null;
-}
-
-export function getIconsByGroup(group: IconGroup): IconEntry[] {
-  return ICON_REGISTRY.filter((e) => e.group === group);
-}
-
 export function searchIcons(query: string): IconEntry[] {
   const q = query.trim().toLowerCase();
   if (!q) return ICON_REGISTRY;

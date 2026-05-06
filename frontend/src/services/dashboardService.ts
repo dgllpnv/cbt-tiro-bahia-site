@@ -60,6 +60,7 @@ export interface RankingFrequencyEntry {
   fullName: string;
   memberNumber: string | null;
   photoUrl: string | null;
+  facePhoto: string | null;
   visitCount: number;
 }
 
@@ -68,6 +69,7 @@ export interface RankingMasteryEntry {
   fullName: string;
   memberNumber: string | null;
   photoUrl: string | null;
+  facePhoto: string | null;
   totalShots: number;
 }
 

@@ -14,6 +14,11 @@ export interface User {
   annuityValidUntil?: string;
   memberSince?: string;
   status: string;
+  // Thumbnail base64 do FaceProfile mais recente ativo (1 elemento ou vazio).
+  // Usado para renderizar avatar na lista e no perfil do associado.
+  faceProfiles?: Array<{ thumbnail: string | null }>;
+  // Anexos do associado (presente apenas em GET /api/users/:id, não no list).
+  attachments?: UserAttachment[];
 }
 
 export interface UserAttachment {

@@ -236,10 +236,27 @@ router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response
     const members = memberIds.length
       ? await prisma.user.findMany({
           where: { id: { in: memberIds } },
-          select: { id: true, fullName: true, memberNumber: true, photoUrl: true },
+          select: {
+            id: true,
+            fullName: true,
+            memberNumber: true,
+            photoUrl: true,
+            // Avatar do dashboard puxa do FaceProfile mais recente — mesma fonte
+            // usada na listagem de associados e nos cards de presentes.
+            faceProfiles: {
+              where: { isActive: true },
+              orderBy: { createdAt: 'desc' as const },
+              take: 1,
+              select: { thumbnail: true },
+            },
+          },
         })
       : [];
     const byId = new Map(members.map((m) => [m.id, m]));
+    const facePhotoFor = (memberId: string): string | null => {
+      const m = byId.get(memberId);
+      return m?.faceProfiles?.[0]?.thumbnail ?? null;
+    };
 
     const byFrequency = visitGroup
       .filter((v) => byId.has(v.memberId))
@@ -248,6 +265,7 @@ router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response
         fullName: byId.get(v.memberId)!.fullName,
         memberNumber: byId.get(v.memberId)!.memberNumber,
         photoUrl: byId.get(v.memberId)!.photoUrl,
+        facePhoto: facePhotoFor(v.memberId),
         visitCount: v._count._all,
       }));
 
@@ -258,6 +276,7 @@ router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response
         fullName: byId.get(d.memberId)!.fullName,
         memberNumber: byId.get(d.memberId)!.memberNumber,
         photoUrl: byId.get(d.memberId)!.photoUrl,
+        facePhoto: facePhotoFor(d.memberId),
         totalShots: d._sum.shotsFired || 0,
       }));
 

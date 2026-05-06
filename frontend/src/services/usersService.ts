@@ -114,6 +114,8 @@ function mapUser(raw: any): User {
     annuityValidUntil: raw.annuityValidUntil,
     memberSince: raw.memberSince,
     status: raw.status || 'ACTIVE',
+    faceProfiles: Array.isArray(raw.faceProfiles) ? raw.faceProfiles : [],
+    attachments: Array.isArray(raw.attachments) ? raw.attachments : undefined,
   };
 }
 

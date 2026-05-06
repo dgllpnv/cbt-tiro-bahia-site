@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Loader2 } from 'lucide-react';
 import { GiBullets } from 'react-icons/gi';
+import MemberAvatar from '@/components/admin/MemberAvatar';
 
 import {
   getDashboardRankings,
@@ -68,6 +69,7 @@ interface RankingCardProps {
     fullName: string;
     memberNumber: string | null;
     photoUrl: string | null;
+    facePhoto: string | null;
     value: number;
   }>;
   valueLabel: (v: number) => string;
@@ -120,11 +122,12 @@ const RankingCard = ({
                 >
                   {accent.label}
                 </span>
-                <div
-                  className={`h-9 w-9 rounded-full bg-cbt-orange/20 text-cbt-orange flex items-center justify-center font-tactical text-xs font-bold ring-2 ${accent.ring}`}
-                >
-                  {getInitials(entry.fullName)}
-                </div>
+                <MemberAvatar
+                  size="sm"
+                  fullName={entry.fullName}
+                  facePhoto={entry.facePhoto}
+                  ringClassName={`ring-2 ${accent.ring}`}
+                />
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground font-tactical text-sm truncate">{entry.fullName}</p>
                   <p className="text-muted-foreground/80 font-tactical text-xs truncate">
@@ -261,6 +264,7 @@ const RankingsPanel = () => {
           fullName: e.fullName,
           memberNumber: e.memberNumber,
           photoUrl: e.photoUrl,
+          facePhoto: e.facePhoto,
           value: e.visitCount,
         }))}
         valueLabel={(v) => `${v} ${v === 1 ? 'visita' : 'visitas'}`}
@@ -276,6 +280,7 @@ const RankingsPanel = () => {
           fullName: e.fullName,
           memberNumber: e.memberNumber,
           photoUrl: e.photoUrl,
+          facePhoto: e.facePhoto,
           value: e.totalShots,
         }))}
         valueLabel={(v) => `${v.toLocaleString('pt-BR')} disparos`}

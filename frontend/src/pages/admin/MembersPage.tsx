@@ -8,8 +8,10 @@ import EmptyState from '@/components/shared/EmptyState';
 import SearchInput from '@/components/shared/SearchInput';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import MemberStatusBadge from '@/components/members/MemberStatusBadge';
+import MemberAvatar from '@/components/admin/MemberAvatar';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableHeader,
@@ -39,6 +41,10 @@ const MembersPage = () => {
     totalPages: 0,
   });
   const [search, setSearch] = useState('');
+  // Por padrão lista só ativos. Quando o admin digita uma busca, o filtro
+  // de status é ignorado (mostra ativos + inativos + suspensos) — esse é
+  // o comportamento decidido pelo usuário para facilitar localizar histórico.
+  const [onlyActive, setOnlyActive] = useState(true);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,11 +64,16 @@ const MembersPage = () => {
   });
   const [isActionLoading, setIsActionLoading] = useState(false);
 
+  // Quando há busca, ignora o filtro de status (mostra todos)
+  const trimmedSearch = search.trim();
+  const filteringByStatus = onlyActive && !trimmedSearch;
+
   // ── Fetch Users ─────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     const result = await listUsers({
-      search: search || undefined,
+      search: trimmedSearch || undefined,
+      status: filteringByStatus ? 'ACTIVE' : undefined,
       page,
       limit: ITEMS_PER_PAGE,
     });
@@ -78,16 +89,16 @@ const MembersPage = () => {
       });
     }
     setIsLoading(false);
-  }, [search, page]);
+  }, [trimmedSearch, filteringByStatus, page]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search or filter changes
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [trimmedSearch, filteringByStatus]);
 
   // ── Actions ─────────────────────────────────────────────────────────────
   const handleToggleStatus = (user: User) => {
@@ -161,13 +172,34 @@ const MembersPage = () => {
         }
       />
 
-      {/* Search */}
-      <div className="mb-6 max-w-sm">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Buscar por nome, CPF ou email..."
-        />
+      {/* Search + filtros */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 max-w-sm">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Buscar por nome, CPF ou email..."
+          />
+        </div>
+        <label
+          className={`flex items-center gap-2 text-sm font-tactical px-3 py-2 rounded-md border border-border bg-card/50 cursor-pointer select-none transition-colors ${
+            trimmedSearch
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:bg-muted/40'
+          }`}
+          title={
+            trimmedSearch
+              ? 'Filtro desabilitado durante busca — mostrando ativos e inativos'
+              : 'Mostrar apenas associados ativos'
+          }
+        >
+          <Checkbox
+            checked={onlyActive}
+            onCheckedChange={(c) => setOnlyActive(c === true)}
+            disabled={!!trimmedSearch}
+          />
+          <span className="text-foreground">Apenas ativos</span>
+        </label>
       </div>
 
       {/* Content */}
@@ -199,6 +231,7 @@ const MembersPage = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="w-14 text-muted-foreground font-tactical sr-only">Foto</TableHead>
                   <TableHead className="text-muted-foreground font-tactical">Nome</TableHead>
                   <TableHead className="text-muted-foreground font-tactical">CPF</TableHead>
                   <TableHead className="text-muted-foreground font-tactical">N. Associado</TableHead>
@@ -210,6 +243,13 @@ const MembersPage = () => {
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id} className="border-border hover:bg-muted/50">
+                    <TableCell className="w-14 py-2">
+                      <MemberAvatar
+                        size="sm"
+                        fullName={user.fullName}
+                        facePhoto={user.faceProfiles?.[0]?.thumbnail ?? null}
+                      />
+                    </TableCell>
                     <TableCell className="text-foreground font-medium">{user.fullName}</TableCell>
                     <TableCell className="text-foreground/85 font-mono text-sm">
                       {formatCpf(user.cpf)}

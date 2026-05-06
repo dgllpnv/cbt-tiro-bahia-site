@@ -301,4 +301,39 @@ router.post('/adjust', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// =====================================================
+// PATCH /api/stock/:productId/minimum — Atualiza apenas o estoque minimo
+// (usado pela tela de Produtos ao editar metadados sem mexer em quantidade)
+// =====================================================
+const minimumSchema = z.object({
+  minimumStock: z.number().int().min(0, 'Minimo deve ser >= 0'),
+});
+
+router.patch('/:productId/minimum', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = minimumSchema.parse(req.body);
+    const stockItem = await prisma.stockItem.findFirst({
+      where: { productId: req.params.productId },
+      select: { id: true },
+    });
+    if (!stockItem) {
+      res.status(404).json({ success: false, error: 'Item de estoque nao encontrado' });
+      return;
+    }
+    const updated = await prisma.stockItem.update({
+      where: { id: stockItem.id },
+      data: { minimumStock: data.minimumStock },
+      select: { id: true, minimumStock: true },
+    });
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ success: false, error: error.errors[0].message });
+      return;
+    }
+    console.error('Erro ao atualizar minimo:', error);
+    res.status(500).json({ success: false, error: 'Erro ao atualizar minimo' });
+  }
+});
+
 export default router;

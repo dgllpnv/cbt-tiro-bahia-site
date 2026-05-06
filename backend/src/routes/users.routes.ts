@@ -49,6 +49,15 @@ const userSelectFields = {
   metadata: true,
   createdAt: true,
   updatedAt: true,
+  // Inclui apenas o thumbnail mais recente do FaceProfile ativo (1 por user).
+  // Usado pelo frontend para exibir avatar na listagem e no perfil sem precisar
+  // de outra chamada. thumbnail ja vem como base64 data URL do Human.js.
+  faceProfiles: {
+    where: { isActive: true },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+    select: { thumbnail: true },
+  },
 } as const;
 
 // =====================================================
@@ -726,5 +735,119 @@ router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response):
     });
   }
 });
+
+// =====================================================
+// POST /:id/attachments — Adiciona anexo ao associado (ADMIN only)
+// =====================================================
+
+const attachmentCreateSchema = z.object({
+  fileName: z.string().min(1).max(500),
+  // base64 data URL pode ser longo (PDF/imagem ate 10MB). Sem max — body parser
+  // ja limita em 10mb (ver index.ts).
+  fileUrl: z.string().min(1),
+  fileType: z.string().min(1).max(120),
+  fileSize: z.number().int().nonnegative().optional(),
+  description: z.string().max(500).optional(),
+});
+
+router.post('/:id/attachments', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id as string;
+    const validation = attachmentCreateSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({ success: false, error: validation.error.errors[0].message });
+      return;
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, fullName: true },
+    });
+    if (!targetUser) {
+      res.status(404).json({ success: false, error: 'Usuario nao encontrado' });
+      return;
+    }
+
+    const data = validation.data;
+    const attachment = await prisma.userAttachment.create({
+      data: {
+        userId,
+        fileName: data.fileName,
+        fileUrl: data.fileUrl,
+        fileType: data.fileType,
+        fileSize: data.fileSize ?? null,
+        description: data.description ?? null,
+      },
+      select: {
+        id: true,
+        fileName: true,
+        fileType: true,
+        fileSize: true,
+        description: true,
+        uploadedAt: true,
+      },
+    });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'UserAttachment',
+      entityId: attachment.id,
+      userId,
+      newData: { fileName: data.fileName, fileType: data.fileType, fileSize: data.fileSize },
+      description: `Anexo "${data.fileName}" adicionado ao associado ${targetUser.fullName}`,
+      ipAddress: req.ip as string | undefined,
+    });
+
+    // Retorna o attachment SEM o fileUrl (base64) para resposta leve.
+    // Frontend ja tem o conteudo localmente; refetch traz a lista atualizada.
+    res.status(201).json({ success: true, data: attachment });
+  } catch (error) {
+    console.error('[USERS] Erro ao criar anexo:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+  }
+});
+
+// =====================================================
+// DELETE /:id/attachments/:attachmentId — Remove anexo (ADMIN only)
+// =====================================================
+
+router.delete(
+  '/:id/attachments/:attachmentId',
+  requireRole('ADMIN'),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.id as string;
+      const attachmentId = req.params.attachmentId as string;
+
+      const attachment = await prisma.userAttachment.findUnique({
+        where: { id: attachmentId },
+        select: { id: true, userId: true, fileName: true },
+      });
+      if (!attachment || attachment.userId !== userId) {
+        res.status(404).json({ success: false, error: 'Anexo nao encontrado' });
+        return;
+      }
+
+      await prisma.userAttachment.delete({ where: { id: attachmentId } });
+
+      await createAuditLog({
+        performedById: req.user!.id,
+        action: 'DELETE',
+        entityType: 'UserAttachment',
+        entityId: attachmentId,
+        userId,
+        previousData: { fileName: attachment.fileName },
+        description: `Anexo "${attachment.fileName}" removido`,
+        ipAddress: req.ip as string | undefined,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[USERS] Erro ao remover anexo:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  },
+);
 
 export default router;
