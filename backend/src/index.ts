@@ -36,14 +36,37 @@ const PORT = Number(process.env.PORT) || 3002;
 // =====================================================
 // CORS CONFIGURATION
 // =====================================================
+// Aceita:
+//   1. Origens explicitas em ALLOWED_ORIGINS (CSV)
+//   2. Qualquer subdominio *.easypanel.host (URLs temporarias do
+//      EasyPanel mudam com hash; whitelist explicita seria fragil)
+//   3. Localhost padrao em DEV (8080, 5173, 3000)
+// Origin null/undefined (curl, server-to-server) sempre passa.
+// =====================================================
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
-  : ['http://localhost:8080', 'http://localhost:5173'];
+const explicitOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000'];
+
+const EASYPANEL_PATTERN = /^https:\/\/[a-z0-9-]+\.[a-z0-9]+\.easypanel\.host$/i;
+
+function isOriginAllowed(origin: string): boolean {
+  if (explicitOrigins.includes(origin)) return true;
+  if (EASYPANEL_PATTERN.test(origin)) return true;
+  return false;
+}
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Origin null/undefined = curl ou server-to-server. Permite.
+      if (!origin) return callback(null, true);
+      if (isOriginAllowed(origin)) return callback(null, true);
+      // Origem nao autorizada — Express CORS rejeita silenciosamente
+      // (nao retorna ACL-Allow-Origin), browser bloqueia.
+      console.warn(`[CORS] Origem nao autorizada: ${origin}`);
+      return callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -165,7 +188,7 @@ app.listen(PORT, () => {
   console.log(`  CBT Backend - Clube Baiano de Tiro`);
   console.log(`  Servidor rodando na porta ${PORT}`);
   console.log(`  Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`  CORS: ${allowedOrigins.join(', ')}`);
+  console.log(`  CORS: ${explicitOrigins.join(', ')} + *.easypanel.host`);
   console.log(`========================================\n`);
 });
 
