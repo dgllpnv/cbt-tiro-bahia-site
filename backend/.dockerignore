@@ -1,0 +1,46 @@
+# Dependencias e build
+node_modules
+dist
+.next
+build
+
+# Variaveis sensiveis
+.env
+.env.local
+.env.*.local
+
+# Git e VCS
+.git
+.gitignore
+.github
+
+# Arquivos de migracao e diagnostico (uso pontual, nao precisa em prod)
+data
+scripts/check-state.ts
+scripts/cleanup-history.ts
+scripts/smoke-test.ts
+scripts/migrate-adm-clube.ts
+scripts/migration-utils.ts
+scripts/cleanup-seeds.ts
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Tests / coverage
+coverage
+.nyc_output
+
+# Docker meta-files (nao replicar dentro da imagem)
+Dockerfile
+.dockerignore
+
+# Prisma — gerados localmente sao recriados no build via `prisma generate`
+prisma/migrations
