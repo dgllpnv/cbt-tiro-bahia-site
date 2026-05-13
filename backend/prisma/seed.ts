@@ -29,10 +29,14 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@cbt.com.br' },
-    update: {},
+    update: {
+      cpf: '11144477735', // CPF valido (DVs ok)
+      passwordHash: adminPasswordHash,
+      role: 'ADMIN',
+    },
     create: {
       email: 'admin@cbt.com.br',
-      cpf: '00000000000',
+      cpf: '11144477735',
       passwordHash: adminPasswordHash,
       role: 'ADMIN',
       status: 'ACTIVE',
@@ -46,7 +50,34 @@ async function main() {
   console.log(`[OK] Admin criado: ${adminUser.email} (${adminUser.id})`);
 
   // ==========================================================
-  // 2. ASSOCIATE USER
+  // 2. CASHIER USER (Operador de Caixa)
+  // ==========================================================
+  const cashierPasswordHash = await bcrypt.hash('caixa123', SALT_ROUNDS);
+
+  const cashierUser = await prisma.user.upsert({
+    where: { email: 'caixa@cbt.com.br' },
+    update: {
+      cpf: '12345678909', // CPF valido (DVs ok)
+      role: 'CASHIER',
+      passwordHash: cashierPasswordHash,
+    },
+    create: {
+      email: 'caixa@cbt.com.br',
+      cpf: '12345678909',
+      passwordHash: cashierPasswordHash,
+      role: 'CASHIER',
+      status: 'ACTIVE',
+      fullName: 'Operador de Caixa',
+      memberNumber: 'CAX001',
+      memberSince: new Date(),
+      clubId: CLUB_ID,
+    },
+  });
+
+  console.log(`[OK] Operador de caixa criado: ${cashierUser.email} (${cashierUser.id})`);
+
+  // ==========================================================
+  // 3. ASSOCIATE USER
   // ==========================================================
   const associatePasswordHash = await bcrypt.hash('associado123', SALT_ROUNDS);
 
@@ -55,10 +86,13 @@ async function main() {
 
   const associateUser = await prisma.user.upsert({
     where: { email: 'associado@cbt.com.br' },
-    update: {},
+    update: {
+      cpf: '52998224725', // CPF valido (DVs ok)
+      passwordHash: associatePasswordHash,
+    },
     create: {
       email: 'associado@cbt.com.br',
-      cpf: '11111111111',
+      cpf: '52998224725',
       passwordHash: associatePasswordHash,
       role: 'ASSOCIATE',
       status: 'ACTIVE',
@@ -365,7 +399,7 @@ async function main() {
   // SUMMARY
   // ==========================================================
   console.log('\n--- CBT Seed: Populacao concluida com sucesso! ---');
-  console.log(`  Usuarios:       2 (1 admin, 1 associado)`);
+  console.log(`  Usuarios:       3 (1 admin, 1 caixa, 1 associado)`);
   console.log(`  Baias:          ${laneCount}`);
   console.log(`  Produtos:       ${products.length}`);
   console.log(`  Equipamentos:   ${equipments.length}`);

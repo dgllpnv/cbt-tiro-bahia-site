@@ -89,7 +89,7 @@ const createSchema = z.object({
   description: z.string().optional(),
 });
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = createSchema.parse(req.body);
 
@@ -118,7 +118,7 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
 });
 
 // GET /api/habituality/alerts — Members below minimum (ADMIN)
-router.get('/alerts', requireRole('ADMIN'), async (_req: Request, res: Response): Promise<void> => {
+router.get('/alerts', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
   try {
     const year = new Date().getFullYear();
     const startDate = new Date(year, 0, 1);

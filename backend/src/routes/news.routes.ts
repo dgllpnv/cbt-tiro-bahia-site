@@ -108,7 +108,7 @@ const createNewsSchema = z.object({
   isPublished: z.boolean().optional(),
 });
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = createNewsSchema.parse(req.body);
 
@@ -163,7 +163,7 @@ const updateNewsSchema = z.object({
   isPublished: z.boolean().optional(),
 });
 
-router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const existing = await prisma.news.findUnique({ where: { id: req.params.id } });
     if (!existing) {
@@ -211,7 +211,7 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
 // =====================================================
 // DELETE /api/news/:id — Delete news (ADMIN only)
 // =====================================================
-router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const existing = await prisma.news.findUnique({ where: { id: req.params.id } });
     if (!existing) {

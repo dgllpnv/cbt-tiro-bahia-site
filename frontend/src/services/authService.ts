@@ -16,6 +16,7 @@ interface MeResponse {
 function mapRole(backendRole: string): UserRole {
   switch (backendRole) {
     case 'ADMIN': return 'admin';
+    case 'CASHIER': return 'cashier';
     case 'ASSOCIATE': return 'associate';
     default: return 'associate';
   }

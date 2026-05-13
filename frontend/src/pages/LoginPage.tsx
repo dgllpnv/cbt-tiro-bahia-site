@@ -3,42 +3,139 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Eye, EyeOff, IdCard, ShieldCheck } from 'lucide-react';
 import CbtLogo from '@/components/shared/CbtLogo';
+import { formatCpfMask, isValidCpf, stripCpf } from '@/lib/cpf';
+
+// =====================================================
+// LoginPage com dois modos via abas:
+//   - Associado: CPF (mascara + validacao DV) + senha
+//   - Admin:     E-mail (admin master ou caixa) + senha
+//
+// O backend aceita ambos os identificadores no mesmo endpoint
+// (OR no findFirst), entao a separacao e puramente de UX/UI.
+// Apos o login, AuthContext + LoginPage redirecionam ao "home" do role.
+// =====================================================
+
+type LoginMode = 'associate' | 'admin';
 
 const LoginPage = () => {
-  const [identifier, setIdentifier] = useState('');
+  const { login, isAuthenticated, user } = useAuth();
+  const [mode, setMode] = useState<LoginMode>('associate');
+
+  // Estado por modo — preserva o que voce digitou ao trocar de aba.
+  const [cpf, setCpf] = useState('');
+  const [cpfError, setCpfError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isAuthenticated, user } = useAuth();
 
-  // Redirect if already authenticated
+  // Redireciona se ja autenticado
   if (isAuthenticated && user) {
-    const target = user.role === 'admin' ? '/admin' : '/portal';
+    const target =
+      user.role === 'admin' ? '/admin' :
+      user.role === 'cashier' ? '/admin/caixa' :
+      '/portal';
     return <Navigate to={target} replace />;
   }
 
+  // ── Handlers do tab Associado (CPF) ────────────────────────────────────
+  const handleCpfChange = (raw: string) => {
+    setCpf(formatCpfMask(raw));
+    if (cpfError) setCpfError('');
+    if (error) setError('');
+  };
+
+  const handleCpfBlur = () => {
+    const digits = stripCpf(cpf);
+    if (digits.length === 0) {
+      setCpfError('');
+      return;
+    }
+    if (digits.length < 11) {
+      setCpfError('CPF incompleto.');
+      return;
+    }
+    if (!isValidCpf(digits)) {
+      setCpfError('CPF invalido. Confira os digitos.');
+      return;
+    }
+    setCpfError('');
+  };
+
+  // ── Handlers do tab Admin (e-mail) ─────────────────────────────────────
+  const handleEmailChange = (v: string) => {
+    setEmail(v);
+    if (emailError) setEmailError('');
+    if (error) setError('');
+  };
+
+  const handleEmailBlur = () => {
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setEmailError('');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailError('E-mail invalido.');
+      return;
+    }
+    setEmailError('');
+  };
+
+  const handleModeChange = (next: string) => {
+    setMode(next as LoginMode);
+    setError('');
+    setCpfError('');
+    setEmailError('');
+  };
+
+  // ── Submit ─────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!identifier.trim() || !password.trim()) {
-      setError('Preencha todos os campos.');
-      return;
+    let identifier = '';
+
+    if (mode === 'associate') {
+      const digits = stripCpf(cpf);
+      if (!digits || !password.trim()) {
+        setError('Preencha CPF e senha.');
+        return;
+      }
+      if (!isValidCpf(digits)) {
+        setCpfError('CPF invalido. Confira os digitos.');
+        return;
+      }
+      identifier = digits;
+    } else {
+      const trimmed = email.trim();
+      if (!trimmed || !password.trim()) {
+        setError('Preencha e-mail e senha.');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        setEmailError('E-mail invalido.');
+        return;
+      }
+      identifier = trimmed;
     }
 
     setIsSubmitting(true);
-    const result = await login(identifier.trim(), password);
+    const result = await login(identifier, password);
     setIsSubmitting(false);
 
-    if (result.success) {
-      // AuthContext already has updated user, re-render will trigger redirect above
-    } else {
+    if (!result.success) {
       setError(result.error || 'Erro ao fazer login.');
     }
   };
+
+  const subtitle =
+    mode === 'associate' ? 'PORTAL DO ASSOCIADO' : 'AREA ADMINISTRATIVA';
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
@@ -51,75 +148,151 @@ const LoginPage = () => {
       <div className="relative z-10 w-full max-w-md">
         <div className="bg-card/80 border border-border rounded-2xl p-8 backdrop-blur-sm tactical-shadow">
           {/* Logo */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
               <CbtLogo className="w-full h-full" />
             </div>
             <h1 className="text-2xl font-military font-bold text-foreground tracking-wider">
               CLUBE BAIANO DE TIRO
             </h1>
-            <p className="text-cbt-orange font-tactical text-sm mt-1 tracking-widest">
-              PORTAL DO ASSOCIADO
+            <p className="text-cbt-orange font-tactical text-sm mt-1 tracking-widest transition-colors duration-300">
+              {subtitle}
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-tactical text-foreground/85 mb-2">
-                CPF ou E-mail
-              </label>
-              <Input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Digite seu CPF ou e-mail"
-                className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical"
-                disabled={isSubmitting}
-              />
-            </div>
+          {/* Tabs Associado/Admin */}
+          <Tabs value={mode} onValueChange={handleModeChange} className="mb-5">
+            <TabsList className="grid grid-cols-2 w-full bg-muted border border-border p-1 h-11">
+              <TabsTrigger
+                value="associate"
+                className="font-tactical tracking-wide data-[state=active]:bg-cbt-orange data-[state=active]:text-black data-[state=active]:shadow-md text-muted-foreground"
+              >
+                <IdCard className="h-4 w-4 mr-2" />
+                Associado
+              </TabsTrigger>
+              <TabsTrigger
+                value="admin"
+                className="font-tactical tracking-wide data-[state=active]:bg-cbt-orange data-[state=active]:text-black data-[state=active]:shadow-md text-muted-foreground"
+              >
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                Admin
+              </TabsTrigger>
+            </TabsList>
 
-            <div>
-              <label className="block text-sm font-tactical text-foreground/85 mb-2">
-                Senha
-              </label>
-              <div className="relative">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5 mt-5" noValidate>
+              {/* Identifier varia por modo */}
+              <TabsContent value="associate" className="m-0">
+                <label
+                  htmlFor="cpf"
+                  className="block text-sm font-tactical text-foreground/85 mb-2"
+                >
+                  CPF
+                </label>
                 <Input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Digite sua senha"
-                  className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical pr-12"
+                  id="cpf"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="username"
+                  value={cpf}
+                  onChange={(e) => handleCpfChange(e.target.value)}
+                  onBlur={handleCpfBlur}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  aria-invalid={!!cpfError}
+                  aria-describedby={cpfError ? 'cpf-error' : undefined}
+                  className={`bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical tracking-wider ${
+                    cpfError ? 'border-red-700/60 focus:border-red-700' : ''
+                  }`}
                   disabled={isSubmitting}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                {cpfError && (
+                  <p
+                    id="cpf-error"
+                    className="mt-1.5 text-xs font-tactical text-red-500"
+                  >
+                    {cpfError}
+                  </p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="admin" className="m-0">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-tactical text-foreground/85 mb-2"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
+                  E-mail
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onBlur={handleEmailBlur}
+                  placeholder="admin@cbt.com.br"
+                  aria-invalid={!!emailError}
+                  aria-describedby={emailError ? 'email-error' : undefined}
+                  className={`bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical ${
+                    emailError ? 'border-red-700/60 focus:border-red-700' : ''
+                  }`}
+                  disabled={isSubmitting}
+                />
+                {emailError && (
+                  <p
+                    id="email-error"
+                    className="mt-1.5 text-xs font-tactical text-red-500"
+                  >
+                    {emailError}
+                  </p>
+                )}
+              </TabsContent>
 
-            {error && (
-              <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3 text-red-700 dark:text-red-400 text-sm font-tactical">
-                {error}
+              {/* Senha — mesmo campo nas duas abas */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-tactical text-foreground/85 mb-2"
+                >
+                  Senha
+                </label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Digite sua senha"
+                    className="bg-muted border-input text-foreground placeholder:text-muted-foreground/60 focus:border-cbt-orange focus:ring-cbt-orange/20 h-12 font-tactical pr-12"
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
-            )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full h-12 bg-cbt-orange hover:bg-cbt-orange/90 text-black font-tactical font-bold text-lg tracking-wide glow-orange transition-all duration-300"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                'ENTRAR'
+              {error && (
+                <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3 text-red-700 dark:text-red-400 text-sm font-tactical">
+                  {error}
+                </div>
               )}
-            </Button>
-          </form>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-12 bg-cbt-orange hover:bg-cbt-orange/90 text-black font-tactical font-bold text-lg tracking-wide glow-orange transition-all duration-300"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'ENTRAR'}
+              </Button>
+            </form>
+          </Tabs>
 
           {/* Back to site */}
           <div className="mt-6 text-center">
@@ -132,12 +305,18 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Test credentials hint (dev only) */}
+        {/* Test credentials hint (dev only) — separa por aba */}
         {import.meta.env.DEV && (
-          <div className="mt-4 bg-card/50 border border-border rounded-lg p-4 text-xs font-tactical text-muted-foreground/80">
-            <p className="text-cbt-orange font-bold mb-2">Credenciais de teste:</p>
-            <p>Admin: admin@cbt.com.br / admin123</p>
-            <p>Associado: associado@cbt.com.br / associado123</p>
+          <div className="mt-4 bg-card/50 border border-border rounded-lg p-4 text-xs font-tactical text-muted-foreground/80 space-y-3">
+            <div>
+              <p className="text-cbt-orange font-bold mb-1">Aba Associado (CPF):</p>
+              <p>529.982.247-25 / associado123</p>
+            </div>
+            <div>
+              <p className="text-cbt-orange font-bold mb-1">Aba Admin (e-mail):</p>
+              <p>admin@cbt.com.br / admin123 (master)</p>
+              <p>caixa@cbt.com.br / caixa123 (operador de caixa)</p>
+            </div>
           </div>
         )}
       </div>

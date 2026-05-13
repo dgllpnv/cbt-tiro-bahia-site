@@ -47,7 +47,7 @@ const updateStatusSchema = z.object({
   notes: z.string().optional(),
 });
 
-router.patch('/:id/status', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.patch('/:id/status', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { status, notes } = updateStatusSchema.parse(req.body);
 
@@ -79,7 +79,7 @@ const assignSchema = z.object({
   memberId: z.string().uuid(),
 });
 
-router.patch('/:id/assign', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.patch('/:id/assign', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { memberId } = assignSchema.parse(req.body);
 

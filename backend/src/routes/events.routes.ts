@@ -86,7 +86,7 @@ const createEventSchema = z.object({
   imageUrl: z.string().url().optional().or(z.literal('')),
 });
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = createEventSchema.parse(req.body);
 
@@ -118,7 +118,7 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
 });
 
 // PUT /api/events/:id — Update event (ADMIN)
-router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const existing = await prisma.event.findUnique({ where: { id: req.params.id } });
     if (!existing) {
@@ -152,7 +152,7 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
 });
 
 // DELETE /api/events/:id — Delete event (ADMIN)
-router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const existing = await prisma.event.findUnique({ where: { id: req.params.id } });
     if (!existing) {
@@ -174,7 +174,7 @@ const participateSchema = z.object({
   countsAsHabituality: z.boolean().optional(),
 });
 
-router.post('/:id/participate', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/:id/participate', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { memberId, caliberUsed, countsAsHabituality } = participateSchema.parse(req.body);
 
@@ -240,7 +240,7 @@ const resultsSchema = z.object({
   })),
 });
 
-router.put('/:id/results', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id/results', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { results } = resultsSchema.parse(req.body);
 

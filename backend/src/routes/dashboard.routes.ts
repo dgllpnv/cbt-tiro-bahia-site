@@ -105,7 +105,7 @@ router.get('/associate', async (req: Request, res: Response): Promise<void> => {
 // =====================================================
 // GET /api/dashboard/admin — Admin dashboard (ADMIN only)
 // =====================================================
-router.get('/admin', requireRole('ADMIN'), async (_req: Request, res: Response): Promise<void> => {
+router.get('/admin', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
   try {
     const now = new Date();
     const todayStart = startOfDay(now);
@@ -188,7 +188,7 @@ router.get('/admin', requireRole('ADMIN'), async (_req: Request, res: Response):
 // =====================================================
 // GET /api/dashboard/rankings — Top members by frequency / mastery (ADMIN)
 // =====================================================
-router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/rankings', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const period = (req.query.period as string) || 'month';
     const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 5));
@@ -299,7 +299,7 @@ router.get('/rankings', requireRole('ADMIN'), async (req: Request, res: Response
 // =====================================================
 // GET /api/dashboard/top-firearms — most-used firearms (ADMIN)
 // =====================================================
-router.get('/top-firearms', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/top-firearms', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const period = (req.query.period as string) || 'month';
     const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 10));

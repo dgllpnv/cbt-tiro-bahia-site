@@ -19,15 +19,17 @@ import {
   Target,
   FileCheck,
   FileBarChart,
+  Wallet,
   X,
 } from 'lucide-react';
 import CbtLogo from '@/components/shared/CbtLogo';
+import type { UserRole } from '@/types/user';
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
-  roles: ('admin' | 'associate')[];
+  roles: UserRole[];
 }
 
 const navItems: NavItem[] = [
@@ -41,19 +43,22 @@ const navItems: NavItem[] = [
   { name: 'Eventos', href: '/portal/eventos', icon: <Calendar size={20} />, roles: ['associate'] },
   { name: 'Documentos', href: '/portal/documentos', icon: <FileCheck size={20} />, roles: ['associate'] },
 
-  // Admin items
-  { name: 'Dashboard', href: '/admin', icon: <Home size={20} />, roles: ['admin'] },
-  { name: 'Lancamentos', href: '/admin/lancamentos', icon: <ClipboardList size={20} />, roles: ['admin'] },
-  { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin'] },
-  { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin'] },
+  // Admin items — quase todos compartilhados com cashier; so /admin/financeiro
+  // (KPIs mensais/anuais, despesas, dashboard analitico) e admin-only. Cashier
+  // tem seu proprio fechamento em /admin/caixa.
+  { name: 'Dashboard', href: '/admin', icon: <Home size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Caixa do dia', href: '/admin/caixa', icon: <Wallet size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Lancamentos', href: '/admin/lancamentos', icon: <ClipboardList size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Financeiro', href: '/admin/financeiro', icon: <DollarSign size={20} />, roles: ['admin'] },
-  { name: 'Relatorios', href: '/admin/relatorios', icon: <FileBarChart size={20} />, roles: ['admin'] },
-  { name: 'Produtos', href: '/admin/produtos', icon: <Package size={20} />, roles: ['admin'] },
-  { name: 'Dados do Clube', href: '/admin/dados-clube', icon: <Building2 size={20} />, roles: ['admin'] },
-  { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin'] },
+  { name: 'Relatorios', href: '/admin/relatorios', icon: <FileBarChart size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Produtos', href: '/admin/produtos', icon: <Package size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Dados do Clube', href: '/admin/dados-clube', icon: <Building2 size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },
-  { name: 'Noticias', href: '/admin/noticias', icon: <Newspaper size={20} />, roles: ['admin'] },
-  { name: 'Eventos', href: '/admin/eventos', icon: <Calendar size={20} />, roles: ['admin'] },
+  { name: 'Noticias', href: '/admin/noticias', icon: <Newspaper size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Eventos', href: '/admin/eventos', icon: <Calendar size={20} />, roles: ['admin', 'cashier'] },
 ];
 
 interface PortalSidebarProps {
@@ -85,7 +90,9 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
           <div className="flex-1 min-w-0">
             <h2 className="text-foreground font-military font-bold text-sm truncate">CBT</h2>
             <p className="text-cbt-orange text-xs font-tactical truncate">
-              {user?.role === 'admin' ? 'ADMINISTRACAO' : 'PORTAL DO ASSOCIADO'}
+              {user?.role === 'admin' ? 'ADMINISTRACAO'
+                : user?.role === 'cashier' ? 'OPERADOR DE CAIXA'
+                : 'PORTAL DO ASSOCIADO'}
             </p>
           </div>
           {onClose && (
@@ -124,7 +131,9 @@ const PortalSidebar = ({ isOpen, onClose }: PortalSidebarProps) => {
           <div className="flex-1 min-w-0">
             <p className="text-foreground text-sm font-tactical truncate">{user?.fullName}</p>
             <p className="text-muted-foreground/80 text-xs font-tactical truncate">
-              {user?.role === 'admin' ? 'Administrador' : `Associado ${user?.memberNumber}`}
+              {user?.role === 'admin' ? 'Administrador'
+                : user?.role === 'cashier' ? 'Operador de Caixa'
+                : `Associado ${user?.memberNumber}`}
             </p>
           </div>
         </div>

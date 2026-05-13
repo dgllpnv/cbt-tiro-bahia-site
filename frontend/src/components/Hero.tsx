@@ -1,7 +1,30 @@
+import { useEffect, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { registerSiteView, getSiteStats } from '@/services/publicStatsService';
+
+// Sessao do navegador serve como dedup leve: 1 view por aba/tab.
+// Sem isso, F5 spamaria o contador. localStorage seria por device.
+const VIEW_SESSION_KEY = 'cbt_view_counted';
 
 const Hero = () => {
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const alreadyCounted = sessionStorage.getItem(VIEW_SESSION_KEY) === '1';
+      const result = alreadyCounted ? await getSiteStats() : await registerSiteView();
+      if (!cancelled && result.success) {
+        setVisitorCount(result.data.totalViews);
+        if (!alreadyCounted) sessionStorage.setItem(VIEW_SESSION_KEY, '1');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background with metal texture */}
@@ -61,7 +84,7 @@ const Hero = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 mt-16 pt-8 border-t border-gray-700">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-8 border-t border-gray-700">
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">+10</div>
             <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Anos de experiência</div>
@@ -73,6 +96,12 @@ const Hero = () => {
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">24/7</div>
             <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Segurança garantida</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2 tabular-nums">
+              {visitorCount == null ? '—' : visitorCount.toLocaleString('pt-BR')}
+            </div>
+            <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Visitantes do site</div>
           </div>
         </div>
       </div>

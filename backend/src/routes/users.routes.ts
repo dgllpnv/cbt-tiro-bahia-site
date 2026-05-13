@@ -138,7 +138,7 @@ const deleteConfirmSchema = z.object({
 // GET / — List users (ADMIN only)
 // =====================================================
 
-router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
@@ -206,15 +206,16 @@ router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promi
 });
 
 // =====================================================
-// GET /:id — Get user by ID (ADMIN or self)
+// GET /:id — Get user by ID (ADMIN, CASHIER ou self)
 // =====================================================
 
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
 
-    // Check: must be ADMIN or self
-    if (req.user!.role !== 'ADMIN' && req.user!.id !== id) {
+    // ADMIN/CASHIER veem qualquer um. Outras roles só veem o proprio cadastro.
+    const role = req.user!.role;
+    if (role !== 'ADMIN' && role !== 'CASHIER' && req.user!.id !== id) {
       res.status(403).json({
         success: false,
         error: 'Acesso negado. Permissao insuficiente',
@@ -266,7 +267,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 // POST / — Create user (ADMIN only)
 // =====================================================
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const validation = createUserSchema.safeParse(req.body);
 
@@ -393,7 +394,7 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
 // PUT /:id — Update user (ADMIN only)
 // =====================================================
 
-router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
 
@@ -514,7 +515,7 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
 // PATCH /:id/status — Change user status (ADMIN only)
 // =====================================================
 
-router.patch('/:id/status', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.patch('/:id/status', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
 
@@ -593,7 +594,7 @@ router.patch('/:id/status', requireRole('ADMIN'), async (req: Request, res: Resp
 // PUT /:id/password — Reset user password (ADMIN only)
 // =====================================================
 
-router.put('/:id/password', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id/password', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
 
@@ -750,7 +751,7 @@ const attachmentCreateSchema = z.object({
   description: z.string().max(500).optional(),
 });
 
-router.post('/:id/attachments', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/:id/attachments', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id as string;
     const validation = attachmentCreateSchema.safeParse(req.body);
@@ -814,7 +815,7 @@ router.post('/:id/attachments', requireRole('ADMIN'), async (req: Request, res: 
 
 router.delete(
   '/:id/attachments/:attachmentId',
-  requireRole('ADMIN'),
+  requireRole('ADMIN', 'CASHIER'),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.params.id as string;

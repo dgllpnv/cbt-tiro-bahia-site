@@ -7,6 +7,16 @@ interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
 }
 
+/**
+ * Resolve qual e a "home" do role atual — destino seguro quando o usuario
+ * tenta acessar uma rota fora do seu escopo de permissao.
+ */
+function roleHome(role: UserRole | undefined): string {
+  if (role === 'admin') return '/admin';
+  if (role === 'cashier') return '/admin/caixa';
+  return '/portal';
+}
+
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
@@ -26,14 +36,14 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Admin can access everything — never show "access denied" to admin
-  if (user?.role === 'admin') {
+  // Sem allowedRoles = qualquer usuario autenticado pode acessar
+  if (!allowedRoles || allowedRoles.length === 0) {
     return <>{children}</>;
   }
 
-  // For non-admin users, check role
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/portal" replace />;
+  // Verifica role contra a lista permitida; redireciona pra home do usuario se nao bate.
+  if (user && !allowedRoles.includes(user.role)) {
+    return <Navigate to={roleHome(user.role)} replace />;
   }
 
   return <>{children}</>;

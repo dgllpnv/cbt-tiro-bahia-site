@@ -43,6 +43,7 @@ import EquipmentCreatePage from "./pages/admin/EquipmentCreatePage";
 import EquipmentDetailPage from "./pages/admin/EquipmentDetailPage";
 import ClubDataPage from "./pages/admin/ClubDataPage";
 import ReportsPage from "./pages/admin/ReportsPage";
+import CashierDailyPage from "./pages/admin/CashierDailyPage";
 
 const queryClient = new QueryClient();
 
@@ -85,16 +86,22 @@ const App = () => (
               <Route path="documentos" element={<DocumentsPage />} />
             </Route>
 
-            {/* Admin Portal — path="/admin" ensures only /admin/* URLs match */}
+            {/* Admin Portal — admin e cashier acessam tudo, exceto /admin/financeiro (so admin). */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={['admin', 'cashier']}>
                   <PortalLayout />
                 </ProtectedRoute>
               }
             >
+              {/* Rotas admin-only: financeiro completo + auditoria/logs */}
+              <Route path="financeiro" element={<ProtectedRoute allowedRoles={['admin']}><FinancialPage /></ProtectedRoute>} />
+              <Route path="logs" element={<ProtectedRoute allowedRoles={['admin']}><AuditLogsPage /></ProtectedRoute>} />
+
+              {/* Demais rotas acessiveis por admin e cashier */}
               <Route index element={<AdminDashboardPage />} />
+              <Route path="caixa" element={<CashierDailyPage />} />
               <Route path="lancamentos" element={<TransactionsPage />} />
               <Route path="associados" element={<MembersPage />} />
               <Route path="associados/novo" element={<MemberCreatePage />} />
@@ -105,14 +112,12 @@ const App = () => (
               <Route path="equipamentos" element={<EquipmentsPage />} />
               <Route path="equipamentos/novo" element={<EquipmentCreatePage />} />
               <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
-              <Route path="financeiro" element={<FinancialPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
               <Route path="produtos" element={<ProductsPage />} />
-              {/* Compat: redireciona rotas antigas para a tela unificada */}
+              {/* Compat: rotas antigas redirecionam */}
               <Route path="cadastros" element={<Navigate to="/admin/produtos" replace />} />
               <Route path="estoque" element={<Navigate to="/admin/produtos" replace />} />
               <Route path="dados-clube" element={<ClubDataPage />} />
-              <Route path="logs" element={<AuditLogsPage />} />
               <Route path="noticias" element={<NewsManagementPage />} />
               <Route path="eventos" element={<EventsManagementPage />} />
             </Route>

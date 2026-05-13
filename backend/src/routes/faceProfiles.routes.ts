@@ -8,7 +8,7 @@ import { createHabitualityFromVisit } from '../lib/habitualityFromVisit.js';
 
 const router = Router();
 router.use(authMiddleware);
-router.use(requireRole('ADMIN'));
+router.use(requireRole('ADMIN', 'CASHIER'));
 
 // =====================================================
 // VALIDATION SCHEMAS

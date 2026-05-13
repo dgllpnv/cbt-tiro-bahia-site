@@ -6,9 +6,9 @@ import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 
-// All routes require auth + ADMIN
+// Acesso completo a ADMIN e CASHIER (operacao de balcao).
 router.use(authMiddleware);
-router.use(requireRole('ADMIN'));
+router.use(requireRole('ADMIN', 'CASHIER'));
 
 // =====================================================
 // GET /api/stock — List all stock items

@@ -12,8 +12,135 @@ import {
 
 const router = Router();
 
-// All routes require auth + ADMIN
 router.use(authMiddleware);
+
+// =====================================================
+// GET /api/financial/daily-closing
+// Fechamento do dia. Acessivel a ADMIN e CASHIER.
+// Retorna receita/despesa/saldo do dia atual + breakdown por
+// forma de pagamento e por tipo + lista de transacoes e despesas.
+// NAO aceita parametro de data — sempre hoje (por design,
+// CASHIER nao pode escolher periodo).
+// =====================================================
+router.get('/daily-closing', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const now = new Date();
+    const start = startOfDay(now);
+    const end = endOfDay(now);
+
+    const [
+      revAgg, expAgg, txCountAgg,
+      paymentRows, typeRows,
+      transactions, expenses,
+    ] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+      }),
+      prisma.expense.aggregate({
+        where: { expenseDate: { gte: start, lte: end } },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+      }),
+      prisma.transaction.groupBy({
+        by: ['paymentMethod'],
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ['type'],
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      prisma.transaction.findMany({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        orderBy: { transactionDate: 'desc' },
+        include: {
+          member: { select: { id: true, fullName: true, memberNumber: true } },
+          registeredBy: { select: { id: true, fullName: true } },
+          items: { select: { description: true, quantity: true, subtotal: true } },
+        },
+        take: 200,
+      }),
+      prisma.expense.findMany({
+        where: { expenseDate: { gte: start, lte: end } },
+        orderBy: { expenseDate: 'desc' },
+        include: { registeredBy: { select: { id: true, fullName: true } } },
+        take: 200,
+      }),
+    ]);
+
+    const revenue = Number(revAgg._sum.totalAmount ?? 0);
+    const expensesTotal = Number(expAgg._sum.amount ?? 0);
+    const balance = revenue - expensesTotal;
+
+    const paymentBreakdown = paymentRows
+      .map((r) => ({
+        method: r.paymentMethod ?? '—',
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const typeBreakdown = typeRows
+      .map((r) => ({
+        type: r.type,
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    res.json({
+      success: true,
+      data: {
+        date: start.toISOString(),
+        endOfDay: end.toISOString(),
+        totals: {
+          revenue,
+          expenses: expensesTotal,
+          balance,
+          transactionCount: txCountAgg,
+          expenseCount: expenses.length,
+        },
+        paymentBreakdown,
+        typeBreakdown,
+        transactions: transactions.map((t) => ({
+          id: t.id,
+          transactionDate: t.transactionDate.toISOString(),
+          type: t.type,
+          totalAmount: Number(t.totalAmount),
+          paymentMethod: t.paymentMethod,
+          notes: t.notes,
+          member: t.member ? { id: t.member.id, fullName: t.member.fullName, memberNumber: t.member.memberNumber } : null,
+          registeredBy: t.registeredBy ? { id: t.registeredBy.id, fullName: t.registeredBy.fullName } : null,
+          items: t.items.map((i) => ({
+            description: i.description,
+            quantity: i.quantity,
+            subtotal: Number(i.subtotal),
+          })),
+        })),
+        expenses: expenses.map((e) => ({
+          id: e.id,
+          expenseDate: e.expenseDate.toISOString(),
+          category: e.category,
+          description: e.description,
+          amount: Number(e.amount),
+          vendor: e.vendor,
+          registeredBy: e.registeredBy ? { id: e.registeredBy.id, fullName: e.registeredBy.fullName } : null,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao montar fechamento do dia:', error);
+    res.status(500).json({ success: false, error: 'Erro ao montar fechamento do dia' });
+  }
+});
+
+// Demais rotas: somente ADMIN
 router.use(requireRole('ADMIN'));
 
 // =====================================================

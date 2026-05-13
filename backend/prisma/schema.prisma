@@ -18,6 +18,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  CASHIER
   ASSOCIATE
   VISITOR
 }
@@ -693,6 +694,22 @@ model Lane {
 
   @@unique([clubId, number])
   @@index([status])
+}
+
+// =====================================================
+// SiteStat — Contador de visitantes do site publico
+//
+// Tabela leve (1 registro por clube) para exibir contador de visitas
+// no Hero da home. Incremento atomico via prisma.$transaction nao e
+// necessario porque Postgres garante atomicidade no UPDATE com increment.
+// =====================================================
+
+model SiteStat {
+  id          String   @id @default(uuid())
+  clubId      String   @unique @default("cbt-bahia")
+  totalViews  Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 }
 
 // =====================================================

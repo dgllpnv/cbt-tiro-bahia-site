@@ -4,7 +4,7 @@ import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// All routes require auth + ADMIN
+// Auditoria restrita a ADMIN — cashier nao precisa ver logs do sistema.
 router.use(authMiddleware);
 router.use(requireRole('ADMIN'));
 

@@ -30,7 +30,7 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
 });
 
 // POST /api/documents/generate/filiation/:memberId — Generate Filiation Declaration
-router.post('/generate/filiation/:memberId', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/generate/filiation/:memberId', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const member = await prisma.user.findUnique({ where: { id: req.params.memberId } });
     if (!member) {
@@ -64,7 +64,7 @@ router.post('/generate/filiation/:memberId', requireRole('ADMIN'), async (req: R
 });
 
 // POST /api/documents/generate/habituality/:memberId — Generate Habituality Declaration
-router.post('/generate/habituality/:memberId', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/generate/habituality/:memberId', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const member = await prisma.user.findUnique({ where: { id: req.params.memberId } });
     if (!member) {

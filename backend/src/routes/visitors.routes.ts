@@ -8,7 +8,7 @@ import { createAuditLog } from '../services/auditService.js';
 const router = Router();
 
 router.use(authMiddleware);
-router.use(requireRole('ADMIN'));
+router.use(requireRole('ADMIN', 'CASHIER'));
 
 // =====================================================
 // HELPER: Visitor select fields (sem passwordHash)

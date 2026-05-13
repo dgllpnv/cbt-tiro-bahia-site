@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  FileDown,
   DollarSign,
   Crosshair,
   Package,
@@ -66,6 +67,9 @@ import {
   resetUserPassword,
   deleteUser,
 } from '@/services/usersService';
+import { getClubSettings } from '@/services/clubSettingsService';
+import { getMemberStats } from '@/services/memberStatsService';
+import { exportMemberFullReportPdf } from '@/lib/reports/pdfMemberFullReport';
 import type { User, UserAttachment } from '@/types/user';
 import {
   formatCpf,
@@ -223,6 +227,9 @@ const MemberDetailPage = () => {
   const [loansLoading, setLoansLoading] = useState(false);
   const [loanTransferTarget, setLoanTransferTarget] = useState<EquipmentLoan | null>(null);
   const [loanReturnTarget, setLoanReturnTarget] = useState<EquipmentLoan | null>(null);
+
+  // ── Export State ─────────────────────────────────────────────────────────
+  const [isExporting, setIsExporting] = useState(false);
 
   // ── Fetch Member ─────────────────────────────────────────────────────────
   const fetchMember = useCallback(async () => {
@@ -484,6 +491,82 @@ const MemberDetailPage = () => {
     });
   };
 
+  // ── Export Handler ───────────────────────────────────────────────────────
+  // Reune todos os dados do associado (busca em paralelo as secoes ainda
+  // nao carregadas pelas tabs lazy) e gera o PDF na identidade visual do CBT.
+  const handleExportData = async () => {
+    if (!id || !member || isExporting) return;
+    setIsExporting(true);
+    try {
+      const [clubRes, statsRes, visitsRes, txRes, annRes, loansRes] = await Promise.all([
+        getClubSettings(),
+        getMemberStats(id),
+        api.get('/api/visits', { params: { memberId: id, limit: 50 } }).catch(() => null),
+        api.get('/api/transactions', { params: { memberId: id, limit: 50 } }).catch(() => null),
+        api.get(`/api/annuities/member/${id}`).catch(() => null),
+        api.get('/api/loans', { params: { memberId: id, limit: 50 } }).catch(() => null),
+      ]);
+
+      const pickList = (res: any): any[] => {
+        if (!res?.data?.success) return [];
+        const d = res.data.data;
+        if (Array.isArray(d)) return d;
+        return d?.visits || d?.transactions || d?.annuities || d?.loans || [];
+      };
+
+      await exportMemberFullReportPdf({
+        member: {
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email ?? null,
+          cpf: member.cpf,
+          role: member.role,
+          status: member.status,
+          memberNumber: member.memberNumber ?? null,
+          memberSince: (member as any).memberSince ?? null,
+          dateOfBirth: (member as any).dateOfBirth ?? null,
+          phone: member.phone ?? null,
+          address: (member as any).address ?? null,
+          neighborhood: (member as any).neighborhood ?? null,
+          city: (member as any).city ?? null,
+          state: (member as any).state ?? null,
+          zipCode: (member as any).zipCode ?? null,
+          rg: (member as any).rg ?? null,
+          rgIssuer: (member as any).rgIssuer ?? null,
+          nationality: (member as any).nationality ?? null,
+          naturality: (member as any).naturality ?? null,
+          fatherName: (member as any).fatherName ?? null,
+          motherName: (member as any).motherName ?? null,
+          profession: (member as any).profession ?? null,
+          maritalStatus: (member as any).maritalStatus ?? null,
+          cr: member.cr ?? null,
+          crLevel: member.crLevel ?? null,
+          crExpiry: (member as any).crExpiry ?? null,
+          membershipTier: (member as any).membershipTier ?? null,
+          annuityValidUntil: member.annuityValidUntil ?? null,
+        },
+        facePhoto: member.faceProfiles?.[0]?.thumbnail ?? null,
+        club: clubRes.success ? clubRes.data : null,
+        stats: statsRes.success ? statsRes.data : null,
+        visits: pickList(visitsRes),
+        transactions: pickList(txRes),
+        annuities: pickList(annRes),
+        loans: pickList(loansRes),
+        attachments,
+      });
+
+      toast({ title: 'PDF gerado com sucesso' });
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao exportar dados',
+        description: err?.message || 'Falha inesperada ao gerar o PDF.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // ── Annuity helpers ──────────────────────────────────────────────────────
   const getAnnuityInfo = () => {
     const validUntil = member?.annuityValidUntil;
@@ -627,6 +710,19 @@ const MemberDetailPage = () => {
         actions={
           <div className="flex items-center gap-3">
             <MemberStatusBadge status={member.status} />
+            <Button
+              onClick={handleExportData}
+              disabled={isExporting}
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
+              title="Gera PDF com todos os dados cadastrais e historicos do associado"
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4 mr-2" />
+              )}
+              Exportar Dados
+            </Button>
             <Button
               variant="outline"
               asChild

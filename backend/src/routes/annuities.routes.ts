@@ -12,7 +12,7 @@ router.use(authMiddleware);
 // =====================================================
 // GET /api/annuities — List all payments (ADMIN only)
 // =====================================================
-router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
@@ -62,7 +62,7 @@ router.get('/', requireRole('ADMIN'), async (req: Request, res: Response): Promi
 // =====================================================
 // GET /api/annuities/expiring — Expiring annuities (ADMIN only)
 // =====================================================
-router.get('/expiring', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/expiring', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const days = Math.max(1, parseInt(req.query.days as string) || 30);
     const includeOverdue = req.query.includeOverdue === 'true';
@@ -150,7 +150,7 @@ const createAnnuitySchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = createAnnuitySchema.parse(req.body);
 

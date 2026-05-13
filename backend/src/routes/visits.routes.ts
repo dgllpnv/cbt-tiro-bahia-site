@@ -113,7 +113,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 // GET /today — Today's visits (ADMIN only)
 // =====================================================
 
-router.get('/today', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.get('/today', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -244,7 +244,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 // POST / — Create visit (ADMIN only)
 // =====================================================
 
-router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const validation = createVisitSchema.safeParse(req.body);
 
@@ -370,7 +370,7 @@ router.post('/', requireRole('ADMIN'), async (req: Request, res: Response): Prom
 // PUT /:id — Update visit (ADMIN only)
 // =====================================================
 
-router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -442,7 +442,7 @@ router.put('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Pr
 // PATCH /:id/checkout — Check out visit (ADMIN only)
 // =====================================================
 
-router.patch('/:id/checkout', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.patch('/:id/checkout', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -514,7 +514,7 @@ router.patch('/:id/checkout', requireRole('ADMIN'), async (req: Request, res: Re
 // DELETE /:id — Delete visit (ADMIN only)
 // =====================================================
 
-router.delete('/:id', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
