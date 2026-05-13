@@ -309,8 +309,118 @@ if ($pushCode -ne 0) {
 }
 Write-Host "  Schema OK" -ForegroundColor Green
 
-Write-Host "  Seed DESATIVADO - banco preservado." -ForegroundColor Yellow
-Write-Host "  Para popular do zero: cd backend && npm run db:seed:all" -ForegroundColor DarkGray
+# ---------- 3.5. SEEDS BASE + MIGRACAO DE DADOS DO SISTEMA ANTIGO ----------
+#
+# Banco vazio (< 10 associados) -> rodar seed base (admin/caixa/associado +
+# baias + produtos + equipamentos) e, se houver .enc disponivel, migrar os
+# socios do sistema antigo.
+#
+# Banco ja populado -> nao mexe (idempotente, preserva trabalho local).
+
+$migrationEnc = Join-Path $BACKEND "data\backup_adm_clube.csv.enc"
+$migrationCsv = Join-Path $BACKEND "data\backup_adm_clube.csv"
+
+# Conta associados via psql dentro do container. -tA = sem headers, sem padding.
+# Single-quoted PS evita inferno de escape em "User" (tabela case-sensitive).
+$assocSql = 'SELECT COUNT(*) FROM "User" WHERE role = ''ASSOCIATE'';'
+$assocCountRaw = & docker.exe exec cbt-postgres psql -U postgres -d cbt_portal -tA -c $assocSql 2>$null
+$assocCount = 0
+if ($LASTEXITCODE -eq 0 -and $assocCountRaw) {
+    $assocCount = [int]($assocCountRaw.Trim())
+}
+
+if ($assocCount -ge 100) {
+    Write-Host "  Banco ja populado ($assocCount associados) - migracao pulada." -ForegroundColor DarkGray
+} else {
+    Write-Host ""
+    Write-Host "  Banco vazio/inicial ($assocCount associados) - populando..." -ForegroundColor Cyan
+
+    # 1) Seed base: cria admin@cbt.com.br, caixa@cbt.com.br, associado@cbt.com.br,
+    #    6 baias, 5 produtos, 21 equipamentos. Idempotente (upserts).
+    Write-Host "  [a] Rodando seed base (admin/caixa/associado + baias + produtos)..." -ForegroundColor Gray
+    Push-Location -LiteralPath $BACKEND
+    & npm.cmd run db:seed *>&1 | Select-Object -Last 8 | ForEach-Object { Write-Host "      $_" -ForegroundColor DarkGray }
+    $seedCode = $LASTEXITCODE
+    Pop-Location
+    if ($seedCode -ne 0) {
+        Write-Host "  AVISO: seed base falhou (code $seedCode) - prossegue assim mesmo" -ForegroundColor Yellow
+    } else {
+        Write-Host "  [a] Seed base OK" -ForegroundColor Green
+    }
+
+    # 2) Migracao do sistema antigo (so se .enc existir)
+    if (Test-Path $migrationEnc) {
+        Write-Host "  [b] Migracao do sistema antigo ADM CLUBE detectada (.enc presente)..." -ForegroundColor Gray
+
+        # Descriptografar CSV se ainda nao foi
+        if (-not (Test-Path $migrationCsv)) {
+            $passphrase = $env:MIGRATION_PASSPHRASE
+            if (-not $passphrase) {
+                # Tenta ler do backend\.env
+                $envContent = Get-Content $backendEnv -Raw -ErrorAction SilentlyContinue
+                if ($envContent -match '(?m)^MIGRATION_PASSPHRASE=(.+?)\s*$') {
+                    $passphrase = $matches[1].Trim('"').Trim("'")
+                }
+            }
+            if (-not $passphrase) {
+                Write-Host ""
+                Write-Host "  Passphrase necessaria para descriptografar dados migrados." -ForegroundColor Yellow
+                Write-Host "  (Solicite ao admin do clube. Vazio = pular migracao.)" -ForegroundColor DarkGray
+                $passphrase = Read-Host "  Passphrase"
+            }
+            if (-not $passphrase) {
+                Write-Host "  Migracao pulada (sem passphrase)." -ForegroundColor Yellow
+            } else {
+                Push-Location -LiteralPath $BACKEND
+                $env:MIGRATION_PASSPHRASE = $passphrase
+                & npx.cmd tsx scripts/csv-crypto.ts decrypt data/backup_adm_clube.csv.enc data/backup_adm_clube.csv
+                $decCode = $LASTEXITCODE
+                Pop-Location
+                if ($decCode -ne 0) {
+                    Write-Host "  ERRO ao descriptografar - passphrase incorreta?" -ForegroundColor Red
+                    Write-Host "  Banco fica apenas com o seed base. Reinicie com passphrase correta." -ForegroundColor Yellow
+                } else {
+                    # Persistir passphrase no .env local pra proximas execucoes (so se nao estava la)
+                    if ($envContent -notmatch '(?m)^MIGRATION_PASSPHRASE=.+$') {
+                        Add-Content -Path $backendEnv -Value "`nMIGRATION_PASSPHRASE=$passphrase"
+                        Write-Host "  Passphrase salva em backend\.env (gitignored) para proximas execucoes." -ForegroundColor DarkGray
+                    }
+                }
+            }
+        }
+
+        # Aplicar migracao se temos o CSV claro agora
+        if (Test-Path $migrationCsv) {
+            Write-Host "  [c] Aplicando migracao (cleanup + 1317 socios + armas + habitualidades)..." -ForegroundColor Gray
+            Write-Host "      Isto leva aprox. 2 minutos. Aguarde..." -ForegroundColor DarkGray
+            Push-Location -LiteralPath $BACKEND
+            & npm.cmd run migrate:adm:apply -- --yes *>&1 | Select-Object -Last 12 | ForEach-Object { Write-Host "      $_" -ForegroundColor DarkGray }
+            $migCode = $LASTEXITCODE
+            Pop-Location
+            if ($migCode -ne 0) {
+                Write-Host "  ERRO na migracao (code $migCode). Banco ficou com o seed base." -ForegroundColor Red
+            } else {
+                Write-Host "  [c] Migracao aplicada com sucesso." -ForegroundColor Green
+
+                # 3) Patch dos socios perdidos (EDIVANILDO + 12 com CPF invalido)
+                Write-Host "  [d] Patch resgatando socios com CPF colidido/invalido..." -ForegroundColor Gray
+                Push-Location -LiteralPath $BACKEND
+                & npx.cmd tsx scripts/migrate-patch-missing.ts *>&1 | Select-Object -Last 8 | ForEach-Object { Write-Host "      $_" -ForegroundColor DarkGray }
+                Pop-Location
+                Write-Host "  [d] Patch OK." -ForegroundColor Green
+
+                # Restaurar seed para garantir baias/produtos que o cleanup zerou
+                Write-Host "  [e] Restaurando baias/produtos (cleanup zerou)..." -ForegroundColor Gray
+                Push-Location -LiteralPath $BACKEND
+                & npm.cmd run db:seed *>&1 | Out-Null
+                Pop-Location
+                Write-Host "  [e] Estado final consolidado." -ForegroundColor Green
+            }
+        }
+    } else {
+        Write-Host "  [b] Sem dados de migracao do sistema antigo (sem .enc) - banco fica apenas com seed base." -ForegroundColor DarkGray
+    }
+}
 
 # ---------- 4. FRONTEND DEPS ----------
 

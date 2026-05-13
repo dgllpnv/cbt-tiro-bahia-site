@@ -23,7 +23,13 @@ build
 # Backend
 backend/dist
 backend/node_modules
-backend/data/
+# Dados de migração — bloqueia o conteúdo, libera SOMENTE arquivos .enc
+# (criptografados) e o README. Usa `backend/data/*` (filhos), não `backend/data/`
+# (diretório inteiro), porque git não permite negar dentro de diretório excluído.
+backend/data/*
+!backend/data/*.enc
+!backend/data/README.md
+!backend/data/.gitkeep
 
 # Frontend
 frontend/dist

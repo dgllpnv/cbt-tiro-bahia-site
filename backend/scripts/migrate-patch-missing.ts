@@ -105,13 +105,17 @@ async function main() {
 
   // Os "perdidos por duplicação" são as posições 2+ em cada bucket de CPFs duplicados
   // ONDE o nome difere do nome do vencedor (= conflito real, não re-cadastro).
+  // Ignora registros de teste óbvios (NO NO NO NO, TESTE, etc).
   const dupLosers: Array<{ row: number; data: CsvRow; reason: string }> = [];
   for (const [, arr] of cpfRows) {
     if (arr.length < 2) continue;
     const winnerName = (arr[0].data.nome || '').trim().toUpperCase();
     for (const e of arr.slice(1)) {
       const losingName = (e.data.nome || '').trim().toUpperCase();
-      if (losingName && losingName !== winnerName && !namesAreSimilar(losingName, winnerName)) {
+      if (!losingName) continue;
+      // Ignorar registros de teste óbvios
+      if (/^NO\b/i.test(losingName) || /^TESTE/i.test(losingName) || /\bTESTE\b/i.test(losingName)) continue;
+      if (losingName !== winnerName && !namesAreSimilar(losingName, winnerName)) {
         dupLosers.push({ row: e.row, data: e.data, reason: 'CPF colidiu com outro sócio' });
       }
     }
