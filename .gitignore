@@ -23,10 +23,6 @@ build
 # Backend
 backend/dist
 backend/node_modules
-
-# Material bruto de imagens (fonte original — usado pra popular
-# frontend/public/site/ e seeds). Nao deve ir pro git (~80MB de PNGs).
-img/
 # Dados de migração — bloqueia o conteúdo, libera SOMENTE arquivos .enc
 # (criptografados) e o README. Usa `backend/data/*` (filhos), não `backend/data/`
 # (diretório inteiro), porque git não permite negar dentro de diretório excluído.
