@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Pencil, UserPlus, ToggleRight, Trash2, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Eye, Pencil, UserPlus, ToggleRight, Trash2, ChevronLeft, ChevronRight, Users, Hash, ArrowDownAZ } from 'lucide-react';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -45,6 +45,9 @@ const MembersPage = () => {
   // de status é ignorado (mostra ativos + inativos + suspensos) — esse é
   // o comportamento decidido pelo usuário para facilitar localizar histórico.
   const [onlyActive, setOnlyActive] = useState(true);
+  // Ordenacao: padrao por numero de associado (rotina do caixa identifica
+  // pelo numero); alternativa alfabetica por nome para quem prefere.
+  const [sortBy, setSortBy] = useState<'memberNumber' | 'fullName'>('memberNumber');
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -74,6 +77,7 @@ const MembersPage = () => {
     const result = await listUsers({
       search: trimmedSearch || undefined,
       status: filteringByStatus ? 'ACTIVE' : undefined,
+      sort: sortBy,
       page,
       limit: ITEMS_PER_PAGE,
     });
@@ -89,16 +93,16 @@ const MembersPage = () => {
       });
     }
     setIsLoading(false);
-  }, [trimmedSearch, filteringByStatus, page]);
+  }, [trimmedSearch, filteringByStatus, sortBy, page]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Reset to page 1 when search or filter changes
+  // Reset to page 1 when search, filter or sort change
   useEffect(() => {
     setPage(1);
-  }, [trimmedSearch, filteringByStatus]);
+  }, [trimmedSearch, filteringByStatus, sortBy]);
 
   // ── Actions ─────────────────────────────────────────────────────────────
   const handleToggleStatus = (user: User) => {
@@ -181,6 +185,44 @@ const MembersPage = () => {
             placeholder="Buscar por nome, CPF ou email..."
           />
         </div>
+
+        {/* Toggle de ordenacao — padrao Numero de associado, alternativa
+            alfabetica por nome. Segmented control compacto. */}
+        <div
+          className="inline-flex items-center rounded-md border border-border bg-card/50 p-0.5 select-none"
+          role="group"
+          aria-label="Ordenar associados"
+        >
+          <button
+            type="button"
+            onClick={() => setSortBy('memberNumber')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-tactical transition-colors ${
+              sortBy === 'memberNumber'
+                ? 'bg-cbt-orange text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+            }`}
+            title="Ordenar por numero de associado (padrao)"
+            aria-pressed={sortBy === 'memberNumber'}
+          >
+            <Hash className="h-3.5 w-3.5" />
+            Numero
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy('fullName')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-tactical transition-colors ${
+              sortBy === 'fullName'
+                ? 'bg-cbt-orange text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+            }`}
+            title="Ordenar alfabeticamente por nome"
+            aria-pressed={sortBy === 'fullName'}
+          >
+            <ArrowDownAZ className="h-3.5 w-3.5" />
+            A-Z
+          </button>
+        </div>
+
         <label
           className={`flex items-center gap-2 text-sm font-tactical px-3 py-2 rounded-md border border-border bg-card/50 cursor-pointer select-none transition-colors ${
             trimmedSearch

@@ -33,34 +33,64 @@ interface NavItem {
   roles: UserRole[];
 }
 
-const navItems: NavItem[] = [
-  // Associate items
-  { name: 'Inicio', href: '/portal', icon: <Home size={20} />, roles: ['associate'] },
-  { name: 'Historico de Treinos', href: '/portal/historico', icon: <History size={20} />, roles: ['associate'] },
-  { name: 'Meu Perfil', href: '/portal/perfil', icon: <User size={20} />, roles: ['associate'] },
-  { name: 'Anuidade', href: '/portal/anuidade', icon: <CreditCard size={20} />, roles: ['associate'] },
-  { name: 'Carteirinha', href: '/portal/carteirinha', icon: <IdCard size={20} />, roles: ['associate'] },
-  { name: 'Habitualidade', href: '/portal/habitualidade', icon: <Target size={20} />, roles: ['associate'] },
-  { name: 'Eventos', href: '/portal/eventos', icon: <Calendar size={20} />, roles: ['associate'] },
-  { name: 'Documentos', href: '/portal/documentos', icon: <FileCheck size={20} />, roles: ['associate'] },
+// ─────────────────────────────────────────────────────────────────────────────
+// Ordenacao do menu por afinidade — agrupada por dominio funcional para
+// minimizar o esforco cognitivo de navegacao. Comeca em Dashboard (visao
+// geral) e termina em Logs (auditoria). Cada bloco abaixo e um "cluster":
+//
+//  ASSOCIATE:
+//    1. Visao geral .......... Inicio
+//    2. Identidade ........... Meu Perfil, Carteirinha
+//    3. Atividade do atirador  Historico de Treinos, Habitualidade
+//    4. Financeiro/papelada .. Anuidade, Documentos
+//    5. Calendario ........... Eventos
+//
+//  ADMIN/CASHIER:
+//    1. Visao geral .......... Dashboard
+//    2. Operacao financeira .. Caixa do dia, Lancamentos, Financeiro, Relatorios
+//    3. Pessoas .............. Associados, Visitantes
+//    4. Patrimonio ........... Equipamentos, Produtos, Dados do Clube
+//    5. Conteudo do site ..... Noticias, Galeria do Site, Eventos
+//    6. Auditoria ............ Logs
+// ─────────────────────────────────────────────────────────────────────────────
 
-  // Admin items — quase todos compartilhados com cashier; so /admin/financeiro
-  // (KPIs mensais/anuais, despesas, dashboard analitico) e admin-only. Cashier
-  // tem seu proprio fechamento em /admin/caixa.
+const navItems: NavItem[] = [
+  // ── ASSOCIATE ────────────────────────────────────────────────────────
+  { name: 'Inicio', href: '/portal', icon: <Home size={20} />, roles: ['associate'] },
+  { name: 'Meu Perfil', href: '/portal/perfil', icon: <User size={20} />, roles: ['associate'] },
+  { name: 'Carteirinha', href: '/portal/carteirinha', icon: <IdCard size={20} />, roles: ['associate'] },
+  { name: 'Historico de Treinos', href: '/portal/historico', icon: <History size={20} />, roles: ['associate'] },
+  { name: 'Habitualidade', href: '/portal/habitualidade', icon: <Target size={20} />, roles: ['associate'] },
+  { name: 'Anuidade', href: '/portal/anuidade', icon: <CreditCard size={20} />, roles: ['associate'] },
+  { name: 'Documentos', href: '/portal/documentos', icon: <FileCheck size={20} />, roles: ['associate'] },
+  { name: 'Eventos', href: '/portal/eventos', icon: <Calendar size={20} />, roles: ['associate'] },
+
+  // ── ADMIN / CASHIER ──────────────────────────────────────────────────
+  // Visao geral
   { name: 'Dashboard', href: '/admin', icon: <Home size={20} />, roles: ['admin', 'cashier'] },
+
+  // Operacao financeira (cluster do caixa)
   { name: 'Caixa do dia', href: '/admin/caixa', icon: <Wallet size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Lancamentos', href: '/admin/lancamentos', icon: <ClipboardList size={20} />, roles: ['admin', 'cashier'] },
-  { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin', 'cashier'] },
-  { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Financeiro', href: '/admin/financeiro', icon: <DollarSign size={20} />, roles: ['admin'] },
   { name: 'Relatorios', href: '/admin/relatorios', icon: <FileBarChart size={20} />, roles: ['admin', 'cashier'] },
+
+  // Pessoas
+  { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin', 'cashier'] },
+
+  // Patrimonio / cadastros do clube
+  { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Produtos', href: '/admin/produtos', icon: <Package size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Dados do Clube', href: '/admin/dados-clube', icon: <Building2 size={20} />, roles: ['admin', 'cashier'] },
-  { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin', 'cashier'] },
-  { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },
+
+  // Conteudo do site publico
   { name: 'Noticias', href: '/admin/noticias', icon: <Newspaper size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Galeria do Site', href: '/admin/galeria', icon: <ImageIcon size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Eventos', href: '/admin/eventos', icon: <Calendar size={20} />, roles: ['admin', 'cashier'] },
+
+  // Auditoria — sempre por ultimo
+  { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },
 ];
 
 interface PortalSidebarProps {

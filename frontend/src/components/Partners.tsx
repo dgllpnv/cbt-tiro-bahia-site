@@ -1,4 +1,4 @@
-import { Handshake, Scale, Shield } from 'lucide-react';
+import { Handshake, Scale, Shield, Code2 } from 'lucide-react';
 
 // =====================================================
 // Partners — Parceiros oficiais do CBT.
@@ -109,6 +109,51 @@ const Partners = () => {
           <div className="mt-12 flex items-center justify-center gap-3 text-gray-500 font-tactical text-sm">
             <Shield className="w-4 h-4 text-cbt-orange" />
             <span>Parcerias auditadas e em conformidade com a legislação brasileira</span>
+          </div>
+
+          {/* ── Tecnologia & Desenvolvimento ──────────────────────────────
+              Sessao discreta destacando a empresa que construiu o site.
+              Layout proposital: card unico, menor que os parceiros do clube
+              acima, com selo "Desenvolvimento e Tecnologia" — reconhecimento
+              sem disputar o protagonismo dos parceiros principais. */}
+          <div className="mt-16 pt-10 border-t border-gray-800">
+            <div className="flex items-center justify-center gap-2 mb-5">
+              <Code2 className="w-3.5 h-3.5 text-gray-500" />
+              <span className="text-gray-500 font-tactical text-[11px] uppercase tracking-[0.2em]">
+                Desenvolvimento e Tecnologia
+              </span>
+            </div>
+            <div className="max-w-md mx-auto">
+              <a
+                href="https://auri-auri-site.o9cmue.easypanel.host/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visitar site da Auri Solutions"
+                className="group flex items-center gap-4 bg-gray-900/60 hover:bg-gray-900/80 border border-gray-800 hover:border-cbt-orange/60 rounded-lg p-4 transition-all duration-300 hover:-translate-y-0.5 tactical-shadow"
+              >
+                <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center overflow-hidden rounded-md">
+                  <img
+                    src="/site/parceiros/auri-solutions.png"
+                    alt="Auri Solutions"
+                    loading="lazy"
+                    className="max-h-full max-w-full object-contain"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-military font-bold text-base leading-tight">
+                    Auri Solutions
+                  </p>
+                  <p className="text-gray-400 font-tactical text-xs leading-snug mt-0.5">
+                    Software development & automation
+                  </p>
+                  <p className="text-cbt-orange font-tactical text-[10px] uppercase tracking-wider mt-2 font-bold flex items-center gap-1">
+                    Conheça nosso trabalho
+                    <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+                  </p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>

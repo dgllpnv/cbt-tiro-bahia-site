@@ -87,6 +87,8 @@ interface ListUsersParams {
   search?: string;
   page?: number;
   limit?: number;
+  /** 'memberNumber' (padrao) ou 'fullName' (alfabetico) */
+  sort?: 'memberNumber' | 'fullName';
 }
 
 // ── Helper to map backend user fields ───────────────────────────────────────

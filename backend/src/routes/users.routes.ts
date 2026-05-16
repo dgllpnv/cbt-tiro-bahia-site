@@ -144,7 +144,17 @@ router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Respo
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const skip = (page - 1) * limit;
 
-    const { role, status, search } = req.query;
+    const { role, status, search, sort } = req.query;
+
+    // Ordenacao — padrao por numero de associado (mais util na rotina do
+    // caixa, que costuma identificar gente pelo numero). Aceita 'fullName'
+    // explicitamente para quem prefere ordem alfabetica.
+    // memberNumber e zero-padded ('CBT0101'..'CBT0150'), entao o sort
+    // lexicografico do Postgres coincide com o numerico — sem hack.
+    const sortField = sort === 'fullName' ? 'fullName' : 'memberNumber';
+    const orderBy: any = sortField === 'memberNumber'
+      ? [{ memberNumber: 'asc' as const }, { fullName: 'asc' as const }]
+      : [{ fullName: 'asc' as const }];
 
     // Build where clause — por padrao, /api/users NAO retorna VISITOR
     // (visitantes vivem em /api/visitors). Filtro aceita ADMIN, ASSOCIATE ou VISITOR
@@ -177,7 +187,7 @@ router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Respo
         select: userSelectFields,
         skip,
         take: limit,
-        orderBy: { fullName: 'asc' },
+        orderBy,
       }),
       prisma.user.count({ where }),
     ]);
