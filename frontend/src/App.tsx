@@ -11,6 +11,7 @@ import PublicLayout from "@/components/layout/PublicLayout";
 
 // Public pages
 import Index from "./pages/Index";
+import GalleryPage from "./pages/GalleryPage";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 
@@ -44,6 +45,7 @@ import EquipmentDetailPage from "./pages/admin/EquipmentDetailPage";
 import ClubDataPage from "./pages/admin/ClubDataPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import CashierDailyPage from "./pages/admin/CashierDailyPage";
+import GalleryManagementPage from "./pages/admin/GalleryManagementPage";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +67,7 @@ const App = () => (
             <Routes>
               {/* Public — sempre dark via PublicLayout (identidade institucional) */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+              <Route path="/galeria" element={<PublicLayout><GalleryPage /></PublicLayout>} />
               <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
 
               {/* Associate Portal — path="/portal" ensures only /portal/* URLs match */}
@@ -119,6 +122,7 @@ const App = () => (
               <Route path="estoque" element={<Navigate to="/admin/produtos" replace />} />
               <Route path="dados-clube" element={<ClubDataPage />} />
               <Route path="noticias" element={<NewsManagementPage />} />
+              <Route path="galeria" element={<GalleryManagementPage />} />
               <Route path="eventos" element={<EventsManagementPage />} />
             </Route>
 

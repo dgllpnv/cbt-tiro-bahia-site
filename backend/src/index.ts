@@ -25,6 +25,7 @@ import clubSettingsRoutes from './routes/clubSettings.routes.js';
 import visitorsRoutes from './routes/visitors.routes.js';
 import faceProfilesRoutes from './routes/faceProfiles.routes.js';
 import reportsRoutes from './routes/reports.routes.js';
+import galleryRoutes from './routes/gallery.routes.js';
 import publicRoutes from './routes/public.routes.js';
 
 // =====================================================
@@ -151,6 +152,7 @@ app.use('/api/club-settings', clubSettingsRoutes);
 app.use('/api/visitors', visitorsRoutes);
 app.use('/api/face-profiles', faceProfilesRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/gallery', galleryRoutes);
 app.use('/api/public', publicRoutes);
 
 // =====================================================

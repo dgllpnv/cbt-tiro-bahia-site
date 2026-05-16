@@ -3,56 +3,52 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, MapPin } from 'lucide-react';
+import { Phone, MapPin, Mail, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+// =====================================================
+// Contact — Canais oficiais de contato do CBT.
+// Telefone (71) 3051-1111 e usado tanto para ligacao quanto WhatsApp,
+// alinhado com o site oficial (clubebaianodetiro.com.br).
+// O formulario abaixo apenas exibe toast de confirmacao — para integracao
+// real, seria necessario criar um endpoint POST /api/public/contact-message
+// (decisao: mock por ora; canais diretos sao incentivados).
+// =====================================================
+
+const PHONE_DISPLAY = '(71) 3051-1111';
+const PHONE_TEL = '+557130511111';
+const EMAIL = 'clubebaianodetiro@outlook.com';
+const WHATSAPP_URL =
+  'https://wa.me/557130511111?text=' +
+  encodeURIComponent('Olá! Gostaria de saber mais sobre o CBT.');
 
 const Contact = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Basic form validation
+
     if (!formData.name || !formData.email || !formData.phone || !formData.message) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos do formulário.",
-        variant: "destructive"
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha todos os campos do formulário.',
+        variant: 'destructive',
       });
       return;
     }
 
-    // Simulate form submission
     toast({
-      title: "Mensagem enviada!",
-      description: "Entraremos em contato em breve. Obrigado pelo interesse!",
+      title: 'Mensagem registrada!',
+      description: 'Para resposta mais rápida, recomendamos contato direto pelo WhatsApp.',
     });
 
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      message: ''
-    });
+    setFormData({ name: '', email: '', phone: '', message: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-  const whatsappNumber = "5571999999999";
-  const whatsappMessage = "Olá! Gostaria de saber mais sobre os cursos do CBT.";
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <section id="contato" className="py-20 bg-gradient-to-b from-gray-900 to-black">
@@ -65,7 +61,10 @@ const Contact = () => {
             </h2>
             <div className="w-24 h-1 bg-cbt-orange mx-auto mb-8"></div>
             <p className="text-xl text-gray-300 font-tactical max-w-3xl mx-auto">
-              Tire suas dúvidas e agende sua aula experimental. Estamos prontos para ajudar!
+              Tire suas dúvidas, agende uma visita ou se inscreva nos nossos cursos.
+              <span className="block text-cbt-orange mt-2 text-base">
+                A forma mais rápida de falar conosco é pelo WhatsApp.
+              </span>
             </p>
           </div>
 
@@ -73,64 +72,50 @@ const Contact = () => {
             {/* Contact Form */}
             <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
               <CardHeader>
-                <CardTitle className="text-2xl font-military font-bold text-white">
-                  Envie sua mensagem
-                </CardTitle>
+                <CardTitle className="text-2xl font-military font-bold text-white">Envie sua mensagem</CardTitle>
                 <CardDescription className="text-gray-400 font-tactical">
-                  Preencha o formulário abaixo e entraremos em contato
+                  Preencha o formulário e entraremos em contato
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <Input
-                      type="text"
-                      name="name"
-                      placeholder="Seu nome completo"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Input
-                      type="email"
-                      name="email"
-                      placeholder="Seu melhor e-mail"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Input
-                      type="tel"
-                      name="phone"
-                      placeholder="(71) 99999-9999"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Textarea
-                      name="message"
-                      placeholder="Conte-nos sobre seu interesse nos cursos ou tire suas dúvidas..."
-                      value={formData.message}
-                      onChange={handleChange}
-                      rows={5}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange resize-none"
-                      required
-                    />
-                  </div>
-                  
-                  <Button 
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <Input
+                    type="text"
+                    name="name"
+                    placeholder="Seu nome completo"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
+                    required
+                  />
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="Seu melhor e-mail"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
+                    required
+                  />
+                  <Input
+                    type="tel"
+                    name="phone"
+                    placeholder="(71) 99999-9999"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange"
+                    required
+                  />
+                  <Textarea
+                    name="message"
+                    placeholder="Conte-nos sobre seu interesse..."
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={5}
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-tactical focus:border-cbt-orange resize-none"
+                    required
+                  />
+                  <Button
                     type="submit"
                     size="lg"
                     className="w-full bg-cbt-orange hover:bg-cbt-orange/90 text-black font-tactical font-bold uppercase tracking-wide glow-orange transition-all duration-300 hover:scale-105"
@@ -138,91 +123,97 @@ const Contact = () => {
                     Enviar mensagem
                   </Button>
                 </form>
+                <p className="text-xs text-gray-500 font-tactical mt-4 text-center">
+                  Ou fale conosco diretamente pelos canais ao lado para resposta imediata
+                </p>
               </CardContent>
             </Card>
 
-            {/* Contact Info */}
-            <div className="space-y-8">
-              {/* Phone Contact */}
-              <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-cbt-orange/20 rounded-full flex items-center justify-center">
-                      <Phone className="text-cbt-orange" size={28} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-military font-bold text-white mb-2">
-                        TELEFONE DIRETO
-                      </h3>
-                      <a 
-                        href="tel:+5571999999999"
-                        className="text-2xl font-tactical font-bold text-cbt-orange hover:text-cbt-orange/80 transition-colors"
-                      >
-                        (71) 3051-1111
-                      </a>
-                      <p className="text-gray-400 font-tactical text-sm mt-1">
-                        Atendimento de segunda a sábado
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* WhatsApp */}
-              <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
+            {/* Contact Info — canais diretos */}
+            <div className="space-y-5">
+              {/* WhatsApp — destaque */}
+              <Card className="bg-gradient-to-br from-green-900/40 to-gray-900/50 border-green-700/40 tactical-shadow">
                 <CardContent className="p-6">
                   <div className="text-center">
-                    <h3 className="text-xl font-military font-bold text-white mb-4">
-                      FALE CONOSCO PELO WHATSAPP
-                    </h3>
+                    <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageCircle className="text-green-400" size={32} />
+                    </div>
+                    <h3 className="text-xl font-military font-bold text-white mb-2">WHATSAPP</h3>
+                    <p className="text-gray-400 font-tactical text-sm mb-4">
+                      Canal preferencial — resposta rápida durante o expediente
+                    </p>
                     <Button
                       asChild
                       size="lg"
                       className="bg-green-600 hover:bg-green-700 text-white font-tactical font-bold uppercase tracking-wide transition-all duration-300 hover:scale-105"
                     >
-                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                        <img 
-                          src="/branding/24656961-78c6-43d7-81ba-346221d29fea.png" 
-                          alt="WhatsApp" 
-                          className="w-5 h-5 mr-2"
-                        />
-                        Conversar no WhatsApp
+                      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Conversar agora
                       </a>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Quick Info */}
+              {/* Phone */}
               <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
                 <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-cbt-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MapPin className="text-cbt-orange" size={24} />
+                  <div className="flex items-center space-x-4">
+                    <div className="w-14 h-14 bg-cbt-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Phone className="text-cbt-orange" size={24} />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-military font-bold text-white mb-2">
-                        ENDEREÇO COMPLETO
-                      </h3>
-                      <p className="text-gray-300 font-tactical mb-3">
-                        Via Metropolitana, 1807 - Capelão<br />
-                        Lauro de Freitas - BA, 42000-000
-                      </p>
-                      <p className="text-sm text-gray-400 font-tactical">
-                        Estacionamento gratuito • Fácil acesso
-                      </p>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-military font-bold text-white mb-1">TELEFONE</h3>
+                      <a
+                        href={`tel:${PHONE_TEL}`}
+                        className="text-xl font-tactical font-bold text-cbt-orange hover:text-cbt-orange/80 transition-colors"
+                      >
+                        {PHONE_DISPLAY}
+                      </a>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Emergency Note */}
-              <div className="bg-cbt-orange/10 border border-cbt-orange/30 p-4 rounded-lg">
-                <p className="text-cbt-orange font-tactical text-sm text-center">
-                  <strong>Resposta garantida em até 2 horas!</strong><br />
-                  Nosso time está sempre pronto para atender você.
-                </p>
-              </div>
+              {/* Email */}
+              <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-14 h-14 bg-cbt-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Mail className="text-cbt-orange" size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-military font-bold text-white mb-1">E-MAIL</h3>
+                      <a
+                        href={`mailto:${EMAIL}`}
+                        className="text-sm md:text-base font-tactical font-bold text-cbt-orange hover:text-cbt-orange/80 transition-colors break-all"
+                      >
+                        {EMAIL}
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Address */}
+              <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-14 h-14 bg-cbt-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <MapPin className="text-cbt-orange" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-military font-bold text-white mb-2">ENDEREÇO</h3>
+                      <p className="text-gray-300 font-tactical text-sm">
+                        Via Metropolitana, 1807 - Capelão
+                        <br />
+                        Lauro de Freitas - BA
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -230,17 +221,13 @@ const Contact = () => {
 
       {/* Floating WhatsApp Button */}
       <a
-        href={whatsappUrl}
+        href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300"
+        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center"
         aria-label="Conversar no WhatsApp"
       >
-        <img 
-          src="/branding/24656961-78c6-43d7-81ba-346221d29fea.png" 
-          alt="WhatsApp" 
-          className="w-16 h-16"
-        />
+        <MessageCircle size={32} />
       </a>
     </section>
   );

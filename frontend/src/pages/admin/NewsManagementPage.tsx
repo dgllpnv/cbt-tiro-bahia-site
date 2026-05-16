@@ -193,6 +193,22 @@ const NewsManagementPage = () => {
     [filtered],
   );
 
+  // IDs das 3 noticias que aparecem na home agora. Espelha a regra do
+  // backend GET /api/public/news: published, ordenadas por isPinned desc
+  // + publishedAt desc, take 3. Recalcula sobre TODA a lista (nao filtrada),
+  // para que o badge seja consistente independente de filtros aplicados.
+  const HOME_LIMIT = 3;
+  const homeVisibleIds = useMemo(() => {
+    const sorted = [...newsList]
+      .filter((n) => n.isPublished)
+      .sort((a, b) => {
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+      })
+      .slice(0, HOME_LIMIT);
+    return new Set(sorted.map((n) => n.id));
+  }, [newsList]);
+
   // ── Handlers ────────────────────────────────────────────────────────────
   const updateField = <K extends keyof NewsFormState>(key: K, value: NewsFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -324,6 +340,31 @@ const NewsManagementPage = () => {
         }
       />
 
+      {/* ── Regras de exibicao na home ─────────────────────────────────── */}
+      <div className="bg-cbt-orange/5 border border-cbt-orange/30 rounded-lg p-4 mb-5">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-cbt-orange/15 flex items-center justify-center flex-shrink-0">
+            <Star className="h-4 w-4 text-cbt-orange" />
+          </div>
+          <div className="flex-1 text-sm font-tactical text-foreground/85">
+            <p className="font-bold text-foreground mb-1">
+              Como controlar o que aparece na home do site
+            </p>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>
+                • A home mostra as <strong className="text-foreground">{HOME_LIMIT} notícias mais recentes publicadas</strong> — fixadas (<Pin className="inline h-3 w-3 text-cbt-orange" />) entram primeiro
+              </li>
+              <li>
+                • Para que uma notícia apareça, ela precisa estar <strong className="text-foreground">Publicada</strong> (ícone <Eye className="inline h-3 w-3 text-green-600 dark:text-green-400" />). Rascunhos ficam ocultos
+              </li>
+              <li>
+                • Notícias com o selo <Badge className="inline-flex bg-cbt-orange/15 text-cbt-orange border-cbt-orange/30 text-[10px] mx-1 font-tactical h-4 px-1.5">🌐 NA HOME</Badge> são as que estão aparecendo agora no site público
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* ── Filters bar ───────────────────────────────────────────────────── */}
       <div className="bg-card/50 border border-border rounded-lg p-4 mb-5 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
         <Tabs
@@ -429,6 +470,7 @@ const NewsManagementPage = () => {
                     <FeaturedCard
                       key={n.id}
                       news={n}
+                      onHome={homeVisibleIds.has(n.id)}
                       onEdit={() => openEditDialog(n)}
                       onTogglePin={() => togglePinned(n)}
                       onDelete={() => handleDelete(n)}
@@ -458,6 +500,7 @@ const NewsManagementPage = () => {
                   <NewsRow
                     key={n.id}
                     news={n}
+                    onHome={homeVisibleIds.has(n.id)}
                     onEdit={() => openEditDialog(n)}
                     onTogglePin={() => togglePinned(n)}
                     onTogglePublish={() => togglePublished(n)}
@@ -671,12 +714,13 @@ const NewsManagementPage = () => {
 
 interface FeaturedCardProps {
   news: News;
+  onHome: boolean;
   onEdit: () => void;
   onTogglePin: () => void;
   onDelete: () => void;
 }
 
-const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps) => (
+const FeaturedCard = ({ news, onHome, onEdit, onTogglePin, onDelete }: FeaturedCardProps) => (
   <article className="bg-card/70 border border-cbt-orange/30 rounded-lg overflow-hidden flex flex-col group hover:border-cbt-orange/60 transition-colors">
     <div className="relative h-32 bg-muted flex items-center justify-center overflow-hidden">
       {news.imageUrl ? (
@@ -695,6 +739,11 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
         <Pin className="h-3 w-3" />
         Destaque
       </span>
+      {onHome && (
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-600/90 text-white text-[10px] font-tactical font-bold uppercase tracking-wide">
+          🌐 Na home
+        </span>
+      )}
       {!news.isPublished && (
         <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-yellow-500/90 text-primary-foreground text-[10px] font-tactical font-bold uppercase">
           Rascunho
@@ -751,14 +800,19 @@ const FeaturedCard = ({ news, onEdit, onTogglePin, onDelete }: FeaturedCardProps
 
 interface NewsRowProps {
   news: News;
+  onHome: boolean;
   onEdit: () => void;
   onTogglePin: () => void;
   onTogglePublish: () => void;
   onDelete: () => void;
 }
 
-const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsRowProps) => (
-  <div className="group flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors">
+const NewsRow = ({ news, onHome, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsRowProps) => (
+  <div
+    className={`group flex items-center gap-4 px-4 py-3 transition-colors ${
+      onHome ? 'bg-green-500/[0.04] hover:bg-green-500/[0.08]' : 'hover:bg-muted/40'
+    }`}
+  >
     {/* Thumbnail */}
     <div className="hidden sm:flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-muted border border-border overflow-hidden">
       {news.imageUrl ? (
@@ -775,9 +829,14 @@ const NewsRow = ({ news, onEdit, onTogglePin, onTogglePublish, onDelete }: NewsR
 
     {/* Title + meta */}
     <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2 mb-1 flex-wrap">
         {news.isPinned && <Pin className="h-3.5 w-3.5 text-cbt-orange flex-shrink-0" />}
         <h3 className="text-foreground font-tactical text-sm truncate">{news.title}</h3>
+        {onHome && (
+          <Badge className="bg-green-600/15 text-green-700 dark:text-green-400 border-green-600/30 text-[10px] font-tactical h-5">
+            🌐 Na home
+          </Badge>
+        )}
         {!news.isPublished && (
           <Badge className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 text-[10px] font-tactical h-5">
             <EyeOff className="h-2.5 w-2.5 mr-1" />

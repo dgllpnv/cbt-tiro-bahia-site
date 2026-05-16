@@ -56,10 +56,10 @@ const Hero = () => {
           
           <div className="w-24 h-1 bg-cbt-orange mx-auto mb-6"></div>
           <p className="text-xl md:text-2xl text-gray-300 font-tactical mb-2">
-            Sua jornada no mundo do tiro começa aqui
+            Preparando você para o tiro esportivo, prático, tático e defensivo
           </p>
           <p className="text-lg text-gray-400 font-tactical max-w-2xl mx-auto">
-            Mais de 10 anos formando atiradores com excelência, segurança e profissionalismo
+            Desde 2016 formando atiradores com excelência, segurança e profissionalismo
           </p>
         </div>
 
@@ -86,16 +86,16 @@ const Hero = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-8 border-t border-gray-700">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">+10</div>
-            <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Anos de experiência</div>
+            <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">2016</div>
+            <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Desde nossa fundação</div>
           </div>
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">100%</div>
             <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Instrutores credenciados</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">24/7</div>
-            <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Segurança garantida</div>
+            <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2">4</div>
+            <div className="text-sm md:text-base text-gray-300 font-tactical uppercase tracking-wide">Modalidades de tiro</div>
           </div>
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-military font-bold text-cbt-orange mb-2 tabular-nums">

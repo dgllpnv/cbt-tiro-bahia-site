@@ -225,6 +225,7 @@ model User {
   loansReturnedBy   EquipmentLoan[]    @relation("LoanReturnedBy")
   annuityPayments   AnnuityPayment[]
   newsAuthored      News[]
+  galleryImagesCreated GalleryImage[]
   expenses          Expense[]
   auditLogsAffected AuditLog[]         @relation("AuditUser")
   auditLogsPerformed AuditLog[]        @relation("AuditPerformedBy")
@@ -274,6 +275,30 @@ model News {
 
   @@index([clubId, publishedAt])
   @@index([isPinned])
+}
+
+// =====================================================
+// GalleryImage — Fotos da galeria publica do site institucional.
+// Gerenciada pelo admin (CRUD em /admin/galeria). Maximo de 100 imagens
+// ativas e enforced no router POST /api/gallery.
+// imageUrl aceita caminho relativo a /public (ex: "/site/galeria/foo.png")
+// para o seed, ou data URI base64 para uploads do admin — mesmo padrao de News.
+// =====================================================
+
+model GalleryImage {
+  id           String   @id @default(uuid())
+  clubId       String   @default("cbt-bahia")
+  imageUrl     String   @db.Text
+  caption      String?
+  displayOrder Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([clubId, displayOrder])
+  @@index([isPublished])
 }
 
 model Visit {

@@ -64,12 +64,13 @@ const Location = () => {
                       <Clock className="text-cbt-orange" size={24} />
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-military font-bold text-white mb-2">HORÁRIO DE FUNCIONAMENTO</h3>
-                    <div className="space-y-1 text-gray-300 font-tactical">
-                      <p>Segunda a Sexta: 08:00 - 18:00</p>
-                      <p>Sábado: 08:00 - 16:00</p>
-                      <p>Domingo: 08:00 - 14:00</p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-military font-bold text-white mb-3">HORÁRIO DE FUNCIONAMENTO</h3>
+                    <div className="space-y-1.5 text-gray-300 font-tactical">
+                      <p className="flex justify-between max-w-xs"><span className="text-gray-500">Segunda:</span> <span className="text-red-400">Fechado</span></p>
+                      <p className="flex justify-between max-w-xs"><span className="text-gray-500">Terça a Sexta:</span> <span>9h-12h e 14h-17h</span></p>
+                      <p className="flex justify-between max-w-xs"><span className="text-gray-500">Sábado:</span> <span>9h às 17h</span></p>
+                      <p className="flex justify-between max-w-xs"><span className="text-gray-500">Domingo:</span> <span>9h às 12h</span></p>
                     </div>
                   </div>
                 </div>

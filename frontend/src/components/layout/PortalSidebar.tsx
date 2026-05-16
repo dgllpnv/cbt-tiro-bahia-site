@@ -11,6 +11,7 @@ import {
   Crosshair,
   FileText,
   Newspaper,
+  Image as ImageIcon,
   Calendar,
   History,
   User,
@@ -58,6 +59,7 @@ const navItems: NavItem[] = [
   { name: 'Equipamentos', href: '/admin/equipamentos', icon: <Crosshair size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },
   { name: 'Noticias', href: '/admin/noticias', icon: <Newspaper size={20} />, roles: ['admin', 'cashier'] },
+  { name: 'Galeria do Site', href: '/admin/galeria', icon: <ImageIcon size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Eventos', href: '/admin/eventos', icon: <Calendar size={20} />, roles: ['admin', 'cashier'] },
 ];
 
