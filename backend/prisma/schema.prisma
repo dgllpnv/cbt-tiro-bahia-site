@@ -172,6 +172,11 @@ model User {
   email           String?    @unique
   cpf             String     @unique
   passwordHash    String?    @db.Text
+  // Flag de "primeiro acesso" — quando true, o frontend forca a tela de
+  // redefinicao de senha apos o login. O proprio fluxo (escolher nova ou
+  // manter atual) flipa para false. Setado em massa via reset-passwords
+  // -to-cpf quando o admin resetou todas as senhas para o CPF.
+  mustChangePassword Boolean @default(false)
   role            Role       @default(ASSOCIATE)
   status          UserStatus @default(ACTIVE)
 

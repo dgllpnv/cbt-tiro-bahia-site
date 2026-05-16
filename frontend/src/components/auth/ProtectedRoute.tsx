@@ -36,6 +36,12 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Forca tela de "primeiro acesso" enquanto o flag estiver ativo. Qualquer
+  // rota protegida redireciona para /primeiro-acesso, exceto a propria tela.
+  if (user?.mustChangePassword && location.pathname !== '/primeiro-acesso') {
+    return <Navigate to="/primeiro-acesso" replace />;
+  }
+
   // Sem allowedRoles = qualquer usuario autenticado pode acessar
   if (!allowedRoles || allowedRoles.length === 0) {
     return <>{children}</>;

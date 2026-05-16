@@ -34,8 +34,12 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redireciona se ja autenticado
+  // Redireciona se ja autenticado. Se ainda esta no fluxo de primeiro
+  // acesso, manda direto pra tela de definicao de senha.
   if (isAuthenticated && user) {
+    if (user.mustChangePassword) {
+      return <Navigate to="/primeiro-acesso" replace />;
+    }
     const target =
       user.role === 'admin' ? '/admin' :
       user.role === 'cashier' ? '/admin/caixa' :
@@ -304,21 +308,6 @@ const LoginPage = () => {
             </a>
           </div>
         </div>
-
-        {/* Test credentials hint (dev only) — separa por aba */}
-        {import.meta.env.DEV && (
-          <div className="mt-4 bg-card/50 border border-border rounded-lg p-4 text-xs font-tactical text-muted-foreground/80 space-y-3">
-            <div>
-              <p className="text-cbt-orange font-bold mb-1">Aba Associado (CPF):</p>
-              <p>529.982.247-25 / associado123</p>
-            </div>
-            <div>
-              <p className="text-cbt-orange font-bold mb-1">Aba Admin (e-mail):</p>
-              <p>admin@cbt.com.br / admin123 (master)</p>
-              <p>caixa@cbt.com.br / caixa123 (operador de caixa)</p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

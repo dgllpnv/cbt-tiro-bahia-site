@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import GalleryPage from "./pages/GalleryPage";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
+import PasswordSetupPage from "./pages/PasswordSetupPage";
 
 // Associate portal pages
 import PortalHomePage from "./pages/portal/PortalHomePage";
@@ -69,6 +70,15 @@ const App = () => (
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
               <Route path="/galeria" element={<PublicLayout><GalleryPage /></PublicLayout>} />
               <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
+              {/* Tela forcada de primeiro acesso — protegida por auth, sem PortalLayout */}
+              <Route
+                path="/primeiro-acesso"
+                element={
+                  <ProtectedRoute>
+                    <PasswordSetupPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Associate Portal — path="/portal" ensures only /portal/* URLs match */}
             <Route

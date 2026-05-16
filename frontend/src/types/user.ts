@@ -14,6 +14,10 @@ export interface User {
   annuityValidUntil?: string;
   memberSince?: string;
   status: string;
+  /** Quando true, o frontend forca a tela de "primeiro acesso" antes
+   *  de liberar qualquer rota protegida. Flipa para false apos o usuario
+   *  definir nova senha OU optar por manter o CPF. */
+  mustChangePassword?: boolean;
   // Thumbnail base64 do FaceProfile mais recente ativo (1 elemento ou vazio).
   // Usado para renderizar avatar na lista e no perfil do associado.
   faceProfiles?: Array<{ thumbnail: string | null }>;

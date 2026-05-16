@@ -37,6 +37,7 @@ function mapUser(raw: any): User {
     annuityValidUntil: raw.annuityValidUntil,
     memberSince: raw.memberSince,
     status: raw.status || 'ACTIVE',
+    mustChangePassword: !!raw.mustChangePassword,
   };
 }
 
@@ -94,6 +95,24 @@ export async function changePassword(oldPassword: string, newPassword: string): 
     return { success: false, error: response.data.error };
   } catch (error: any) {
     return { success: false, error: error.response?.data?.error || 'Erro ao alterar senha' };
+  }
+}
+
+// Fluxo de "primeiro acesso" — chamado pela tela que e exibida quando
+// user.mustChangePassword === true. Aceita duas decisoes:
+//   - { action: 'change', newPassword }   → define nova senha
+//   - { action: 'keep' }                  → mantem CPF como senha
+// Backend so aceita se o flag mustChangePassword estiver true (endpoint
+// nao serve como atalho para trocar senha sem currentPassword).
+export async function finalizeFirstAccess(
+  payload: { action: 'change'; newPassword: string } | { action: 'keep' },
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await api.post('/api/auth/finalize-first-access', payload);
+    if (response.data.success) return { success: true };
+    return { success: false, error: response.data.error };
+  } catch (error: any) {
+    return { success: false, error: error.response?.data?.error || 'Erro ao concluir primeiro acesso' };
   }
 }
 

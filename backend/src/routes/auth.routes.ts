@@ -22,6 +22,27 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(6, 'Nova senha deve ter no minimo 6 caracteres'),
 });
 
+// Fluxo de "primeiro acesso" — usuario logou com CPF e o flag mustChange
+// Password=true forca esta tela. Aceita duas acoes:
+//   - 'change': define nova senha (>= 6 chars)
+//   - 'keep':   confirma manter a atual (CPF) e so flipa o flag
+const finalizeFirstAccessSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('change'),
+    newPassword: z.string().min(6, 'Nova senha deve ter no minimo 6 caracteres'),
+  }),
+  z.object({ action: z.literal('keep') }),
+]);
+
+// Helper: le mustChangePassword via raw SQL ate o Prisma client ser regenerado.
+// Retorna false se o user nao for encontrado (defensivo — nao deve acontecer).
+async function readMustChangePassword(userId: string): Promise<boolean> {
+  const rows = await prisma.$queryRaw<Array<{ mustChangePassword: boolean }>>`
+    SELECT "mustChangePassword" FROM "User" WHERE id = ${userId} LIMIT 1
+  `;
+  return rows[0]?.mustChangePassword ?? false;
+}
+
 // =====================================================
 // POST /login
 // =====================================================
@@ -122,6 +143,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       ipAddress: req.ip as string | undefined,
     });
 
+    const mustChangePassword = await readMustChangePassword(user.id);
+
     res.json({
       success: true,
       data: {
@@ -136,6 +159,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
           photoUrl: user.photoUrl,
           annuityValidUntil: user.annuityValidUntil,
           crLevel: user.crLevel,
+          mustChangePassword,
         },
       },
     });
@@ -233,9 +257,11 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
       return;
     }
 
+    const mustChangePassword = await readMustChangePassword(user.id);
+
     res.json({
       success: true,
-      data: { user },
+      data: { user: { ...user, mustChangePassword } },
     });
   } catch (error) {
     console.error('[AUTH] Erro ao buscar perfil:', error);
@@ -296,6 +322,11 @@ router.put('/change-password', authMiddleware, async (req: Request, res: Respons
       data: { passwordHash: newPasswordHash },
     });
 
+    // Limpa o flag de primeiro acesso (raw — Prisma client nao foi regenerado)
+    await prisma.$executeRaw`
+      UPDATE "User" SET "mustChangePassword" = false WHERE id = ${req.user!.id}
+    `;
+
     console.log(`[AUTH] Senha alterada: ${user.email}`);
 
     await createAuditLog({
@@ -318,6 +349,79 @@ router.put('/change-password', authMiddleware, async (req: Request, res: Respons
       success: false,
       error: 'Erro interno do servidor',
     });
+  }
+});
+
+// =====================================================
+// POST /finalize-first-access
+// =====================================================
+// Fluxo forcado pelo flag mustChangePassword. Usuario ja autenticado (acabou
+// de logar com CPF). Aceita duas decisoes:
+//   - action='change' + newPassword: troca a senha e limpa o flag
+//   - action='keep':                 mantem CPF como senha, so limpa o flag
+//
+// Nao requer currentPassword — a confirmacao da identidade ja veio do JWT
+// recem-emitido. Diferente de /change-password, que e o fluxo voluntario.
+router.post('/finalize-first-access', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validation = finalizeFirstAccessSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({ success: false, error: validation.error.errors[0].message });
+      return;
+    }
+
+    const userId = req.user!.id;
+
+    // Verifica se o fluxo realmente esta ativo — endpoint nao pode ser usado
+    // como atalho permanente para trocar senha sem currentPassword.
+    const mustChange = await readMustChangePassword(userId);
+    if (!mustChange) {
+      res.status(400).json({
+        success: false,
+        error: 'Fluxo de primeiro acesso ja concluido',
+      });
+      return;
+    }
+
+    const decision = validation.data;
+
+    if (decision.action === 'change') {
+      const newPasswordHash = await bcrypt.hash(decision.newPassword, 12);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash: newPasswordHash },
+      });
+      await createAuditLog({
+        performedById: userId,
+        action: 'PASSWORD_CHANGE',
+        entityType: 'User',
+        entityId: userId,
+        userId: userId,
+        description: `Primeiro acesso: usuario definiu senha propria`,
+        ipAddress: req.ip as string | undefined,
+      });
+    } else {
+      // action === 'keep' — apenas registra a decisao no audit log
+      await createAuditLog({
+        performedById: userId,
+        action: 'PASSWORD_CHANGE',
+        entityType: 'User',
+        entityId: userId,
+        userId: userId,
+        description: `Primeiro acesso: usuario optou por manter CPF como senha`,
+        ipAddress: req.ip as string | undefined,
+      });
+    }
+
+    // Limpa o flag em ambos os casos
+    await prisma.$executeRaw`
+      UPDATE "User" SET "mustChangePassword" = false WHERE id = ${userId}
+    `;
+
+    res.json({ success: true, data: { message: 'Configuracao concluida' } });
+  } catch (error) {
+    console.error('[AUTH] Erro em finalize-first-access:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
   }
 });
 
