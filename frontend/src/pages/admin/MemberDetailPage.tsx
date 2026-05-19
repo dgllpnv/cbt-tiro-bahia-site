@@ -72,11 +72,11 @@ import { getMemberStats } from '@/services/memberStatsService';
 import { exportMemberFullReportPdf } from '@/lib/reports/pdfMemberFullReport';
 import type { User, UserAttachment } from '@/types/user';
 import {
-  formatCpf,
   formatCurrency,
   formatDate,
   formatDateTime,
 } from '@/lib/formatters';
+import { formatCpfMask, isValidCpf, stripCpf } from '@/lib/cpf';
 import { transactionTypeLabels, loanStatusLabels, equipmentConditionLabels } from '@/lib/constants';
 
 // ── Local Types ──────────────────────────────────────────────────────────────
@@ -132,6 +132,7 @@ interface Loan {
 
 interface MemberFormData {
   fullName: string;
+  cpf: string;
   email: string;
   phone: string;
   dateOfBirth: string;
@@ -167,8 +168,12 @@ const MemberDetailPage = () => {
   const [activeTab, setActiveTab] = useState('perfil');
 
   // ── Form State ───────────────────────────────────────────────────────────
+  // cpfError: validacao client-side do CPF (DV + 11 digitos). Bloqueia
+  // o submit. Backend ainda valida e devolve 409 em conflito de unicidade.
+  const [cpfError, setCpfError] = useState('');
   const [form, setForm] = useState<MemberFormData>({
     fullName: '',
+    cpf: '',
     email: '',
     phone: '',
     dateOfBirth: '',
@@ -242,6 +247,7 @@ const MemberDetailPage = () => {
       setMember(m);
       setForm({
         fullName: m.fullName || '',
+        cpf: formatCpfMask(m.cpf || ''),
         email: m.email || '',
         phone: m.phone || '',
         dateOfBirth: (m as any).dateOfBirth || '',
@@ -352,10 +358,29 @@ const MemberDetailPage = () => {
 
   const handleSave = async () => {
     if (!id || !member) return;
+
+    // Valida CPF: so envia se foi alterado. Bloqueia se inseriu invalido.
+    // member.cpf vem do banco sem mascara (11 digitos puros); form.cpf
+    // vem com mascara progressiva do input. Normaliza ambos pra comparar.
+    const cpfDigits = stripCpf(form.cpf);
+    const cpfChanged = cpfDigits !== stripCpf(member.cpf || '');
+    if (cpfChanged) {
+      if (cpfDigits.length !== 11 || !isValidCpf(cpfDigits)) {
+        setCpfError('CPF invalido. Confira os digitos.');
+        toast({
+          title: 'CPF invalido',
+          description: 'Corrija o CPF antes de salvar.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+    setCpfError('');
     setIsSaving(true);
 
     const result = await updateUser(id, {
       fullName: form.fullName || undefined,
+      cpf: cpfChanged ? cpfDigits : undefined,
       email: form.email || undefined,
       phone: form.phone || undefined,
       cr: form.cr || undefined,
@@ -805,14 +830,41 @@ const MemberDetailPage = () => {
                   />
                 </div>
 
-                {/* CPF - read only */}
+                {/* CPF — editavel (mascara progressiva + validacao DV).
+                    Backend trata conflito de unicidade com HTTP 409. */}
                 <div>
                   <label className={labelClass}>CPF</label>
                   <Input
-                    value={formatCpf(member.cpf)}
-                    readOnly
-                    className={readOnlyInputClass}
+                    value={form.cpf}
+                    onChange={(e) => {
+                      handleFormChange('cpf', formatCpfMask(e.target.value));
+                      if (cpfError) setCpfError('');
+                    }}
+                    onBlur={() => {
+                      const digits = stripCpf(form.cpf);
+                      if (digits.length === 0) {
+                        setCpfError('');
+                        return;
+                      }
+                      if (digits.length < 11) {
+                        setCpfError('CPF incompleto.');
+                        return;
+                      }
+                      if (!isValidCpf(digits)) {
+                        setCpfError('CPF invalido. Confira os digitos.');
+                        return;
+                      }
+                      setCpfError('');
+                    }}
+                    placeholder="000.000.000-00"
+                    inputMode="numeric"
+                    maxLength={14}
+                    aria-invalid={!!cpfError}
+                    className={`${inputClass} ${cpfError ? 'border-red-700/60 focus:border-red-700' : ''}`}
                   />
+                  {cpfError && (
+                    <p className="mt-1 text-xs font-tactical text-red-500">{cpfError}</p>
+                  )}
                 </div>
 
                 {/* Email */}

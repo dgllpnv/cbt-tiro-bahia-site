@@ -33,6 +33,7 @@ export interface CreateUserData {
 
 export interface UpdateUserData {
   email?: string;
+  cpf?: string;
   fullName?: string;
   phone?: string;
   role?: string;
