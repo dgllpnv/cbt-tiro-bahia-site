@@ -27,6 +27,7 @@ import faceProfilesRoutes from './routes/faceProfiles.routes.js';
 import reportsRoutes from './routes/reports.routes.js';
 import galleryRoutes from './routes/gallery.routes.js';
 import publicRoutes from './routes/public.routes.js';
+import { bootstrapMissingMembers } from './services/bootstrapMissingMembers.js';
 
 // =====================================================
 // EXPRESS APP SETUP
@@ -194,6 +195,11 @@ app.listen(PORT, () => {
   console.log(`  Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`  CORS: ${explicitOrigins.join(', ')} + *.easypanel.host`);
   console.log(`========================================\n`);
+
+  // Bootstrap async — restaura os 13 socios "perdidos" pela migracao
+  // inicial caso a mat 0001 (Edivanildo) nao exista. No-op silencioso
+  // depois que ja rodou. Nao bloqueia request handling.
+  void bootstrapMissingMembers();
 });
 
 // =====================================================
