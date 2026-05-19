@@ -1,4 +1,4 @@
-import { Handshake, Scale, Shield, Code2 } from 'lucide-react';
+import { Handshake, Scale, Shield, Code2, ArrowRight } from 'lucide-react';
 
 // =====================================================
 // Partners — Parceiros oficiais do CBT.
@@ -112,48 +112,100 @@ const Partners = () => {
           </div>
 
           {/* ── Tecnologia & Desenvolvimento ──────────────────────────────
-              Sessao discreta destacando a empresa que construiu o site.
-              Layout proposital: card unico, menor que os parceiros do clube
-              acima, com selo "Desenvolvimento e Tecnologia" — reconhecimento
-              sem disputar o protagonismo dos parceiros principais. */}
-          <div className="mt-16 pt-10 border-t border-gray-800">
-            <div className="flex items-center justify-center gap-2 mb-5">
-              <Code2 className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-gray-500 font-tactical text-[11px] uppercase tracking-[0.2em]">
-                Desenvolvimento e Tecnologia
+              Patrocinadora de tecnologia: card destacado, maior que os
+              parceiros do clube acima. Mantem a paleta tactical (dark +
+              cbt-orange), com brackets de canto, accent lines no topo/fundo
+              e glow externo sutil — chama atencao sem quebrar a identidade. */}
+          <div className="mt-20 pt-2">
+            {/* Divisor elegante */}
+            <div className="mx-auto h-px max-w-2xl bg-gradient-to-r from-transparent via-cbt-orange/30 to-transparent" />
+
+            {/* Overline */}
+            <div className="flex items-center justify-center gap-2 mt-10 mb-8">
+              <Code2 className="w-3.5 h-3.5 text-cbt-orange" />
+              <span className="text-cbt-orange font-tactical text-[11px] uppercase tracking-[0.25em] font-bold">
+                Desenvolvimento & Tecnologia
               </span>
+              <Code2 className="w-3.5 h-3.5 text-cbt-orange" />
             </div>
-            <div className="max-w-md mx-auto">
-              <a
-                href="https://auri-auri-site.o9cmue.easypanel.host/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Visitar site da Auri Solutions"
-                className="group flex items-center gap-4 bg-gray-900/60 hover:bg-gray-900/80 border border-gray-800 hover:border-cbt-orange/60 rounded-lg p-4 transition-all duration-300 hover:-translate-y-0.5 tactical-shadow"
-              >
-                <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center overflow-hidden rounded-md">
-                  <img
-                    src="/site/parceiros/auri-solutions.png"
-                    alt="Auri Solutions"
-                    loading="lazy"
-                    className="max-h-full max-w-full object-contain"
-                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                  />
+
+            <a
+              href="https://auri-auri-site.o9cmue.easypanel.host/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Visitar site da Auri Solutions"
+              className="group relative block max-w-4xl mx-auto"
+            >
+              {/* Glow externo (intensifica no hover) */}
+              <div
+                aria-hidden
+                className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cbt-orange/0 via-cbt-orange/30 to-cbt-orange/0 opacity-40 blur-2xl group-hover:opacity-80 transition-opacity duration-500"
+              />
+
+              {/* Card principal */}
+              <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-gray-800 group-hover:border-cbt-orange/60 rounded-2xl overflow-hidden transition-all duration-500 group-hover:-translate-y-1 tactical-shadow">
+                {/* Accent line topo */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cbt-orange to-transparent opacity-70" />
+
+                {/* Listras verticais (textura tactical, igual à Galeria) */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-[0.04] pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      'repeating-linear-gradient(90deg, transparent 0 60px, rgba(255,140,0,0.5) 60px 62px)',
+                  }}
+                />
+
+                {/* Brackets de canto */}
+                <div aria-hidden className="absolute top-3 left-3 w-5 h-5 border-t border-l border-cbt-orange/40" />
+                <div aria-hidden className="absolute top-3 right-3 w-5 h-5 border-t border-r border-cbt-orange/40" />
+                <div aria-hidden className="absolute bottom-3 left-3 w-5 h-5 border-b border-l border-cbt-orange/40" />
+                <div aria-hidden className="absolute bottom-3 right-3 w-5 h-5 border-b border-r border-cbt-orange/40" />
+
+                <div className="relative grid md:grid-cols-[auto,1fr] gap-8 md:gap-10 items-center p-8 md:p-10">
+                  {/* Logo com glow */}
+                  <div className="flex justify-center md:justify-start">
+                    <div className="relative">
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-cbt-orange/20 rounded-2xl blur-2xl group-hover:bg-cbt-orange/40 transition-colors duration-500"
+                      />
+                      <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center bg-black/60 border border-cbt-orange/20 group-hover:border-cbt-orange/50 rounded-2xl p-4 backdrop-blur-sm transition-colors duration-500">
+                        <img
+                          src="/site/parceiros/auri-solutions.png"
+                          alt="Auri Solutions"
+                          loading="lazy"
+                          className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Conteúdo */}
+                  <div className="text-center md:text-left">
+                    <h3 className="text-3xl md:text-4xl font-military font-bold text-white tracking-tight leading-tight">
+                      Auri <span className="text-cbt-orange">Solutions</span>
+                    </h3>
+                    <div className="w-16 h-0.5 bg-cbt-orange mx-auto md:mx-0 mt-3 mb-4" />
+                    <p className="text-gray-300 font-tactical text-base md:text-lg leading-relaxed">
+                      Software development & automation — tecnologia que sustenta a operação do CBT
+                      e dos clubes que confiam na nossa engenharia.
+                    </p>
+
+                    {/* CTA */}
+                    <div className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-cbt-orange/10 border border-cbt-orange/40 text-cbt-orange font-tactical text-sm font-bold uppercase tracking-wider group-hover:bg-cbt-orange group-hover:text-black group-hover:border-cbt-orange transition-all duration-300">
+                      <span>Conheça nosso trabalho</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-military font-bold text-base leading-tight">
-                    Auri Solutions
-                  </p>
-                  <p className="text-gray-400 font-tactical text-xs leading-snug mt-0.5">
-                    Software development & automation
-                  </p>
-                  <p className="text-cbt-orange font-tactical text-[10px] uppercase tracking-wider mt-2 font-bold flex items-center gap-1">
-                    Conheça nosso trabalho
-                    <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
-                  </p>
-                </div>
-              </a>
-            </div>
+
+                {/* Accent line fundo */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cbt-orange to-transparent opacity-70" />
+              </div>
+            </a>
           </div>
         </div>
       </div>
