@@ -15,13 +15,19 @@ build
 .github
 
 # Arquivos de migracao e diagnostico (uso pontual, nao precisa em prod)
-data
+# data/: bloqueia tudo mas libera o .enc (criptografado) e meta-arquivos.
+# Necessario para o bootstrap auto-restaurar socios perdidos em prod.
+data/*
+!data/*.enc
+!data/README.md
+!data/.gitkeep
 scripts/check-state.ts
 scripts/cleanup-history.ts
 scripts/smoke-test.ts
 scripts/migrate-adm-clube.ts
-scripts/migration-utils.ts
 scripts/cleanup-seeds.ts
+# migration-utils.ts e importado por migrate-patch-missing.ts (rodado
+# automaticamente pelo bootstrap). Mantemos no container.
 
 # IDE / OS
 .vscode

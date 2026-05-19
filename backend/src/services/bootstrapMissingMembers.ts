@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { prisma } from '../lib/prisma.js';
 
@@ -50,14 +50,29 @@ export async function bootstrapMissingMembers(): Promise<void> {
       return;
     }
 
-    if (!existsSync(csvClearPath)) {
+    const csvWasDecryptedHere = !existsSync(csvClearPath);
+    if (csvWasDecryptedHere) {
       console.log('[BOOTSTRAP] Descriptografando CSV...');
       await runScript(['scripts/csv-crypto.ts', 'decrypt', CSV_ENC, CSV_CLEAR]);
     }
 
-    console.log('[BOOTSTRAP] Rodando migrate-patch-missing.ts...');
-    await runScript(['scripts/migrate-patch-missing.ts']);
-    console.log('[BOOTSTRAP] Patch concluido — socios perdidos restaurados.');
+    try {
+      console.log('[BOOTSTRAP] Rodando migrate-patch-missing.ts...');
+      await runScript(['scripts/migrate-patch-missing.ts']);
+      console.log('[BOOTSTRAP] Patch concluido — socios perdidos restaurados.');
+    } finally {
+      // Limpeza de seguranca: remove o CSV descriptografado para minimizar
+      // a janela em que dados pessoais ficam em texto claro no disco do
+      // container. So apaga se foi este boot que descriptografou.
+      if (csvWasDecryptedHere && existsSync(csvClearPath)) {
+        try {
+          unlinkSync(csvClearPath);
+          console.log('[BOOTSTRAP] CSV descriptografado removido (cleanup).');
+        } catch (e) {
+          console.warn('[BOOTSTRAP] Falha ao remover CSV claro:', (e as Error).message);
+        }
+      }
+    }
   } catch (error) {
     console.error('[BOOTSTRAP] Falha (servidor continua rodando):', (error as Error).message);
   }
