@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Pencil, UserPlus, Trash2, ChevronLeft, ChevronRight, UserCheck } from 'lucide-react';
+import { Eye, Pencil, UserPlus, ChevronLeft, ChevronRight, UserCheck } from 'lucide-react';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 import SearchInput from '@/components/shared/SearchInput';
-import ConfirmDialog from '@/components/shared/ConfirmDialog';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +20,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import {
   listVisitors,
-  deleteVisitor,
   type Visitor,
   type PaginationMeta,
 } from '@/services/visitorsService';
@@ -42,19 +40,6 @@ const VisitorsPage = () => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({
-    open: false,
-    title: '',
-    description: '',
-    onConfirm: () => {},
-  });
-  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const fetchVisitors = useCallback(async () => {
     setIsLoading(true);
@@ -83,31 +68,6 @@ const VisitorsPage = () => {
   useEffect(() => {
     setPage(1);
   }, [search]);
-
-  const handleDelete = (visitor: Visitor) => {
-    setConfirmDialog({
-      open: true,
-      title: 'Excluir visitante',
-      description: `Tem certeza que deseja excluir o visitante "${visitor.fullName}"? Esta acao nao pode ser desfeita.`,
-      onConfirm: async () => {
-        setIsActionLoading(true);
-        const result = await deleteVisitor(visitor.id);
-        setIsActionLoading(false);
-
-        if (result.success) {
-          toast({ title: 'Visitante excluido com sucesso' });
-          setConfirmDialog((prev) => ({ ...prev, open: false }));
-          fetchVisitors();
-        } else {
-          toast({
-            title: 'Erro ao excluir visitante',
-            description: result.error,
-            variant: 'destructive',
-          });
-        }
-      },
-    });
-  };
 
   return (
     <div>
@@ -204,15 +164,6 @@ const VisitorsPage = () => {
                             <Pencil className="h-4 w-4" />
                           </Link>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-400 hover:bg-secondary"
-                          title="Excluir"
-                          onClick={() => handleDelete(visitor)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -256,16 +207,6 @@ const VisitorsPage = () => {
           </>
         )}
       </div>
-
-      <ConfirmDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
-        title={confirmDialog.title}
-        description={confirmDialog.description}
-        variant="destructive"
-        onConfirm={confirmDialog.onConfirm}
-        isLoading={isActionLoading}
-      />
     </div>
   );
 };

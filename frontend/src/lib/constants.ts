@@ -61,8 +61,10 @@ export const expenseCategoryLabels: Record<string, string> = {
 
 export const roleLabels: Record<string, string> = {
   ADMIN: 'Administrador',
+  CASHIER: 'Caixa',
   ASSOCIATE: 'Associado',
   admin: 'Administrador',
+  cashier: 'Caixa',
   associate: 'Associado',
 };
 

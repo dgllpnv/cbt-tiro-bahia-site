@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, type FormEvent, type ChangeEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Save, UserCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, UserCheck } from 'lucide-react';
 
 import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
-import ConfirmDialog from '@/components/shared/ConfirmDialog';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 import {
   getVisitorById,
   updateVisitor,
-  deleteVisitor,
   type Visitor,
   type UpdateVisitorData,
 } from '@/services/visitorsService';
@@ -75,13 +73,6 @@ const VisitorDetailPage = () => {
   const [activeTab, setActiveTab] = useState<'dados' | 'visitas' | 'transacoes'>('dados');
 
   const [convertOpen, setConvertOpen] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({ open: false, title: '', description: '', onConfirm: () => {} });
-  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const [visits, setVisits] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -191,31 +182,6 @@ const VisitorDetailPage = () => {
         variant: 'destructive',
       });
     }
-  };
-
-  const handleDelete = () => {
-    if (!visitor) return;
-    setConfirmDialog({
-      open: true,
-      title: 'Excluir visitante',
-      description: `Tem certeza que deseja excluir o visitante "${visitor.fullName}"? Esta acao nao pode ser desfeita.`,
-      onConfirm: async () => {
-        setIsActionLoading(true);
-        const result = await deleteVisitor(visitor.id);
-        setIsActionLoading(false);
-        if (result.success) {
-          toast({ title: 'Visitante excluido' });
-          setConfirmDialog((prev) => ({ ...prev, open: false }));
-          navigate('/admin/visitantes');
-        } else {
-          toast({
-            title: 'Erro ao excluir',
-            description: result.error,
-            variant: 'destructive',
-          });
-        }
-      },
-    });
   };
 
   if (isLoading || !visitor || !form) {
@@ -409,16 +375,7 @@ const VisitorDetailPage = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleDelete}
-                className="bg-muted border-red-900/50 text-red-700 dark:text-red-400 hover:bg-red-900/30 hover:text-red-700 dark:text-red-300 font-tactical"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir Visitante
-              </Button>
+            <div className="flex items-center justify-end">
               <Button
                 type="submit"
                 disabled={isSaving}
@@ -541,16 +498,6 @@ const VisitorDetailPage = () => {
           // O visitante deixou de ser visitante; redireciona para o cadastro de associado
           navigate(`/admin/associados/${visitor.id}`);
         }}
-      />
-
-      <ConfirmDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
-        title={confirmDialog.title}
-        description={confirmDialog.description}
-        variant="destructive"
-        onConfirm={confirmDialog.onConfirm}
-        isLoading={isActionLoading}
       />
     </div>
   );

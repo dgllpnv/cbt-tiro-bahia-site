@@ -70,7 +70,7 @@ const createUserSchema = z.object({
   fullName: z.string().min(2, 'Nome completo deve ter no minimo 2 caracteres'),
   memberNumber: z.string().min(1, 'Numero de associado e obrigatorio'),
   password: z.string().min(6, 'Senha deve ter no minimo 6 caracteres'),
-  role: z.enum(['ADMIN', 'ASSOCIATE'], { errorMap: () => ({ message: 'Role deve ser ADMIN ou ASSOCIATE' }) }),
+  role: z.enum(['ADMIN', 'CASHIER', 'ASSOCIATE'], { errorMap: () => ({ message: 'Role deve ser ADMIN, CASHIER ou ASSOCIATE' }) }),
   dateOfBirth: z.string().datetime({ offset: true }).optional().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -315,6 +315,16 @@ router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Resp
       profession,
       maritalStatus,
     } = validation.data;
+
+    // Só ADMIN pode atribuir perfis de poder (ADMIN/CASHIER).
+    // Caixa, quando cria usuario, só pode criar Associado.
+    if ((role === 'ADMIN' || role === 'CASHIER') && req.user!.role !== 'ADMIN') {
+      res.status(403).json({
+        success: false,
+        error: 'Apenas administradores podem criar usuarios Admin ou Caixa',
+      });
+      return;
+    }
 
     // Check uniqueness: email, cpf, memberNumber
     const existingUser = await prisma.user.findFirst({

@@ -9,7 +9,7 @@ export interface CreateUserData {
   fullName: string;
   password: string;
   memberNumber: string;
-  role: 'ADMIN' | 'ASSOCIATE';
+  role: 'ADMIN' | 'CASHIER' | 'ASSOCIATE';
   dateOfBirth?: string;
   phone?: string;
   address?: string;
@@ -94,9 +94,10 @@ interface ListUsersParams {
 
 // ── Helper to map backend user fields ───────────────────────────────────────
 
-function mapRole(backendRole: string): 'admin' | 'associate' {
+function mapRole(backendRole: string): 'admin' | 'cashier' | 'associate' {
   switch (backendRole) {
     case 'ADMIN': return 'admin';
+    case 'CASHIER': return 'cashier';
     case 'ASSOCIATE': return 'associate';
     default: return 'associate';
   }

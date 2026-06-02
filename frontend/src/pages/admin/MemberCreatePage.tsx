@@ -6,6 +6,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import { createUser, type CreateUserData } from '@/services/usersService';
 
@@ -97,6 +98,7 @@ const labelClasses = 'block text-sm font-tactical text-foreground/85 mb-1';
 const MemberCreatePage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   const [form, setForm] = useState<FormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,7 +147,7 @@ const MemberCreatePage = () => {
       email: form.email.trim().toLowerCase(),
       password: form.password,
       memberNumber: form.memberNumber.trim(),
-      role: form.role === 'ADMIN' ? 'ADMIN' : 'ASSOCIATE',
+      role: form.role as CreateUserData['role'],
     };
 
     if (form.phone.trim()) payload.phone = form.phone.trim();
@@ -363,7 +365,9 @@ const MemberCreatePage = () => {
                 className={selectClasses}
               >
                 <option value="ASSOCIATE">Associado</option>
-                <option value="ADMIN">Administrador</option>
+                {/* Só admin pode criar perfis de poder (Caixa/Admin) */}
+                {isAdmin && <option value="CASHIER">Caixa</option>}
+                {isAdmin && <option value="ADMIN">Administrador</option>}
               </select>
             </div>
 
