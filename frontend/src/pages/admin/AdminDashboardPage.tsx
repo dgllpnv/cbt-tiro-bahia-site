@@ -23,6 +23,7 @@ import PresentMembersPanel from '@/components/admin/PresentMembersPanel';
 import RankingsPanel from '@/components/admin/RankingsPanel';
 import TopFirearmsPanel from '@/components/admin/TopFirearmsPanel';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/formatters';
 import { getAdminDashboard, type AdminDashboard } from '@/services/dashboardService';
 
@@ -93,6 +94,7 @@ const QuickAction = ({ icon: Icon, label, description, to }: QuickActionProps) =
 
 const AdminDashboardPage = () => {
   const { toast } = useToast();
+  const { isCashier } = useAuth();
   const [stats, setStats] = useState<AdminDashboard>(defaultStats);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -175,14 +177,17 @@ const AdminDashboardPage = () => {
           bgColor="bg-violet-500/10"
           borderColor="border-violet-500/20"
         />
-        <StatCard
-          icon={DollarSign}
-          label="Receita do Mes"
-          value={formatCurrency(stats.monthRevenue)}
-          color="#22c55e"
-          bgColor="bg-green-500/10"
-          borderColor="border-green-500/20"
-        />
+        {/* Receita do Mes: oculta para o caixa (nao deve ver receita) */}
+        {!isCashier && (
+          <StatCard
+            icon={DollarSign}
+            label="Receita do Mes"
+            value={formatCurrency(stats.monthRevenue)}
+            color="#22c55e"
+            bgColor="bg-green-500/10"
+            borderColor="border-green-500/20"
+          />
+        )}
       </div>
 
       {/* ── KPI Stats Row 2 ─────────────────────────────────────────────── */}

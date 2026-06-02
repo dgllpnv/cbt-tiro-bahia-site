@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/table';
 
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import { categoryLabels } from '@/lib/constants';
 import { formatCurrency } from '@/lib/formatters';
@@ -136,6 +137,7 @@ function CategoryChip({
 
 const ProductsPage = () => {
   const { toast } = useToast();
+  const { isCashier } = useAuth();
 
   // Lista
   const [items, setItems] = useState<ProductWithStock[]>([]);
@@ -467,12 +469,15 @@ const ProductsPage = () => {
           value={String(lowCount)}
           accent={lowCount > 0 ? '#ef4444' : '#22c55e'}
         />
-        <KpiCard
-          icon={DollarSign}
-          label="Valor em estoque"
-          value={formatCurrency(totalValue)}
-          accent="#22c55e"
-        />
+        {/* Valor em estoque: oculto para o caixa (nao deve ver valor financeiro) */}
+        {!isCashier && (
+          <KpiCard
+            icon={DollarSign}
+            label="Valor em estoque"
+            value={formatCurrency(totalValue)}
+            accent="#22c55e"
+          />
+        )}
       </div>
 
       {/* Filtros */}
