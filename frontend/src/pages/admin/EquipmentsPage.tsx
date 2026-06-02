@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Wrench,
   Activity,
+  PowerOff,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -483,6 +484,15 @@ const EquipmentsPage = () => {
                               <Link to={`/admin/equipamentos/${eq.id}`}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-red-700 dark:text-red-400 hover:bg-secondary"
+                              title="Desativar"
+                              onClick={() => handleDelete(eq)}
+                            >
+                              <PowerOff className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
