@@ -21,6 +21,7 @@ import {
   FileCheck,
   FileBarChart,
   Wallet,
+  Download,
   X,
 } from 'lucide-react';
 import CbtLogo from '@/components/shared/CbtLogo';
@@ -95,6 +96,7 @@ const navItems: NavItem[] = [
 
   // Auditoria — sempre por ultimo
   { name: 'Logs', href: '/admin/logs', icon: <FileText size={20} />, roles: ['admin'] },
+  { name: 'Exportação dos dados', href: '/admin/exportacao', icon: <Download size={20} />, roles: ['admin'] },
 ];
 
 interface PortalSidebarProps {

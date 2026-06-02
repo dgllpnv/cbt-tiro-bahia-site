@@ -48,6 +48,7 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import CashierDailyPage from "./pages/admin/CashierDailyPage";
 import GalleryManagementPage from "./pages/admin/GalleryManagementPage";
 import HabitualityManualPage from "./pages/admin/HabitualityManualPage";
+import ExportPage from "./pages/admin/ExportPage";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const App = () => (
               {/* Rotas admin-only: financeiro completo + auditoria/logs */}
               <Route path="financeiro" element={<ProtectedRoute allowedRoles={['admin']}><FinancialPage /></ProtectedRoute>} />
               <Route path="logs" element={<ProtectedRoute allowedRoles={['admin']}><AuditLogsPage /></ProtectedRoute>} />
+              <Route path="exportacao" element={<ProtectedRoute allowedRoles={['admin']}><ExportPage /></ProtectedRoute>} />
 
               {/* Demais rotas acessiveis por admin e cashier */}
               <Route index element={<AdminDashboardPage />} />
