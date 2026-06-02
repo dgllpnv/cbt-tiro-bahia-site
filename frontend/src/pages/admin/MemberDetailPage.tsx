@@ -61,6 +61,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import {
   getUserById,
@@ -138,6 +139,7 @@ interface MemberFormData {
   email: string;
   phone: string;
   dateOfBirth: string;
+  annuityValidUntil: string;
   cr: string;
   crLevel: string;
   address: string;
@@ -161,6 +163,7 @@ const MemberDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   // ── Core State ───────────────────────────────────────────────────────────
   const [member, setMember] = useState<User | null>(null);
@@ -179,6 +182,7 @@ const MemberDetailPage = () => {
     email: '',
     phone: '',
     dateOfBirth: '',
+    annuityValidUntil: '',
     cr: '',
     crLevel: '',
     address: '',
@@ -253,6 +257,7 @@ const MemberDetailPage = () => {
         email: m.email || '',
         phone: m.phone || '',
         dateOfBirth: (m as any).dateOfBirth || '',
+        annuityValidUntil: m.annuityValidUntil ? String(m.annuityValidUntil).slice(0, 10) : '',
         cr: m.cr || '',
         crLevel: m.crLevel?.toString() || '',
         address: (m as any).address || '',
@@ -400,6 +405,9 @@ const MemberDetailPage = () => {
       motherName: form.motherName || null,
       profession: form.profession || null,
       maritalStatus: form.maritalStatus || null,
+      // So admin altera a validade da anuidade pelo perfil (data presente -> envia;
+      // vazio -> nao envia, mantem). Backend converte a string para Date.
+      ...(isAdmin && form.annuityValidUntil ? { annuityValidUntil: form.annuityValidUntil } : {}),
     });
 
     if (result.success && result.data) {
@@ -914,6 +922,23 @@ const MemberDetailPage = () => {
                     className={inputClass}
                   />
                 </div>
+
+                {/* Vencimento da anuidade — editavel apenas por admin.
+                    Aplica direto em annuityValidUntil (sem registrar pagamento). */}
+                {isAdmin && (
+                  <div>
+                    <label className={labelClass}>Vencimento da anuidade</label>
+                    <Input
+                      type="date"
+                      value={form.annuityValidUntil}
+                      onChange={(e) => handleFormChange('annuityValidUntil', e.target.value)}
+                      className={inputClass}
+                    />
+                    <p className="text-[11px] font-tactical text-muted-foreground/70 mt-1">
+                      Altera a validade da anuidade sem registrar pagamento.
+                    </p>
+                  </div>
+                )}
 
                 {/* Member Number - read only */}
                 <div>
