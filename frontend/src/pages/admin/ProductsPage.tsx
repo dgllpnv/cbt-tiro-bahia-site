@@ -218,7 +218,8 @@ const ProductsPage = () => {
   const filteredItems = useMemo(() => {
     return items.filter((it) => {
       if (categoryFilter && it.product?.category !== categoryFilter) return false;
-      if (showLowOnly && !(it.currentStock <= it.minimumStock)) return false;
+      // SERVICE nao controla estoque, nunca entra no filtro "estoque baixo".
+      if (showLowOnly && (it.product?.category === 'SERVICE' || !(it.currentStock <= it.minimumStock))) return false;
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         if (!it.product?.name?.toLowerCase().includes(q)) return false;
@@ -228,7 +229,7 @@ const ProductsPage = () => {
   }, [items, categoryFilter, showLowOnly, search]);
 
   const totalProducts = items.length;
-  const lowCount = items.filter((i) => i.currentStock <= i.minimumStock).length;
+  const lowCount = items.filter((i) => i.product?.category !== 'SERVICE' && i.currentStock <= i.minimumStock).length;
   const totalValue = items.reduce(
     (sum, i) => sum + i.currentStock * Number(i.product?.unitPrice ?? 0),
     0,
@@ -551,7 +552,8 @@ const ProductsPage = () => {
             <TableBody>
               {filteredItems.map((item) => {
                 const p = item.product;
-                const isLow = item.currentStock <= item.minimumStock;
+                const isService = p.category === 'SERVICE';
+                const isLow = !isService && item.currentStock <= item.minimumStock;
                 return (
                   <TableRow key={item.id} className="border-border hover:bg-muted/40">
                     <TableCell>
@@ -578,41 +580,51 @@ const ProductsPage = () => {
                       {formatCurrency(Number(p.unitPrice))}
                     </TableCell>
                     <TableCell className="text-right font-tactical text-sm">
-                      <span
-                        className={
-                          isLow
-                            ? 'text-yellow-700 dark:text-yellow-400 font-bold'
-                            : 'text-foreground'
-                        }
-                      >
-                        {item.currentStock}
-                      </span>
-                      <span className="text-muted-foreground/80"> / {item.minimumStock}</span>
-                      {isLow && (
-                        <AlertTriangle className="inline h-3.5 w-3.5 ml-1.5 text-yellow-700 dark:text-yellow-400" />
+                      {isService ? (
+                        <span className="text-muted-foreground/70 italic">Serviço</span>
+                      ) : (
+                        <>
+                          <span
+                            className={
+                              isLow
+                                ? 'text-yellow-700 dark:text-yellow-400 font-bold'
+                                : 'text-foreground'
+                            }
+                          >
+                            {item.currentStock}
+                          </span>
+                          <span className="text-muted-foreground/80"> / {item.minimumStock}</span>
+                          {isLow && (
+                            <AlertTriangle className="inline h-3.5 w-3.5 ml-1.5 text-yellow-700 dark:text-yellow-400" />
+                          )}
+                        </>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-green-700 dark:text-green-400 hover:bg-green-500/10"
-                          title="Entrada de estoque"
-                          onClick={() => openAdjust(item, 'ADJUSTMENT_IN')}
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-700 dark:text-red-400 hover:bg-red-500/10"
-                          title="Saida de estoque"
-                          onClick={() => openAdjust(item, 'ADJUSTMENT_OUT')}
-                          disabled={item.currentStock === 0}
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
+                        {!isService && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-green-700 dark:text-green-400 hover:bg-green-500/10"
+                              title="Entrada de estoque"
+                              onClick={() => openAdjust(item, 'ADJUSTMENT_IN')}
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-700 dark:text-red-400 hover:bg-red-500/10"
+                              title="Saida de estoque"
+                              onClick={() => openAdjust(item, 'ADJUSTMENT_OUT')}
+                              disabled={item.currentStock === 0}
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -725,38 +737,41 @@ const ProductsPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="font-tactical text-xs">
-                  {editingId ? 'Estoque atual' : 'Estoque inicial'}
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={productForm.initialStock}
-                  onChange={(e) => setProductForm({ ...productForm, initialStock: e.target.value })}
-                  placeholder="0"
-                  className="mt-1"
-                  disabled={!!editingId}
-                />
-                {editingId && (
-                  <p className="text-[10px] font-tactical text-muted-foreground/70 mt-0.5">
-                    Use os botoes de entrada/saida na linha para alterar.
-                  </p>
-                )}
+            {/* Serviços (day-use, limpeza…) nao controlam estoque */}
+            {productForm.category !== 'SERVICE' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="font-tactical text-xs">
+                    {editingId ? 'Estoque atual' : 'Estoque inicial'}
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={productForm.initialStock}
+                    onChange={(e) => setProductForm({ ...productForm, initialStock: e.target.value })}
+                    placeholder="0"
+                    className="mt-1"
+                    disabled={!!editingId}
+                  />
+                  {editingId && (
+                    <p className="text-[10px] font-tactical text-muted-foreground/70 mt-0.5">
+                      Use os botoes de entrada/saida na linha para alterar.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="font-tactical text-xs">Estoque minimo (alerta)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={productForm.minimumStock}
+                    onChange={(e) => setProductForm({ ...productForm, minimumStock: e.target.value })}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
               </div>
-              <div>
-                <Label className="font-tactical text-xs">Estoque minimo (alerta)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={productForm.minimumStock}
-                  onChange={(e) => setProductForm({ ...productForm, minimumStock: e.target.value })}
-                  placeholder="0"
-                  className="mt-1"
-                />
-              </div>
-            </div>
+            )}
 
             {/* Icon picker no form */}
             <div className="bg-muted/40 border border-border rounded-md p-3">

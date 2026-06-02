@@ -18,7 +18,7 @@ const createProductSchema = z.object({
   description: z.string().optional(),
   sku: z.string().optional(),
   category: z.enum(
-    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'],
+    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'SERVICE', 'OTHER'],
     { errorMap: () => ({ message: 'Categoria invalida' }) },
   ),
   // .nullable() porque o frontend envia null quando o campo vai vazio
@@ -48,7 +48,7 @@ const updateProductSchema = z.object({
   description: z.string().nullable().optional(),
   sku: z.string().nullable().optional(),
   category: z.enum(
-    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'],
+    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'SERVICE', 'OTHER'],
   ).optional(),
   caliber: z.string().nullable().optional(),
   caliberCategory: z.enum(['RIMFIRE', 'CENTERFIRE', 'SHOTGUN', 'RIFLE']).nullable().optional(),
@@ -390,26 +390,42 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const product = await prisma.product.update({
-      where: { id },
-      data: { isActive: false },
-      include: {
-        stockItems: {
-          select: {
-            id: true,
-            currentStock: true,
-            minimumStock: true,
-            maximumStock: true,
-            location: true,
-            lastRestocked: true,
+    // Se o produto ja foi vendido (existe TransactionItem apontando para ele),
+    // preserva o historico: soft-delete (isActive=false). Caso contrario, pode
+    // sair de vez do banco — limpando StockMovement + StockItem antes (FK).
+    const soldCount = await prisma.transactionItem.count({ where: { productId: id } });
+
+    if (soldCount > 0) {
+      const product = await prisma.product.update({
+        where: { id },
+        data: { isActive: false },
+        include: {
+          stockItems: {
+            select: {
+              id: true,
+              currentStock: true,
+              minimumStock: true,
+              maximumStock: true,
+              location: true,
+              lastRestocked: true,
+            },
           },
         },
-      },
+      });
+      console.log(`[PRODUCTS] Produto ${existing.name} desativado (soft delete, possui vendas) por ${req.user!.email}`);
+      res.json({ success: true, data: product });
+      return;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.stockMovement.deleteMany({ where: { stockItem: { productId: id } } });
+      await tx.stockItem.deleteMany({ where: { productId: id } });
+      await tx.product.delete({ where: { id } });
     });
 
-    console.log(`[PRODUCTS] Produto ${existing.name} desativado (soft delete) por ${req.user!.email}`);
+    console.log(`[PRODUCTS] Produto ${existing.name} EXCLUIDO do banco (sem vendas) por ${req.user!.email}`);
 
-    res.json({ success: true, data: product });
+    res.json({ success: true, data: { id } });
   } catch (error) {
     console.error('[PRODUCTS] Erro ao excluir produto:', error);
     res.status(500).json({ success: false, error: 'Erro ao excluir produto' });

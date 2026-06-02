@@ -164,7 +164,15 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     // Validate stock for items with productId before the transaction
     const productItems = itemsWithSubtotal.filter((item) => item.productId);
+    // Produtos da categoria SERVICE (day-use, limpeza…) nao controlam estoque:
+    // pulam validacao e decremento.
+    const serviceProducts = await prisma.product.findMany({
+      where: { id: { in: productItems.map((i) => i.productId!) }, category: 'SERVICE' },
+      select: { id: true },
+    });
+    const serviceIds = new Set(serviceProducts.map((p) => p.id));
     for (const item of productItems) {
+      if (serviceIds.has(item.productId!)) continue;
       const stockItem = await prisma.stockItem.findFirst({
         where: { productId: item.productId! },
       });
@@ -220,8 +228,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         },
       });
 
-      // Deduct stock for items with productId
+      // Deduct stock for items with productId (SERVICE nao decrementa)
       for (const item of productItems) {
+        if (serviceIds.has(item.productId!)) continue;
         const stockItem = await tx.stockItem.findFirst({
           where: { productId: item.productId! },
         });
@@ -586,9 +595,16 @@ router.patch('/:id/finalize', async (req: Request, res: Response): Promise<void>
     }
 
     const productItems = existing.items.filter((it) => it.productId);
+    // Produtos SERVICE nao controlam estoque: pulam validacao e decremento.
+    const serviceProducts = await prisma.product.findMany({
+      where: { id: { in: productItems.map((i) => i.productId!) }, category: 'SERVICE' },
+      select: { id: true },
+    });
+    const serviceIds = new Set(serviceProducts.map((p) => p.id));
 
     // Validacao de estoque ANTES da transacao para nao prender locks desnecessarios
     for (const item of productItems) {
+      if (serviceIds.has(item.productId!)) continue;
       const stockItem = await prisma.stockItem.findFirst({ where: { productId: item.productId! } });
       if (!stockItem) {
         res.status(400).json({
@@ -628,8 +644,9 @@ router.patch('/:id/finalize', async (req: Request, res: Response): Promise<void>
         },
       });
 
-      // Debita estoque + registra movimentos
+      // Debita estoque + registra movimentos (SERVICE nao decrementa)
       for (const item of productItems) {
+        if (serviceIds.has(item.productId!)) continue;
         const stockItem = await tx.stockItem.findFirst({ where: { productId: item.productId! } });
         if (!stockItem) continue;
         const previousStock = stockItem.currentStock;

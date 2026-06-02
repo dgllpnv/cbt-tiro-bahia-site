@@ -6,6 +6,7 @@ import {
   KeyRound,
   GraduationCap,
   Coffee,
+  ConciergeBell,
   Package,
   type LucideIcon,
 } from 'lucide-react';
@@ -106,6 +107,18 @@ export const categoryVisuals: Record<string, CategoryVisual> = {
     text: 'text-yellow-300',
     ring: 'ring-yellow-500/40',
   },
+  // Servicos (day-use, limpeza de arma): nao controla estoque, so preco de venda.
+  // Azul indigo distingue de cantina (amarelo) e dos calibres (vermelho/laranja).
+  SERVICE: {
+    icon: ConciergeBell,
+    label: 'Serviços',
+    color: '#6366f1',
+    bg: 'bg-indigo-500/10',
+    bgStrong: 'bg-indigo-500/20',
+    border: 'border-indigo-500/40',
+    text: 'text-indigo-300',
+    ring: 'ring-indigo-500/40',
+  },
   OTHER: FALLBACK,
 };
 
@@ -114,4 +127,4 @@ export function getCategoryVisual(category: string | null | undefined): Category
   return categoryVisuals[category] ?? FALLBACK;
 }
 
-export const CATEGORY_KEYS = ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'] as const;
+export const CATEGORY_KEYS = ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'SERVICE', 'OTHER'] as const;

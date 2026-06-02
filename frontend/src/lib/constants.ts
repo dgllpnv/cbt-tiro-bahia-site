@@ -8,6 +8,7 @@ export const categoryLabels: Record<string, string> = {
   RENTAL_ITEM: 'Item de Aluguel',
   COURSE: 'Curso',
   CANTINA: 'Cantina',
+  SERVICE: 'Serviços',
   OTHER: 'Outro',
 };
 

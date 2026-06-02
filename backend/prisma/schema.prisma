@@ -80,6 +80,7 @@ enum ProductCategory {
   RENTAL_ITEM
   COURSE
   CANTINA
+  SERVICE
   OTHER
 }
 

@@ -32,10 +32,12 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       where.product = { category };
     }
 
-    // For belowMinimum we need raw filter since we compare two columns
-    let stockWhere: any = {};
+    // For belowMinimum we need raw filter since we compare two columns.
+    // Sempre filtra produtos inativos (soft-deleted) — senao produto "excluido"
+    // continua aparecendo na lista de produtos (que consome este endpoint).
+    let stockWhere: any = { product: { isActive: true } };
     if (category) {
-      stockWhere.product = { category };
+      stockWhere.product.category = category;
     }
 
     const [items, total] = await Promise.all([
@@ -88,6 +90,8 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 router.get('/low', async (_req: Request, res: Response): Promise<void> => {
   try {
     const allItems = await prisma.stockItem.findMany({
+      // SERVICE nao controla estoque; produtos inativos nao alertam.
+      where: { product: { isActive: true, category: { not: 'SERVICE' } } },
       include: {
         product: {
           select: { id: true, name: true, category: true, caliber: true, unit: true },
