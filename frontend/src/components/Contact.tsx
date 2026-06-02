@@ -3,20 +3,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, MapPin, Mail, MessageCircle } from 'lucide-react';
+import { MapPin, Mail, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // =====================================================
 // Contact — Canais oficiais de contato do CBT.
-// Telefone (71) 3051-1111 e usado tanto para ligacao quanto WhatsApp,
-// alinhado com o site oficial (clubebaianodetiro.com.br).
+// Atendimento exclusivamente via WhatsApp (numero (71) 3051-1111).
+// Telefone fixo foi removido (decisao do clube: canais escritos sao
+// rastreaveis e a equipe nao tem cobertura para atender ligacao).
 // O formulario abaixo apenas exibe toast de confirmacao — para integracao
 // real, seria necessario criar um endpoint POST /api/public/contact-message
 // (decisao: mock por ora; canais diretos sao incentivados).
 // =====================================================
 
-const PHONE_DISPLAY = '(71) 3051-1111';
-const PHONE_TEL = '+557130511111';
 const EMAIL = 'clubebaianodetiro@outlook.com';
 const WHATSAPP_URL =
   'https://wa.me/557130511111?text=' +
@@ -152,26 +151,6 @@ const Contact = () => {
                         Conversar agora
                       </a>
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Phone */}
-              <Card className="bg-gray-900/50 border-gray-700 tactical-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-cbt-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="text-cbt-orange" size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-military font-bold text-white mb-1">TELEFONE</h3>
-                      <a
-                        href={`tel:${PHONE_TEL}`}
-                        className="text-xl font-tactical font-bold text-cbt-orange hover:text-cbt-orange/80 transition-colors"
-                      >
-                        {PHONE_DISPLAY}
-                      </a>
-                    </div>
                   </div>
                 </CardContent>
               </Card>

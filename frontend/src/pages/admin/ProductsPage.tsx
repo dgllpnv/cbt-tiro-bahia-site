@@ -43,7 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import { categoryLabels } from '@/lib/constants';
 import { formatCurrency } from '@/lib/formatters';
-import { getCategoryVisual } from '@/lib/categoryVisuals';
+import { getCategoryVisual, CATEGORY_KEYS } from '@/lib/categoryVisuals';
 import { getCaliberColor } from '@/lib/ammunitionVisuals';
 import { getIconEntry } from '@/lib/iconRegistry';
 
@@ -68,15 +68,9 @@ interface ProductWithStock {
   };
 }
 
-const CATEGORIES = [
-  'AMMUNITION',
-  'TARGET',
-  'ACCESSORY',
-  'SAFETY_EQUIPMENT',
-  'RENTAL_ITEM',
-  'COURSE',
-  'OTHER',
-];
+// Derivado de CATEGORY_KEYS pra nao duplicar a lista. Adicionar nova
+// categoria so precisa: Prisma enum + Zod backend + categoryVisuals/labels.
+const CATEGORIES = [...CATEGORY_KEYS];
 
 const QUICK_QTY = [10, 50, 100];
 

@@ -7,6 +7,7 @@ export const categoryLabels: Record<string, string> = {
   SAFETY_EQUIPMENT: 'Equip. de Segurança',
   RENTAL_ITEM: 'Item de Aluguel',
   COURSE: 'Curso',
+  CANTINA: 'Cantina',
   OTHER: 'Outro',
 };
 
@@ -63,4 +64,18 @@ export const roleLabels: Record<string, string> = {
   ASSOCIATE: 'Associado',
   admin: 'Administrador',
   associate: 'Associado',
+};
+
+// Tipo de municao usada no disparo. 'Original' (fabrica) vs 'Recarregada'
+// (recarregada pelo proprio atirador). Aparece no ShotEntryDialog,
+// declaracao de habitualidade individual e livro de habitualidade.
+export const ammunitionTypeLabels: Record<string, string> = {
+  FACTORY: 'Original',
+  RELOADED: 'Recarregada',
+};
+
+// Versao curta para uso em tabelas estreitas (PDFs).
+export const ammunitionTypeShortLabels: Record<string, string> = {
+  FACTORY: 'Orig.',
+  RELOADED: 'Rec.',
 };

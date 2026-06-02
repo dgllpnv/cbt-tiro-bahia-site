@@ -76,7 +76,7 @@ const GalleryPage = () => {
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 hidden sm:flex items-center justify-center">
                 <img
-                  src="/branding/d5fad45c-e7f8-49a2-bb56-498d1ba70193.png"
+                  src="/branding/cbt-logo.png"
                   alt="CBT"
                   className="w-full h-full object-contain"
                 />

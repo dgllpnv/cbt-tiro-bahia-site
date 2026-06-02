@@ -12,10 +12,16 @@ router.use(authMiddleware);
 // VALIDATION SCHEMAS
 // =====================================================
 
+// Whitelist de tipos de municao. RELOADED = recarregada pelo atirador,
+// FACTORY = original/de fabrica. Mantido como string no schema Prisma
+// para flexibilidade futura (ex: importada), validado aqui.
+const ammunitionTypeSchema = z.enum(['RELOADED', 'FACTORY']).nullable().optional();
+
 const createVisitDetailSchema = z.object({
   caliber: z.string().min(1, 'Calibre e obrigatorio'),
   firearmName: z.string().max(100).optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1'),
+  ammunitionType: ammunitionTypeSchema,
   notes: z.string().optional(),
 });
 
@@ -23,6 +29,7 @@ const updateVisitDetailSchema = z.object({
   caliber: z.string().min(1, 'Calibre e obrigatorio').optional(),
   firearmName: z.string().max(100).nullable().optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1').optional(),
+  ammunitionType: ammunitionTypeSchema,
   notes: z.string().nullable().optional(),
 });
 
@@ -115,6 +122,7 @@ router.post('/visit/:visitId', async (req: Request, res: Response): Promise<void
         caliber: data.caliber,
         firearmName: data.firearmName?.trim() || null,
         shotsFired: data.shotsFired,
+        ammunitionType: data.ammunitionType ?? null,
         notes: data.notes || null,
       },
       include: {

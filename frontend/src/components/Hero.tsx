@@ -47,9 +47,9 @@ const Hero = () => {
           
           {/* Logo grande - aumentado consideravelmente */}
           <div className="flex justify-center mb-6">
-            <img 
-              src="/branding/0585332b-3517-47cc-bd1c-bddc36ab6149.png" 
-              alt="CBT - Clube Baiano de Tiro" 
+            <img
+              src="/branding/cbt-logo.png"
+              alt="CBT - Clube Baiano de Tiro"
               className="w-80 h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] object-contain"
             />
           </div>

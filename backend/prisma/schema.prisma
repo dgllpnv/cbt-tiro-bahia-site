@@ -79,6 +79,7 @@ enum ProductCategory {
   SAFETY_EQUIPMENT
   RENTAL_ITEM
   COURSE
+  CANTINA
   OTHER
 }
 
@@ -346,6 +347,11 @@ model VisitDetail {
   caliber     String
   firearmName String?
   shotsFired  Int
+  // Tipo da municao usada: 'RELOADED' (recarregada pelo atirador) ou
+  // 'FACTORY' (original/de fabrica). Opcional — registros antigos ficam null.
+  // Aparece na Declaracao de Habitualidade (coluna apos "Municao"=tiros) e
+  // no Livro de Habitualidade. Whitelist validada no Zod do backend.
+  ammunitionType String?
   notes       String?  @db.Text
   createdAt   DateTime @default(now())
 

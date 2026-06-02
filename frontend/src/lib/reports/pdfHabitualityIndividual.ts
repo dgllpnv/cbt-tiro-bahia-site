@@ -23,6 +23,7 @@ import {
   type ReportClubInfo,
 } from './_shared/reportBase';
 import type { HabitualityDeclarationPacket } from '@/services/documentsService';
+import { ammunitionTypeLabels } from '@/lib/constants';
 
 export async function buildHabitualityIndividualPdf(
   packet: HabitualityDeclarationPacket,
@@ -97,22 +98,26 @@ export async function buildHabitualityIndividualPdf(
         a.caliber,
         a.firearmName ?? '—',
         a.shotsFired != null ? String(a.shotsFired) : '—',
+        a.ammunitionType ? ammunitionTypeLabels[a.ammunitionType] : '—',
       ])
-    : [['—', '—', '—', 'Nenhuma atividade registrada no período', '—', '—', '—']];
+    : [['—', '—', '—', 'Nenhuma atividade registrada no período', '—', '—', '—', '—']];
 
+  // Coluna "Tipo mun." adicionada apos "Municao" (Portaria 260-COLOG/2025
+  // distingue municao recarregada vs original para fins de habitualidade).
   addAutoTable(
     ctx,
-    [['#', 'Data', 'Tipo', 'Modalidade', 'Calibre', 'Arma', 'Munição']],
+    [['#', 'Data', 'Tipo', 'Modalidade', 'Calibre', 'Arma', 'Munição', 'Tipo mun.']],
     tableBody,
     {
       columnStyles: {
         0: { cellWidth: 8, halign: 'center' },
-        1: { cellWidth: 22 },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 38 },
-        4: { cellWidth: 22 },
-        5: { cellWidth: 38 },
-        6: { cellWidth: 17, halign: 'right' },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 32 },
+        4: { cellWidth: 18 },
+        5: { cellWidth: 32 },
+        6: { cellWidth: 15, halign: 'right' },
+        7: { cellWidth: 22, halign: 'center' },
       },
     },
   );

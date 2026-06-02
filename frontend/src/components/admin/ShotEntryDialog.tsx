@@ -20,8 +20,10 @@ import {
   createVisitDetail,
   deleteVisitDetail,
   listVisitDetails,
+  type AmmunitionType,
   type VisitDetailItem,
 } from '@/services/visitDetailsService';
+import { ammunitionTypeLabels } from '@/lib/constants';
 import {
   FIREARM_CATEGORIES,
   POPULAR_FIREARMS,
@@ -71,6 +73,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
   const [caliber, setCaliber] = useState('9mm');
   const [otherCaliber, setOtherCaliber] = useState('');
   const [shotsFired, setShotsFired] = useState('');
+  const [ammunitionType, setAmmunitionType] = useState<AmmunitionType | null>(null);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [touchedAny, setTouchedAny] = useState(false);
@@ -84,6 +87,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
       setCaliber('9mm');
       setOtherCaliber('');
       setShotsFired('');
+      setAmmunitionType(null);
       setNotes('');
       setTouchedAny(false);
     }
@@ -134,6 +138,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
       caliber: finalCaliber,
       firearmName: finalFirearm || undefined,
       shotsFired: shotsNum,
+      ammunitionType,
       notes: notes.trim() || undefined,
     });
     setSaving(false);
@@ -144,7 +149,8 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
         title: 'Tiro registrado',
         description: `${shotsNum} disparo(s) de ${finalCaliber}${finalFirearm ? ` · ${finalFirearm}` : ''}`,
       });
-      // Reset only qty + notes; keep firearm + caliber selected for fast repeat entries
+      // Reset only qty + notes; keep firearm + caliber + tipo de municao
+      // selecionados para entrada rapida em sequencia.
       setShotsFired('');
       setNotes('');
       refreshList();
@@ -357,6 +363,33 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
                 className="bg-muted border-input text-foreground font-tactical mt-2"
               />
             )}
+          </div>
+
+          {/* Ammunition type (recarregada vs original) — opcional */}
+          <div className="space-y-2">
+            <Label className="text-foreground/85 font-tactical text-sm">
+              Tipo de munição <span className="text-muted-foreground/70 normal-case">(opcional)</span>
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {(['FACTORY', 'RELOADED'] as const).map((t) => {
+                const active = ammunitionType === t;
+                // Clique no ja-selecionado limpa (toggle), permitindo deixar nulo.
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setAmmunitionType((curr) => (curr === t ? null : t))}
+                    className={`px-3 py-1.5 rounded-md border text-xs font-tactical transition-colors ${
+                      active
+                        ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
+                        : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    {ammunitionTypeLabels[t]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Quantity */}

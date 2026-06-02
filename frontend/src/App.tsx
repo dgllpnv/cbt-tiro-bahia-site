@@ -47,6 +47,7 @@ import ClubDataPage from "./pages/admin/ClubDataPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import CashierDailyPage from "./pages/admin/CashierDailyPage";
 import GalleryManagementPage from "./pages/admin/GalleryManagementPage";
+import HabitualityManualPage from "./pages/admin/HabitualityManualPage";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,15 @@ const App = () => (
               <Route path="equipamentos/novo" element={<EquipmentCreatePage />} />
               <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
+              {/* Habitualidade Manual — admin-only (poder retroativo) */}
+              <Route
+                path="habitualidade-manual"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <HabitualityManualPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="produtos" element={<ProductsPage />} />
               {/* Compat: rotas antigas redirecionam */}
               <Route path="cadastros" element={<Navigate to="/admin/produtos" replace />} />

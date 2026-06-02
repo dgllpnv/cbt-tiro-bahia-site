@@ -51,7 +51,7 @@ export interface HabitualityBookRecord {
     id: string;
     visitDate: string;
     checkInTime: string;
-    details: Array<{ caliber: string; firearmName: string | null; shotsFired: number }>;
+    details: Array<{ caliber: string; firearmName: string | null; shotsFired: number; ammunitionType: 'RELOADED' | 'FACTORY' | null }>;
   } | null;
 }
 

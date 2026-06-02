@@ -9,6 +9,7 @@ import {
   type ReportClubInfo,
 } from './_shared/reportBase';
 import type { HabitualityBookReport } from '@/services/reportsService';
+import { ammunitionTypeShortLabels } from '@/lib/constants';
 
 const ACTIVITY_LABEL: Record<string, string> = {
   TRAINING: 'Treinamento',
@@ -45,10 +46,13 @@ export async function buildHabitualityBookPdf(
     addAutoTable(
       ctx,
       [
-        ['#', 'Data', 'Atirador / CPF', 'CR / Nível', 'Calibre', 'Arma', 'Tiros', 'Tipo', 'Verif. por'],
+        ['#', 'Data', 'Atirador / CPF', 'CR / Nível', 'Calibre', 'Arma', 'Tiros', 'Mun.', 'Tipo', 'Verif. por'],
       ],
       payload.records.map((r, idx) => {
-        const detail = r.visit?.details?.[0];
+        // Casa o detail pelo calibre (mesma logica do documents.routes).
+        // Fallback no [0] preserva comportamento antigo se nao houver match.
+        const detail =
+          r.visit?.details?.find((d) => d.caliber === r.caliber) ?? r.visit?.details?.[0];
         const cr = [r.member.cr, r.member.crLevel ? `N${r.member.crLevel}` : null]
           .filter(Boolean)
           .join(' · ') || '—';
@@ -60,6 +64,7 @@ export async function buildHabitualityBookPdf(
           r.caliber,
           detail?.firearmName ?? '—',
           detail?.shotsFired != null ? String(detail.shotsFired) : '—',
+          detail?.ammunitionType ? ammunitionTypeShortLabels[detail.ammunitionType] : '—',
           ACTIVITY_LABEL[r.activityType] ?? r.activityType,
           r.verifiedBy?.fullName ?? '—',
         ];
@@ -72,7 +77,8 @@ export async function buildHabitualityBookPdf(
           3: { cellWidth: 22 },
           4: { cellWidth: 18 },
           6: { cellWidth: 12, halign: 'center' },
-          7: { cellWidth: 22 },
+          7: { cellWidth: 12, halign: 'center' },
+          8: { cellWidth: 22 },
         },
       },
     );

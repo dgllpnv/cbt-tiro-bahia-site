@@ -75,6 +75,10 @@ const navItems: NavItem[] = [
   { name: 'Financeiro', href: '/admin/financeiro', icon: <DollarSign size={20} />, roles: ['admin'] },
   { name: 'Relatorios', href: '/admin/relatorios', icon: <FileBarChart size={20} />, roles: ['admin', 'cashier'] },
 
+  // Lancamento retroativo de habitualidade — entre Relatorios e Associados
+  // por pedido explicito (backlog). Apenas ADMIN: poder retroativo.
+  { name: 'Habitualidade Manual', href: '/admin/habitualidade-manual', icon: <Target size={20} />, roles: ['admin'] },
+
   // Pessoas
   { name: 'Associados', href: '/admin/associados', icon: <Users size={20} />, roles: ['admin', 'cashier'] },
   { name: 'Visitantes', href: '/admin/visitantes', icon: <UserCheck size={20} />, roles: ['admin', 'cashier'] },

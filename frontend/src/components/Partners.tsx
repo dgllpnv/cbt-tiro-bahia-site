@@ -1,4 +1,4 @@
-import { Handshake, Scale, Shield, Code2, ArrowRight } from 'lucide-react';
+import { Handshake, Shield, Code2, ArrowRight } from 'lucide-react';
 
 // =====================================================
 // Partners — Parceiros oficiais do CBT.
@@ -17,9 +17,9 @@ interface Partner {
 
 const partners: Partner[] = [
   {
-    name: 'IDS Brasil',
+    name: 'IDSC',
     description: 'Instituto de Desenvolvimento e Segurança — parceiro estratégico em treinamentos e cursos especializados',
-    image: '/site/parceiros/parceiro_do_clube1.avif',
+    image: '/site/parceiros/idsc.jpg',
     link: 'http://idscbrasil.com.br/',
   },
   {
@@ -30,7 +30,7 @@ const partners: Partner[] = [
   {
     name: 'Marcos Leal',
     description: 'Conselho jurídico — advogado especializado em legislação de armas e direito CAC',
-    icon: <Scale className="w-12 h-12" />,
+    image: '/site/parceiros/marcos-leal.avif',
   },
 ];
 
@@ -130,7 +130,7 @@ const Partners = () => {
             </div>
 
             <a
-              href="https://auri-auri-site.o9cmue.easypanel.host/"
+              href="https://aurisolutions.com.br/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Visitar site da Auri Solutions"

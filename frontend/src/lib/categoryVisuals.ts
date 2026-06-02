@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   KeyRound,
   GraduationCap,
+  Coffee,
   Package,
   type LucideIcon,
 } from 'lucide-react';
@@ -92,6 +93,19 @@ export const categoryVisuals: Record<string, CategoryVisual> = {
     text: 'text-green-300',
     ring: 'ring-green-500/40',
   },
+  // Cantina: amarelo quente (familia do cbt-yellow) — destaca de calibres
+  // (vermelho/laranja) e de seguranca (ambar). Cafe e icone universal de
+  // lanchonete/cantina; Game Icons nao cobre comida bem.
+  CANTINA: {
+    icon: Coffee,
+    label: 'Cantina',
+    color: '#eab308',
+    bg: 'bg-yellow-500/10',
+    bgStrong: 'bg-yellow-500/20',
+    border: 'border-yellow-500/40',
+    text: 'text-yellow-300',
+    ring: 'ring-yellow-500/40',
+  },
   OTHER: FALLBACK,
 };
 
@@ -100,4 +114,4 @@ export function getCategoryVisual(category: string | null | undefined): Category
   return categoryVisuals[category] ?? FALLBACK;
 }
 
-export const CATEGORY_KEYS = ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'OTHER'] as const;
+export const CATEGORY_KEYS = ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'] as const;

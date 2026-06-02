@@ -35,9 +35,9 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 flex items-center justify-center">
-              <img 
-                src="/branding/d5fad45c-e7f8-49a2-bb56-498d1ba70193.png" 
-                alt="CBT - Clube Baiano de Tiro" 
+              <img
+                src="/branding/cbt-logo.png"
+                alt="CBT - Clube Baiano de Tiro"
                 className="w-full h-full object-contain"
               />
             </div>

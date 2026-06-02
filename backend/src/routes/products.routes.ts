@@ -18,11 +18,15 @@ const createProductSchema = z.object({
   description: z.string().optional(),
   sku: z.string().optional(),
   category: z.enum(
-    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'OTHER'],
+    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'],
     { errorMap: () => ({ message: 'Categoria invalida' }) },
   ),
-  caliber: z.string().optional(),
-  caliberCategory: z.enum(['RIMFIRE', 'CENTERFIRE', 'SHOTGUN', 'RIFLE']).optional(),
+  // .nullable() porque o frontend envia null quando o campo vai vazio
+  // (ProductsPage.tsx:301 — `caliber: form.caliber.trim() || null`). Sem
+  // .nullable(), POST falha com "Expected string, received null" em produto
+  // sem calibre (refri, agua, acessorio…). updateProductSchema ja aceita.
+  caliber: z.string().nullable().optional(),
+  caliberCategory: z.enum(['RIMFIRE', 'CENTERFIRE', 'SHOTGUN', 'RIFLE']).nullable().optional(),
   unitPrice: z.number().min(0, 'Preco unitario deve ser no minimo 0'),
   costPrice: z.number().min(0).optional(),
   unit: z.string().optional(),
@@ -44,7 +48,7 @@ const updateProductSchema = z.object({
   description: z.string().nullable().optional(),
   sku: z.string().nullable().optional(),
   category: z.enum(
-    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'OTHER'],
+    ['AMMUNITION', 'TARGET', 'ACCESSORY', 'SAFETY_EQUIPMENT', 'RENTAL_ITEM', 'COURSE', 'CANTINA', 'OTHER'],
   ).optional(),
   caliber: z.string().nullable().optional(),
   caliberCategory: z.enum(['RIMFIRE', 'CENTERFIRE', 'SHOTGUN', 'RIFLE']).nullable().optional(),

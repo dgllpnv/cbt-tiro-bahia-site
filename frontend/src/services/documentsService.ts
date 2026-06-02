@@ -68,6 +68,7 @@ export interface HabitualityActivity {
   caliber: string;
   firearmName: string | null;
   shotsFired: number | null;
+  ammunitionType: 'RELOADED' | 'FACTORY' | null;
   eventTitle: string | null;
   source: 'EVENT' | 'VISIT' | 'MANUAL';
   recordId: string;

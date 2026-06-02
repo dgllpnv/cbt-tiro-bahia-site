@@ -2,6 +2,8 @@ import api from './api';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
 
+export type AmmunitionType = 'RELOADED' | 'FACTORY';
+
 export interface VisitDetailItem {
   id: string;
   visitId: string;
@@ -9,6 +11,7 @@ export interface VisitDetailItem {
   caliber: string;
   firearmName: string | null;
   shotsFired: number;
+  ammunitionType: AmmunitionType | null;
   notes: string | null;
   createdAt: string;
   member?: {
@@ -22,6 +25,7 @@ export interface CreateVisitDetailData {
   caliber: string;
   firearmName?: string;
   shotsFired: number;
+  ammunitionType?: AmmunitionType | null;
   notes?: string;
 }
 

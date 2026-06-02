@@ -213,7 +213,7 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
             select: {
               id: true,
               visitDate: true,
-              details: { select: { caliber: true, firearmName: true, shotsFired: true } },
+              details: { select: { caliber: true, firearmName: true, shotsFired: true, ammunitionType: true } },
             },
           },
         },
@@ -237,6 +237,7 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
       caliber: string;
       firearmName: string | null;
       shotsFired: number | null;
+      ammunitionType: string | null;
       eventTitle: string | null;
       source: 'EVENT' | 'VISIT' | 'MANUAL';
       recordId: string;
@@ -253,6 +254,7 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
         caliber: r.caliber,
         firearmName: detail?.firearmName ?? null,
         shotsFired: detail?.shotsFired ?? null,
+        ammunitionType: detail?.ammunitionType ?? null,
         eventTitle: r.event?.title ?? null,
         source,
         recordId: r.id,

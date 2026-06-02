@@ -11,7 +11,7 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-16 h-16 flex items-center justify-center">
                   <img
-                    src="/branding/c4359ef2-4319-4738-8bd2-f0f84ababee1.png"
+                    src="/branding/cbt-logo.png"
                     alt="CBT - Clube Baiano de Tiro"
                     className="w-full h-full object-contain"
                   />
@@ -62,11 +62,15 @@ const Footer = () => {
                   Lauro de Freitas - BA
                 </p>
                 <p className="text-gray-400 font-tactical">
-                  📞{' '}
-                  <a href="tel:+557130511111" className="hover:text-cbt-orange transition-colors">
-                    (71) 3051-1111
+                  💬{' '}
+                  <a
+                    href="https://wa.me/557130511111"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-cbt-orange transition-colors"
+                  >
+                    WhatsApp (71) 3051-1111
                   </a>
-                  <span className="text-gray-600"> (WhatsApp)</span>
                 </p>
                 <p className="text-gray-400 font-tactical break-all">
                   ✉️{' '}
