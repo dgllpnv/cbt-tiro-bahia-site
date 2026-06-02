@@ -36,6 +36,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
 import { formatDate, maskCpf } from '@/lib/formatters';
 import type { UserAttachment } from '@/types/user';
+import MemberFirearmsSection from '@/components/admin/MemberFirearmsSection';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -282,6 +283,9 @@ const ProfilePage = () => {
               </div>
             )}
           </div>
+
+          {/* Acervo de armas — somente leitura para o associado */}
+          <MemberFirearmsSection memberId={user.id} readOnly />
         </div>
       </div>
 

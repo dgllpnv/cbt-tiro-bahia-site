@@ -24,11 +24,13 @@ import {
   IdCard,
   ArrowRight,
   Receipt,
+  Target,
 } from 'lucide-react';
 import MemberProfileTab from '@/components/admin/MemberProfileTab';
 import LoanTransferDialog from '@/components/admin/LoanTransferDialog';
 import LoanReturnDialog from '@/components/admin/LoanReturnDialog';
 import MemberFaceProfilesSection from '@/components/admin/MemberFaceProfilesSection';
+import MemberFirearmsSection from '@/components/admin/MemberFirearmsSection';
 import { getLoanById, type EquipmentLoan } from '@/services/loansService';
 
 import PageHeader from '@/components/shared/PageHeader';
@@ -787,6 +789,13 @@ const MemberDetailPage = () => {
             Visitas
           </TabsTrigger>
           <TabsTrigger
+            value="armas"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
+          >
+            <Target className="h-4 w-4 mr-2" />
+            Armas
+          </TabsTrigger>
+          <TabsTrigger
             value="emprestimos"
             className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
@@ -807,6 +816,11 @@ const MemberDetailPage = () => {
             facePhoto={member.faceProfiles?.[0]?.thumbnail ?? null}
             onGoToVisits={() => setActiveTab('visitas')}
           />
+        </TabsContent>
+
+        {/* ══════════════════════ TAB: ARMAS ══════════════════════ */}
+        <TabsContent value="armas">
+          <MemberFirearmsSection memberId={member.id} />
         </TabsContent>
 
         {/* ══════════════════════ TAB 1: DADOS ══════════════════════ */}

@@ -245,10 +245,40 @@ model User {
   visitsRegistered  Visit[]            @relation("VisitRegisteredBy")
   faceProfiles      FaceProfile[]      @relation("FaceMember")
   faceProfilesCaptured FaceProfile[]   @relation("FaceCapturedBy")
+  memberFirearms    MemberFirearm[]    @relation("MemberFirearms")
 
   @@index([clubId])
   @@index([status])
   @@index([memberNumber])
+}
+
+// Acervo pessoal do associado (armas de fogo proprias, registradas no SIGMA/
+// SINARM). Diferente de Equipment, que e do clube. O clube mantem esse registro
+// para fins de controle e declaracoes CAC. category usa String (whitelist Zod),
+// seguindo o padrao do projeto (sem enum Prisma — ver ammunitionType).
+model MemberFirearm {
+  id               String    @id @default(uuid())
+  clubId           String    @default("cbt-bahia")
+  memberId         String
+  member           User      @relation("MemberFirearms", fields: [memberId], references: [id], onDelete: Cascade)
+
+  category         String    // 'PISTOL' | 'REVOLVER' | 'RIFLE' | 'SHOTGUN'
+  brand            String?
+  model            String?
+  caliber          String?
+  serialNumber     String?   // numero de serie
+  registrationId   String?   // numero SIGMA / SINARM
+  registrationBody String?   // 'EXERCITO' | 'PF'
+  acquisitionDate  DateTime? @db.Date
+
+  notes            String?   @db.Text
+  isActive         Boolean   @default(true)
+  metadata         Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([memberId])
+  @@index([clubId])
 }
 
 model UserAttachment {
