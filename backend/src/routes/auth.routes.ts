@@ -109,6 +109,23 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Bloqueio por anuidade: associado com anuidade vencida OU sem registro
+    // nao acessa o sistema (decisao do clube). Admin e Caixa nunca sao bloqueados.
+    // Comparacao por inicio do dia — nao bloqueia no ultimo dia de validade.
+    if (user.role === 'ASSOCIATE') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const annuityExpired = !user.annuityValidUntil || user.annuityValidUntil < today;
+      if (annuityExpired) {
+        res.status(403).json({
+          success: false,
+          error:
+            'Anuidade vencida ou nao registrada. Entre em contato com o clube para renovar sua anuidade e liberar o acesso ao sistema.',
+        });
+        return;
+      }
+    }
+
     // Generate JWT
     const secret = process.env.JWT_SECRET;
     if (!secret) {
