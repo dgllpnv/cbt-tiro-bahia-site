@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
 import { encryptBuffer } from '../lib/backupCrypto.js';
+import { buildSelfDecryptingHtml } from '../lib/selfDecryptHtml.js';
 
 // Exportacao completa do banco — somente ADMIN. O arquivo SEMPRE sai cifrado
 // (AES) com a passphrase informada pelo admin.
@@ -108,7 +109,12 @@ router.post('/database', async (req: Request, res: Response): Promise<void> => {
     const encrypted = encryptBuffer(plaintext, passphrase);
 
     const stamp = new Date().toISOString().slice(0, 10);
-    const filename = `cbt-backup-${stamp}.${format}.enc`;
+    // Nome do arquivo descriptografado (gerado ao abrir o .html) e o nome do
+    // proprio download (HTML autodescriptografavel — duplo-clique abre, pede a
+    // senha e baixa o arquivo em claro, sem precisar de projeto/Node).
+    const innerName = `cbt-backup-${stamp}.${format}`;
+    const html = buildSelfDecryptingHtml(encrypted, innerName);
+    const filename = `${innerName}.html`;
 
     // Auditoria — registra o export SEM a passphrase nem os dados.
     await createAuditLog({
@@ -121,9 +127,9 @@ router.post('/database', async (req: Request, res: Response): Promise<void> => {
 
     console.log(`[EXPORT] Backup ${format} gerado (${totalRecords} registros) por ${req.user!.email}`);
 
-    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send(encrypted);
+    res.send(html);
   } catch (error) {
     console.error('[EXPORT] Erro ao exportar banco:', error);
     res.status(500).json({ success: false, error: 'Erro ao exportar banco de dados' });

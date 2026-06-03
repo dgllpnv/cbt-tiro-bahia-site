@@ -53,10 +53,11 @@ const ExportPage = () => {
           <div className="text-sm font-tactical text-foreground/90 space-y-1">
             <p className="font-semibold text-yellow-300">Arquivo sensível e criptografado</p>
             <p className="text-muted-foreground/90">
-              O backup contém todos os dados cadastrais (CPFs, endereços, etc.). Ele é sempre cifrado
+              O backup contém todos os dados cadastrais (CPFs, endereços, etc.) e é sempre cifrado
               (AES-256) com a senha abaixo. <strong>Guarde a senha</strong>: sem ela o arquivo não pode
-              ser aberto nem restaurado. Para descriptografar:{' '}
-              <code className="text-cbt-orange">scripts/csv-crypto.ts decrypt &lt;arquivo&gt; &lt;saída&gt;</code>.
+              ser aberto nem restaurado. O download é um arquivo <strong>.html</strong>: dê
+              <strong> duplo-clique</strong> nele (abre no navegador), digite a senha e o arquivo
+              descriptografado é baixado — sem precisar de mais nada.
             </p>
           </div>
         </div>
