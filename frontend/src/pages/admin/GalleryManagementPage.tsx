@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/dialog';
 
 import { useToast } from '@/hooks/use-toast';
+import { resizeImageToDataUrl } from '@/lib/imageResize';
 import {
   listGallery,
   createGalleryImage,
@@ -40,7 +41,7 @@ import {
   type GalleryImage,
 } from '@/services/galleryService';
 
-const MAX_IMAGES = 100;
+const MAX_IMAGES = 50;
 
 interface FormState {
   imageUrl: string;
@@ -195,18 +196,23 @@ const GalleryManagementPage = () => {
     });
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
       toast({ title: 'Formato invalido', description: 'Use PNG, JPG ou WebP.', variant: 'destructive' });
       return;
     }
-    if (file.size > 3 * 1024 * 1024) {
-      toast({ title: 'Arquivo muito grande', description: 'Tamanho maximo: 3 MB.', variant: 'destructive' });
+    // Aceita ate 15 MB de origem (foto de celular) — sera comprimida no navegador.
+    if (file.size > 15 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'Tamanho maximo: 15 MB.', variant: 'destructive' });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => updateField('imageUrl', String(reader.result));
-    reader.readAsDataURL(file);
+    try {
+      // Redimensiona e comprime antes de subir (galeria leve).
+      const dataUrl = await resizeImageToDataUrl(file, 1600, 0.82);
+      updateField('imageUrl', dataUrl);
+    } catch {
+      toast({ title: 'Erro ao processar imagem', description: 'Tente outra foto.', variant: 'destructive' });
+    }
   };
 
   return (

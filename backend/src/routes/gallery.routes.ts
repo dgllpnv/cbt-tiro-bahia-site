@@ -14,8 +14,8 @@ const router = Router();
 router.use(authMiddleware);
 
 // Limite hard de imagens ativas (publicadas ou nao) para evitar bloat da tabela
-// e payload excessivo no GET publico.
-const MAX_GALLERY_IMAGES = 100;
+// e payload excessivo no GET publico. Mantido baixo para o site ficar leve.
+const MAX_GALLERY_IMAGES = 50;
 
 const imageUrlSchema = z
   .string()
