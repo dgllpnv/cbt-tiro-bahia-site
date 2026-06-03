@@ -15,9 +15,13 @@ export async function exportDatabase(format: ExportFormat, passphrase: string) {
       { responseType: 'blob' },
     );
 
+    // O nome vem do Content-Disposition quando exposto (mesma origem ou
+    // Access-Control-Expose-Headers). Cross-origin em dev o header pode nao vir,
+    // entao montamos o nome localmente — sempre .html (auto-descriptografavel).
     const cd = (response.headers['content-disposition'] as string) || '';
     const match = /filename="?([^"]+)"?/.exec(cd);
-    const filename = match ? match[1] : `cbt-backup.${format}.enc`;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const filename = match ? match[1] : `cbt-backup-${stamp}.${format}.html`;
 
     const url = URL.createObjectURL(response.data as Blob);
     const a = document.createElement('a');

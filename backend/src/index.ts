@@ -75,6 +75,8 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    // Permite o frontend ler o nome do arquivo no download (export do banco)
+    exposedHeaders: ['Content-Disposition'],
   }),
 );
 
