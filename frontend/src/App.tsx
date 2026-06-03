@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,48 +10,57 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import PortalLayout from "@/components/layout/PortalLayout";
 import PublicLayout from "@/components/layout/PublicLayout";
 
+// Paginas carregadas sob demanda (code-splitting): o site publico nao baixa
+// o codigo do admin/portal (jspdf, recharts, @vladmandic/human, etc.).
 // Public pages
-import Index from "./pages/Index";
-import GalleryPage from "./pages/GalleryPage";
-import NotFound from "./pages/NotFound";
-import LoginPage from "./pages/LoginPage";
-import PasswordSetupPage from "./pages/PasswordSetupPage";
+const Index = lazy(() => import("./pages/Index"));
+const GalleryPage = lazy(() => import("./pages/GalleryPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const PasswordSetupPage = lazy(() => import("./pages/PasswordSetupPage"));
 
 // Associate portal pages
-import PortalHomePage from "./pages/portal/PortalHomePage";
-import TrainingHistoryPage from "./pages/portal/TrainingHistoryPage";
-import ProfilePage from "./pages/portal/ProfilePage";
-import AnnuityPage from "./pages/portal/AnnuityPage";
-import MembershipCardPage from "./pages/portal/MembershipCardPage";
-import HabitualityPage from "./pages/portal/HabitualityPage";
-import EventsPage from "./pages/portal/EventsPage";
-import DocumentsPage from "./pages/portal/DocumentsPage";
+const PortalHomePage = lazy(() => import("./pages/portal/PortalHomePage"));
+const TrainingHistoryPage = lazy(() => import("./pages/portal/TrainingHistoryPage"));
+const ProfilePage = lazy(() => import("./pages/portal/ProfilePage"));
+const AnnuityPage = lazy(() => import("./pages/portal/AnnuityPage"));
+const MembershipCardPage = lazy(() => import("./pages/portal/MembershipCardPage"));
+const HabitualityPage = lazy(() => import("./pages/portal/HabitualityPage"));
+const EventsPage = lazy(() => import("./pages/portal/EventsPage"));
+const DocumentsPage = lazy(() => import("./pages/portal/DocumentsPage"));
 
 // Admin pages
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import TransactionsPage from "./pages/admin/TransactionsPage";
-import MembersPage from "./pages/admin/MembersPage";
-import FinancialPage from "./pages/admin/FinancialPage";
-import ProductsPage from "./pages/admin/ProductsPage";
-import AuditLogsPage from "./pages/admin/AuditLogsPage";
-import NewsManagementPage from "./pages/admin/NewsManagementPage";
-import EventsManagementPage from "./pages/admin/EventsManagementPage";
-import MemberCreatePage from "./pages/admin/MemberCreatePage";
-import MemberDetailPage from "./pages/admin/MemberDetailPage";
-import VisitorsPage from "./pages/admin/VisitorsPage";
-import VisitorCreatePage from "./pages/admin/VisitorCreatePage";
-import VisitorDetailPage from "./pages/admin/VisitorDetailPage";
-import EquipmentsPage from "./pages/admin/EquipmentsPage";
-import EquipmentCreatePage from "./pages/admin/EquipmentCreatePage";
-import EquipmentDetailPage from "./pages/admin/EquipmentDetailPage";
-import ClubDataPage from "./pages/admin/ClubDataPage";
-import ReportsPage from "./pages/admin/ReportsPage";
-import CashierDailyPage from "./pages/admin/CashierDailyPage";
-import GalleryManagementPage from "./pages/admin/GalleryManagementPage";
-import HabitualityManualPage from "./pages/admin/HabitualityManualPage";
-import ExportPage from "./pages/admin/ExportPage";
+const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage"));
+const TransactionsPage = lazy(() => import("./pages/admin/TransactionsPage"));
+const MembersPage = lazy(() => import("./pages/admin/MembersPage"));
+const FinancialPage = lazy(() => import("./pages/admin/FinancialPage"));
+const ProductsPage = lazy(() => import("./pages/admin/ProductsPage"));
+const AuditLogsPage = lazy(() => import("./pages/admin/AuditLogsPage"));
+const NewsManagementPage = lazy(() => import("./pages/admin/NewsManagementPage"));
+const EventsManagementPage = lazy(() => import("./pages/admin/EventsManagementPage"));
+const MemberCreatePage = lazy(() => import("./pages/admin/MemberCreatePage"));
+const MemberDetailPage = lazy(() => import("./pages/admin/MemberDetailPage"));
+const VisitorsPage = lazy(() => import("./pages/admin/VisitorsPage"));
+const VisitorCreatePage = lazy(() => import("./pages/admin/VisitorCreatePage"));
+const VisitorDetailPage = lazy(() => import("./pages/admin/VisitorDetailPage"));
+const EquipmentsPage = lazy(() => import("./pages/admin/EquipmentsPage"));
+const EquipmentCreatePage = lazy(() => import("./pages/admin/EquipmentCreatePage"));
+const EquipmentDetailPage = lazy(() => import("./pages/admin/EquipmentDetailPage"));
+const ClubDataPage = lazy(() => import("./pages/admin/ClubDataPage"));
+const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
+const CashierDailyPage = lazy(() => import("./pages/admin/CashierDailyPage"));
+const GalleryManagementPage = lazy(() => import("./pages/admin/GalleryManagementPage"));
+const HabitualityManualPage = lazy(() => import("./pages/admin/HabitualityManualPage"));
+const ExportPage = lazy(() => import("./pages/admin/ExportPage"));
 
 const queryClient = new QueryClient();
+
+// Fallback enquanto o chunk da pagina carrega (dependency-free)
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="h-8 w-8 rounded-full border-2 border-cbt-orange border-t-transparent animate-spin" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -67,6 +77,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <Suspense fallback={<PageFallback />}>
             <Routes>
               {/* Public — sempre dark via PublicLayout (identidade institucional) */}
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
@@ -151,6 +162,7 @@ const App = () => (
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
