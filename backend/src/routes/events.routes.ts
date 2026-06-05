@@ -86,6 +86,17 @@ const createEventSchema = z.object({
   imageUrl: z.string().url().optional().or(z.literal('')),
 });
 
+// Combina data (YYYY-MM-DD) + hora (HH:mm, vinda do <input type="time">) num
+// Date valido. Sem hora -> null. Antes o codigo fazia new Date("14:30") =
+// Invalid Date, quebrando a criacao/edicao do evento.
+// Ancora no fuso da Bahia (-03:00, sem horario de verao) para o instante ser
+// deterministico — sem isso, new Date() usaria o fuso do servidor (UTC em prod,
+// BRT em dev), gravando horas diferentes para a mesma entrada.
+function combineDateTime(dateStr: string, timeStr?: string | null): Date | null {
+  if (!timeStr) return null;
+  return new Date(`${dateStr}T${timeStr}:00-03:00`);
+}
+
 router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = createEventSchema.parse(req.body);
@@ -96,8 +107,8 @@ router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Resp
         description: data.description,
         eventType: data.eventType,
         eventDate: new Date(data.eventDate),
-        startTime: data.startTime ? new Date(data.startTime) : null,
-        endTime: data.endTime ? new Date(data.endTime) : null,
+        startTime: combineDateTime(data.eventDate, data.startTime),
+        endTime: combineDateTime(data.eventDate, data.endTime),
         location: data.location,
         maxParticipants: data.maxParticipants,
         isPublic: data.isPublic ?? true,
@@ -128,13 +139,16 @@ router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Re
 
     const data = createEventSchema.partial().parse(req.body);
 
+    // Base para combinar com as horas: data nova (se enviada) ou a do evento.
+    const baseDateStr = data.eventDate ?? existing.eventDate.toISOString().slice(0, 10);
+
     const event = await prisma.event.update({
       where: { id: req.params.id },
       data: {
         ...data,
         eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
-        startTime: data.startTime ? new Date(data.startTime) : undefined,
-        endTime: data.endTime ? new Date(data.endTime) : undefined,
+        startTime: data.startTime !== undefined ? combineDateTime(baseDateStr, data.startTime) : undefined,
+        endTime: data.endTime !== undefined ? combineDateTime(baseDateStr, data.endTime) : undefined,
         registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : undefined,
         imageUrl: data.imageUrl === '' ? null : data.imageUrl,
       },

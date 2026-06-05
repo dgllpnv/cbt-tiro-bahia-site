@@ -43,6 +43,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
+import MemberSearch from '@/components/shared/MemberSearch';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -466,12 +467,12 @@ const EventsManagementPage = () => {
 
   const handleAddParticipant = async () => {
     if (!selectedEvent || !newMemberId.trim()) {
-      toast({ title: 'Informe o ID do membro', variant: 'destructive' });
+      toast({ title: 'Selecione o membro', variant: 'destructive' });
       return;
     }
     setIsAddingParticipant(true);
     try {
-      await api.post(`/api/events/${selectedEvent.id}/participants`, {
+      await api.post(`/api/events/${selectedEvent.id}/participate`, {
         memberId: newMemberId.trim(),
         caliberUsed: newCaliberUsed.trim() || undefined,
         countsAsHabituality: newCountsAsHabituality,
@@ -916,12 +917,11 @@ const EventsManagementPage = () => {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-muted-foreground font-tactical text-xs">ID do membro *</Label>
-                    <Input
+                    <MemberSearch
                       value={newMemberId}
-                      onChange={(e) => setNewMemberId(e.target.value)}
-                      placeholder="ID ou número de sócio"
-                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange h-9 text-sm"
+                      onChange={(memberId) => setNewMemberId(memberId)}
+                      label="Membro *"
+                      placeholder="Buscar associado por nome..."
                     />
                   </div>
                   <div className="space-y-1">

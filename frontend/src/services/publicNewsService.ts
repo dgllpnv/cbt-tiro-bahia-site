@@ -27,6 +27,18 @@ export interface PublicGalleryImage {
   displayOrder: number;
 }
 
+export interface PublicEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  eventType: string;
+  eventDate: string;
+  startTime: string | null;
+  endTime: string | null;
+  location: string | null;
+  imageUrl: string | null;
+}
+
 export async function fetchPublicNews(limit = 6) {
   try {
     const r = await publicApi.get('/api/public/news', { params: { limit } });
@@ -49,6 +61,19 @@ export async function fetchPublicGallery() {
     return {
       success: false as const,
       error: error?.response?.data?.error || 'Erro ao buscar galeria',
+    };
+  }
+}
+
+export async function fetchPublicEvents(limit = 8) {
+  try {
+    const r = await publicApi.get('/api/public/events', { params: { limit } });
+    if (r.data?.success) return { success: true as const, data: r.data.data as PublicEvent[] };
+    return { success: false as const, error: r.data?.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error?.response?.data?.error || 'Erro ao buscar eventos',
     };
   }
 }

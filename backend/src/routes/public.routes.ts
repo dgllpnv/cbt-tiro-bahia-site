@@ -101,4 +101,38 @@ router.get('/gallery', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
+// =====================================================
+// GET /api/public/events
+// Lista eventos publicos futuros (isPublic, eventDate >= hoje), ordenados
+// pela data. Campos seguros para a home institucional.
+// =====================================================
+router.get('/events', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit as string) || 8));
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const events = await prisma.event.findMany({
+      where: { isPublic: true, eventDate: { gte: startOfToday } },
+      orderBy: { eventDate: 'asc' },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        eventType: true,
+        eventDate: true,
+        startTime: true,
+        endTime: true,
+        location: true,
+        imageUrl: true,
+      },
+    });
+    res.json({ success: true, data: events });
+  } catch (error) {
+    console.error('[PUBLIC] Erro ao listar eventos:', error);
+    res.status(500).json({ success: false, error: 'Erro ao listar eventos' });
+  }
+});
+
 export default router;
