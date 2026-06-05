@@ -52,7 +52,7 @@ import {
 
 const prisma = new PrismaClient();
 
-const PRESERVED_EMAILS = ['admin@cbt.com.br', 'associado@cbt.com.br'];
+const PRESERVED_EMAILS = ['admin@cbt.com.br', 'caixa@cbt.com.br', 'associado@cbt.com.br'];
 
 // =====================================================
 // CLEANUP
