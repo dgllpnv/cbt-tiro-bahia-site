@@ -141,7 +141,7 @@ const FaceCheckoutDialog = ({
       return;
     }
 
-    if (res.data.reason === 'NO_PROFILE_REGISTERED') {
+    if ('reason' in res.data && res.data.reason === 'NO_PROFILE_REGISTERED') {
       // Captura o frame atual para usar como descriptor inicial
       setPendingCapture({ descriptor: captured.descriptor, thumbnail: captured.thumbnail });
       updatePhase('no-profile');

@@ -1,4 +1,5 @@
-import { GiBullets, type IconType } from 'react-icons/gi';
+import { GiBullets } from 'react-icons/gi';
+import type { IconType } from 'react-icons/lib';
 
 export const CALIBER_COLORS: Record<string, string> = {
   '9mm': '#dc2626',

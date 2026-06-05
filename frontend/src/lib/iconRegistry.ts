@@ -39,9 +39,8 @@ import {
 
   // ── VENDAS ──
   GiCash, GiCoins, GiCoinsPile,
-
-  type IconType,
 } from 'react-icons/gi';
+import type { IconType } from 'react-icons/lib';
 
 // ─────────────────────────────────────────────────────────────────────
 

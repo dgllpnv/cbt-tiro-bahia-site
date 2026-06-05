@@ -3,8 +3,8 @@ import {
   GiRevolver,
   GiRifle,
   GiShotgun,
-  type IconType,
 } from 'react-icons/gi';
+import type { IconType } from 'react-icons/lib';
 
 export type FirearmCategory = 'PISTOL' | 'REVOLVER' | 'RIFLE' | 'SHOTGUN';
 

@@ -462,12 +462,21 @@ const ProductsPage = () => {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-        <KpiCard icon={Package} label="Produtos" value={String(totalProducts)} accent="#3b82f6" />
+        <KpiCard
+          icon={Package}
+          label="Produtos"
+          value={String(totalProducts)}
+          color="#3b82f6"
+          bgColor="bg-blue-500/10"
+          borderColor="border-blue-500/20"
+        />
         <KpiCard
           icon={AlertTriangle}
           label="Abaixo do minimo"
           value={String(lowCount)}
-          accent={lowCount > 0 ? '#ef4444' : '#22c55e'}
+          color={lowCount > 0 ? '#ef4444' : '#22c55e'}
+          bgColor={lowCount > 0 ? 'bg-red-500/10' : 'bg-green-500/10'}
+          borderColor={lowCount > 0 ? 'border-red-500/20' : 'border-green-500/20'}
         />
         {/* Valor em estoque: oculto para o caixa (nao deve ver valor financeiro) */}
         {!isCashier && (
@@ -475,7 +484,9 @@ const ProductsPage = () => {
             icon={DollarSign}
             label="Valor em estoque"
             value={formatCurrency(totalValue)}
-            accent="#22c55e"
+            color="#22c55e"
+            bgColor="bg-green-500/10"
+            borderColor="border-green-500/20"
           />
         )}
       </div>
