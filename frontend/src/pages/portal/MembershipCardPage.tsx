@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
-import { maskCpf, formatDate } from '@/lib/formatters';
+import { formatCpf, formatDate } from '@/lib/formatters';
 
 const MembershipCardPage = () => {
   const { user } = useAuth();
@@ -165,14 +165,12 @@ const MembershipCardPage = () => {
     );
   }
 
-  // QR codifica dados publicos para validacao manual no balcao (numero + CPF mascarado).
-  const qrPayload = JSON.stringify({
-    cbt: 'membership',
-    n: user.memberNumber,
-    cpf: user.cpf ? maskCpf(user.cpf) : null,
-    name: user.fullName,
-    valid: user.annuityValidUntil ?? null,
-  });
+  // QR aponta para a carteirinha do associado. Logado -> abre direto;
+  // deslogado -> o ProtectedRoute manda pro login e retorna depois.
+  const qrUrl = `${window.location.origin}/portal/carteirinha`;
+
+  // Foto exibida = miniatura do reconhecimento facial cadastrado (base64).
+  const facePhoto = user.faceProfiles?.[0]?.thumbnail ?? null;
 
   return (
     <div>
@@ -283,11 +281,10 @@ const MembershipCardPage = () => {
               <div className="flex items-start gap-4 mb-5">
                 {/* Foto */}
                 <div className="flex-shrink-0">
-                  {user.photoUrl ? (
+                  {facePhoto ? (
                     <img
-                      src={user.photoUrl}
+                      src={facePhoto}
                       alt={user.fullName}
-                      crossOrigin="anonymous"
                       className="h-28 w-22 rounded-md object-cover border-2 border-cbt-orange/40 shadow-lg shadow-cbt-orange/10"
                       style={{ width: 88, height: 112 }}
                     />
@@ -351,7 +348,7 @@ const MembershipCardPage = () => {
                 {/* QR Code real */}
                 <div className="flex-shrink-0 bg-white p-1.5 rounded-md hidden sm:block border border-cbt-orange/30">
                   <QRCodeSVG
-                    value={qrPayload}
+                    value={qrUrl}
                     size={84}
                     level="M"
                     bgColor="#ffffff"
@@ -372,7 +369,7 @@ const MembershipCardPage = () => {
               <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 <InfoField
                   label="CPF"
-                  value={user.cpf ? maskCpf(user.cpf) : '—'}
+                  value={user.cpf ? formatCpf(user.cpf) : '—'}
                   labelColor={cardStyles.labelColor}
                   valueColor={cardStyles.valueColor}
                 />

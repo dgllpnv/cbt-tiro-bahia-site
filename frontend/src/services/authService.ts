@@ -38,6 +38,7 @@ function mapUser(raw: any): User {
     memberSince: raw.memberSince,
     status: raw.status || 'ACTIVE',
     mustChangePassword: !!raw.mustChangePassword,
+    faceProfiles: Array.isArray(raw.faceProfiles) ? raw.faceProfiles : undefined,
   };
 }
 

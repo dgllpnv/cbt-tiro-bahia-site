@@ -255,6 +255,13 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        // Foto facial ativa mais recente — usada na carteirinha do associado.
+        faceProfiles: {
+          where: { isActive: true },
+          select: { thumbnail: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
       },
     });
 
