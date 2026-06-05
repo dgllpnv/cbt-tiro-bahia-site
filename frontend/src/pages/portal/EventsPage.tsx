@@ -53,6 +53,7 @@ interface Event {
   location?: string;
   maxParticipants?: number;
   isPublic?: boolean;
+  imageUrl?: string | null;
   participations?: EventParticipation[];
   participationsCount?: number;
 }
@@ -147,6 +148,13 @@ const EventsPage = () => {
           className="w-full p-5 text-left"
           onClick={() => setSelectedEvent(event)}
         >
+          {event.imageUrl && (
+            <img
+              src={event.imageUrl}
+              alt={event.title}
+              className="w-full h-32 object-cover rounded-md mb-3"
+            />
+          )}
           <div className="flex items-start justify-between mb-3">
             <Badge variant="outline" className={`text-[10px] font-tactical ${typeBadge.className}`}>
               <TypeIcon className="h-3 w-3 mr-1" />

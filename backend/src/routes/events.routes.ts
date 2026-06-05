@@ -83,7 +83,14 @@ const createEventSchema = z.object({
   maxParticipants: z.number().int().positive().optional(),
   isPublic: z.boolean().optional(),
   registrationDeadline: z.string().optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  // Aceita URL http(s), data URI (upload do painel) ou caminho relativo.
+  imageUrl: z
+    .string()
+    .refine(
+      (v) => v === '' || v.startsWith('data:image/') || /^https?:\/\//.test(v) || v.startsWith('/'),
+      { message: 'imageUrl deve ser http(s), data URI ou caminho relativo' },
+    )
+    .optional(),
 });
 
 // Combina data (YYYY-MM-DD) + hora (HH:mm, vinda do <input type="time">) num

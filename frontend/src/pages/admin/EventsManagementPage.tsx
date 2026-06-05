@@ -19,6 +19,7 @@ import {
   LayoutList,
   LayoutGrid,
   X,
+  ImagePlus,
 } from 'lucide-react';
 import {
   startOfMonth,
@@ -78,6 +79,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import { formatDate } from '@/lib/formatters';
+import { resizeImageToDataUrl } from '@/lib/imageResize';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -104,6 +106,7 @@ interface EventItem {
   location?: string | null;
   maxParticipants?: number | null;
   isPublic?: boolean;
+  imageUrl?: string | null;
   participations?: EventParticipation[];
   participationsCount?: number;
 }
@@ -118,6 +121,7 @@ interface EventFormState {
   location: string;
   maxParticipants: string;
   isPublic: boolean;
+  imageUrl: string;
 }
 
 const emptyForm: EventFormState = {
@@ -130,6 +134,7 @@ const emptyForm: EventFormState = {
   location: '',
   maxParticipants: '',
   isPublic: true,
+  imageUrl: '',
 };
 
 type ViewMode = 'calendar' | 'list';
@@ -341,6 +346,25 @@ const EventsManagementPage = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Imagem do evento: redimensiona/comprime no navegador antes de salvar
+  // (data URI), igual ao upload da galeria.
+  const handleImageFile = async (file: File) => {
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      toast({ title: 'Formato invalido', description: 'Use PNG, JPG ou WebP.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'Tamanho maximo: 15 MB.', variant: 'destructive' });
+      return;
+    }
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 1280, 0.82);
+      updateField('imageUrl', dataUrl);
+    } catch {
+      toast({ title: 'Erro ao processar imagem', description: 'Tente outra foto.', variant: 'destructive' });
+    }
+  };
+
   const openCreateDialog = () => {
     setEditingId(null);
     setForm(emptyForm);
@@ -359,6 +383,7 @@ const EventsManagementPage = () => {
       location: event.location || '',
       maxParticipants: event.maxParticipants ? String(event.maxParticipants) : '',
       isPublic: event.isPublic ?? true,
+      imageUrl: event.imageUrl || '',
     });
     setDetailEvent(null);
     setFormDialogOpen(true);
@@ -384,6 +409,7 @@ const EventsManagementPage = () => {
       location: form.location.trim() || undefined,
       maxParticipants: form.maxParticipants ? parseInt(form.maxParticipants) : undefined,
       isPublic: form.isPublic,
+      imageUrl: form.imageUrl || '',
     };
     try {
       if (editingId) {
@@ -783,6 +809,44 @@ const EventsManagementPage = () => {
                 placeholder="Descrição do evento..."
                 className="bg-muted border-border text-foreground placeholder:text-muted-foreground/80 focus:border-cbt-orange min-h-[100px] resize-y"
               />
+            </div>
+            {/* Imagem do evento (mostrada no site e no portal) */}
+            <div className="space-y-2">
+              <Label className="text-foreground/85 font-tactical text-sm">Imagem do evento</Label>
+              {form.imageUrl ? (
+                <div className="relative w-full max-w-sm">
+                  <img
+                    src={form.imageUrl}
+                    alt="Imagem do evento"
+                    className="w-full h-40 object-cover rounded-md border border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateField('imageUrl', '')}
+                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1"
+                    title="Remover imagem"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full max-w-sm h-32 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-cbt-orange/50 transition-colors bg-muted/40">
+                  <ImagePlus className="h-6 w-6 text-muted-foreground/70 mb-2" />
+                  <span className="text-xs font-tactical text-muted-foreground/80">
+                    Clique para enviar (PNG, JPG ou WebP)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleImageFile(f);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
