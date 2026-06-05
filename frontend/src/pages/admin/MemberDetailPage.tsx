@@ -139,6 +139,7 @@ interface MemberFormData {
   email: string;
   phone: string;
   dateOfBirth: string;
+  memberSince: string;
   annuityValidUntil: string;
   cr: string;
   crLevel: string;
@@ -182,6 +183,7 @@ const MemberDetailPage = () => {
     email: '',
     phone: '',
     dateOfBirth: '',
+    memberSince: '',
     annuityValidUntil: '',
     cr: '',
     crLevel: '',
@@ -256,7 +258,8 @@ const MemberDetailPage = () => {
         cpf: formatCpfMask(m.cpf || ''),
         email: m.email || '',
         phone: m.phone || '',
-        dateOfBirth: (m as any).dateOfBirth || '',
+        dateOfBirth: (m as any).dateOfBirth ? String((m as any).dateOfBirth).slice(0, 10) : '',
+        memberSince: m.memberSince ? String(m.memberSince).slice(0, 10) : '',
         annuityValidUntil: m.annuityValidUntil ? String(m.annuityValidUntil).slice(0, 10) : '',
         cr: m.cr || '',
         crLevel: m.crLevel?.toString() || '',
@@ -390,6 +393,8 @@ const MemberDetailPage = () => {
       cpf: cpfChanged ? cpfDigits : undefined,
       email: form.email || undefined,
       phone: form.phone || undefined,
+      dateOfBirth: form.dateOfBirth || undefined,
+      memberSince: form.memberSince || undefined,
       cr: form.cr || undefined,
       crLevel: form.crLevel ? Number(form.crLevel) : undefined,
       address: form.address || null,
@@ -919,6 +924,17 @@ const MemberDetailPage = () => {
                     type="date"
                     value={form.dateOfBirth}
                     onChange={(e) => handleFormChange('dateOfBirth', e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Data de associação (filiado desde) */}
+                <div>
+                  <label className={labelClass}>Data de associação</label>
+                  <Input
+                    type="date"
+                    value={form.memberSince}
+                    onChange={(e) => handleFormChange('memberSince', e.target.value)}
                     className={inputClass}
                   />
                 </div>

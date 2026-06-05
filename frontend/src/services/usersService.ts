@@ -39,6 +39,8 @@ export interface UpdateUserData {
   role?: string;
   cr?: string;
   crLevel?: number;
+  dateOfBirth?: string;
+  memberSince?: string;
   annuityValidUntil?: string;
   address?: string | null;
   neighborhood?: string | null;
@@ -104,23 +106,17 @@ function mapRole(backendRole: string): 'admin' | 'cashier' | 'associate' {
 }
 
 function mapUser(raw: any): User {
+  // Preserva TODOS os campos vindos do backend (dateOfBirth, address, dados
+  // civis, memberSince, etc.) — a ficha de edicao do associado le varios deles
+  // via (m as any).campo. Antes o map descartava esses campos, deixando o
+  // formulario vazio e podendo apagar dados ao salvar.
   return {
-    id: raw.id,
-    email: raw.email,
-    cpf: raw.cpf,
-    fullName: raw.fullName,
+    ...raw,
     role: mapRole(raw.role),
-    memberNumber: raw.memberNumber,
-    photoUrl: raw.photoUrl,
-    phone: raw.phone,
-    cr: raw.cr,
-    crLevel: raw.crLevel,
-    annuityValidUntil: raw.annuityValidUntil,
-    memberSince: raw.memberSince,
     status: raw.status || 'ACTIVE',
     faceProfiles: Array.isArray(raw.faceProfiles) ? raw.faceProfiles : [],
     attachments: Array.isArray(raw.attachments) ? raw.attachments : undefined,
-  };
+  } as User;
 }
 
 // ── Service Functions ───────────────────────────────────────────────────────
