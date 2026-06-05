@@ -1,4 +1,5 @@
 import api from './api';
+import type { DeclarationDataPacket } from './reportsService';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -29,23 +30,20 @@ export async function getMemberDocuments(memberId: string) {
   }
 }
 
-export async function generateFiliation(memberId: string) {
+// Pacote { member, club } para gerar a Declaracao de Filiacao no cliente
+// (buildFiliacaoPdf). Endpoint self-acessivel (associado ou admin).
+export async function getFiliacaoDeclarationData(memberId: string) {
   try {
-    const response = await api.post(`/api/documents/generate/filiation/${memberId}`);
-    if (response.data.success) return { success: true, data: response.data.data as MemberDocument };
-    return { success: false, error: response.data.error };
+    const response = await api.get(`/api/documents/declaration/filiation/${memberId}`);
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as DeclarationDataPacket };
+    }
+    return { success: false as const, error: response.data.error };
   } catch (error: any) {
-    return { success: false, error: error.response?.data?.error || 'Erro ao gerar declaracao de filiacao' };
-  }
-}
-
-export async function generateHabituality(memberId: string, year?: number) {
-  try {
-    const response = await api.post(`/api/documents/generate/habituality/${memberId}`, { year });
-    if (response.data.success) return { success: true, data: response.data.data as MemberDocument };
-    return { success: false, error: response.data.error };
-  } catch (error: any) {
-    return { success: false, error: error.response?.data?.error || 'Erro ao gerar declaracao de habitualidade' };
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar dados da declaracao',
+    };
   }
 }
 

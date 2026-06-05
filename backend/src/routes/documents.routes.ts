@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -29,91 +29,70 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
   }
 });
 
-// POST /api/documents/generate/filiation/:memberId — Generate Filiation Declaration
-router.post('/generate/filiation/:memberId', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
+// GET /api/documents/declaration/filiation/:memberId
+// Pacote { member, club } (mesmo shape de /api/reports/declaration-data) para o
+// associado — ou admin — gerar a Declaracao de Filiacao no cliente
+// (buildFiliacaoPdf). Permissao: ADMIN ou self. O reports/declaration-data e
+// admin-only, por isso o associado precisa deste endpoint self-acessivel.
+router.get('/declaration/filiation/:memberId', async (req: Request, res: Response): Promise<void> => {
   try {
-    const member = await prisma.user.findUnique({ where: { id: req.params.memberId } });
-    if (!member) {
-      res.status(404).json({ success: false, error: 'Membro nao encontrado' });
+    const memberId = req.params.memberId;
+    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+      res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }
 
-    const doc = await prisma.memberDocument.create({
-      data: {
-        memberId: member.id,
-        documentType: 'FILIATION',
-        title: `Declaracao de Filiacao - ${member.fullName}`,
-        description: 'Declara que o associado e filiado ao Clube Baiano de Tiro',
-        generatedById: req.user!.id,
-        templateData: {
-          memberName: member.fullName,
-          cpf: member.cpf,
-          memberNumber: member.memberNumber,
-          memberSince: member.memberSince,
-          clubName: 'Clube Baiano de Tiro',
-          generatedAt: new Date().toISOString(),
+    const [member, club] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: memberId },
+        select: {
+          id: true, fullName: true, cpf: true, email: true, phone: true,
+          dateOfBirth: true, role: true, photoUrl: true,
+          address: true, neighborhood: true, city: true, state: true, zipCode: true,
+          rg: true, rgIssuer: true, nationality: true, naturality: true,
+          fatherName: true, motherName: true, profession: true, maritalStatus: true,
+          memberNumber: true, memberSince: true,
+          cr: true, crLevel: true, crExpiry: true,
+          annuityValidUntil: true, status: true, isActive: true,
         },
-      },
-    });
+      }),
+      prisma.clubSettings.findUnique({ where: { clubId: 'cbt-bahia' } }),
+    ]);
 
-    res.status(201).json({ success: true, data: doc });
-  } catch (error) {
-    console.error('Erro ao gerar declaracao:', error);
-    res.status(500).json({ success: false, error: 'Erro ao gerar declaracao' });
-  }
-});
-
-// POST /api/documents/generate/habituality/:memberId — Generate Habituality Declaration
-router.post('/generate/habituality/:memberId', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
-  try {
-    const member = await prisma.user.findUnique({ where: { id: req.params.memberId } });
     if (!member) {
-      res.status(404).json({ success: false, error: 'Membro nao encontrado' });
+      res.status(404).json({ success: false, error: 'Associado nao encontrado' });
+      return;
+    }
+    if (!club) {
+      res.status(500).json({ success: false, error: 'Configuracoes do clube nao encontradas' });
       return;
     }
 
-    const year = parseInt(req.body.year) || new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
-
-    const records = await prisma.habitualityRecord.findMany({
-      where: { memberId: member.id, activityDate: { gte: startDate, lte: endDate } },
-      orderBy: { activityDate: 'asc' },
-    });
-
-    // Group by caliber
-    const byCaliber: Record<string, { count: number; dates: string[] }> = {};
-    for (const r of records) {
-      if (!byCaliber[r.caliber]) byCaliber[r.caliber] = { count: 0, dates: [] };
-      byCaliber[r.caliber].count++;
-      byCaliber[r.caliber].dates.push(r.activityDate.toISOString().split('T')[0]);
-    }
-
-    const doc = await prisma.memberDocument.create({
+    res.json({
+      success: true,
       data: {
-        memberId: member.id,
-        documentType: 'HABITUALITY',
-        title: `Declaracao de Habitualidade ${year} - ${member.fullName}`,
-        description: `Comprova habitualidade do associado no ano de ${year}`,
-        generatedById: req.user!.id,
-        templateData: {
-          memberName: member.fullName,
-          cpf: member.cpf,
-          cr: member.cr,
-          memberNumber: member.memberNumber,
-          year,
-          caliberSummary: byCaliber,
-          totalActivities: records.length,
-          clubName: 'Clube Baiano de Tiro',
-          generatedAt: new Date().toISOString(),
+        member,
+        club: {
+          name: club.clubName,
+          cnpj: club.cnpj,
+          crPj: club.crPj,
+          crPjIssueDate: club.crPjIssueDate,
+          addressLine: club.addressLine,
+          city: club.city,
+          state: club.state,
+          zipCode: club.zipCode,
+          phone: club.phone,
+          email: club.email,
+          responsibleName: club.responsibleName,
+          responsibleCpf: club.responsibleCpf,
+          responsibleRole: club.responsibleRole,
+          logoUrl: club.logoUrl,
         },
       },
     });
-
-    res.status(201).json({ success: true, data: doc });
   } catch (error) {
-    console.error('Erro ao gerar declaracao:', error);
-    res.status(500).json({ success: false, error: 'Erro ao gerar declaracao' });
+    console.error('Erro ao montar pacote de filiacao:', error);
+    res.status(500).json({ success: false, error: 'Erro ao montar pacote de filiacao' });
   }
 });
 

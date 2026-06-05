@@ -44,10 +44,7 @@ import {
   getMissingDeclarationFields,
   type ClubSettings,
 } from '@/services/clubSettingsService';
-import {
-  generateHabituality,
-  getHabitualityDeclarationData,
-} from '@/services/documentsService';
+import { getHabitualityDeclarationData } from '@/services/documentsService';
 import { generateHabitualityPdf } from '@/lib/pdfHabituality';
 
 const REQUIRED_TRAININGS = 8;
@@ -152,11 +149,6 @@ const HabitualityPage = () => {
       const pdf = await generateHabitualityPdf(packetRes.data);
       const fileName = `declaracao-habitualidade-${user.memberNumber || 'cbt'}-${declarationYear}.pdf`;
       pdf.save(fileName);
-
-      // Em paralelo: registra MemberDocument para histórico/auditoria. Não bloqueia.
-      generateHabituality(user.id, declarationYear).catch(() => {
-        // falha do registro não impede o download — apenas loga
-      });
 
       toast({
         title: 'Declaração gerada',
