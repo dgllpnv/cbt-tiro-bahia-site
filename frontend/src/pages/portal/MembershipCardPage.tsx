@@ -397,7 +397,7 @@ const MembershipCardPage = () => {
               {/* QR fallback mobile */}
               <div className="flex sm:hidden justify-center mt-5">
                 <div className="bg-white p-1.5 rounded-md border border-cbt-orange/30">
-                  <QRCodeSVG value={qrPayload} size={96} level="M" bgColor="#ffffff" fgColor="#000000" />
+                  <QRCodeSVG value={qrUrl} size={96} level="M" bgColor="#ffffff" fgColor="#000000" />
                 </div>
               </div>
 
