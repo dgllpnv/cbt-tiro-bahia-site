@@ -83,3 +83,5 @@ pnpm-lock.yaml
 
 # Arquivo de memória pessoal entre sessões do Claude — não commitar
 ARQUIVO CONTEXTO.txt
+
+*.tsbuildinfo
