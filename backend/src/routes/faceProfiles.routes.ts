@@ -306,10 +306,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     const member = await prisma.user.findUnique({
       where: { id: data.memberId },
-      select: { id: true, fullName: true, isActive: true, role: true },
+      select: { id: true, fullName: true, isActive: true, status: true, role: true },
     });
-    if (!member || !member.isActive) {
-      res.status(404).json({ success: false, error: 'Membro nao encontrado ou inativo' });
+    if (!member) {
+      res.status(404).json({ success: false, error: 'Membro nao encontrado' });
       return;
     }
 
@@ -332,6 +332,18 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      // Decisao do clube: cadastrar facial de um socio inativo o REATIVA
+      // automaticamente (a captura no balcao significa que ele esta presente
+      // e habilitado). Espelha o PATCH /users/:id/status (status + isActive).
+      let reactivated = false;
+      if (!member.isActive) {
+        await tx.user.update({
+          where: { id: member.id },
+          data: { status: 'ACTIVE', isActive: true },
+        });
+        reactivated = true;
+      }
+
       const profile = await tx.faceProfile.create({
         data: {
           memberId: data.memberId,
@@ -360,8 +372,23 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         });
       }
 
-      return { profile, habituality };
+      return { profile, habituality, reactivated };
     });
+
+    // Auditoria da reativacao (separada do registro de facial, para rastreio).
+    if (result.reactivated) {
+      await createAuditLog({
+        performedById: req.user!.id,
+        action: 'STATUS_CHANGE',
+        entityType: 'User',
+        entityId: member.id,
+        userId: member.id,
+        previousData: { status: member.status, isActive: false },
+        newData: { status: 'ACTIVE', isActive: true },
+        description: `${member.fullName} reativado automaticamente ao cadastrar identidade facial`,
+        ipAddress: req.ip as string | undefined,
+      });
+    }
 
     await createAuditLog({
       performedById: req.user!.id,

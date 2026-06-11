@@ -16,8 +16,10 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id as string;
 
-    // Permission: ADMIN or self
-    if (req.user!.role !== 'ADMIN' && req.user!.id !== id) {
+    // Permission: staff (ADMIN/CASHIER) or self. O caixa ja acessa a lista e o
+    // cadastro do associado; sem o CASHIER aqui, a aba "Perfil" da ficha
+    // quebrava com "Acesso negado" para o operador de caixa.
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'CASHIER' && req.user!.id !== id) {
       res.status(403).json({ success: false, error: 'Acesso negado.' });
       return;
     }

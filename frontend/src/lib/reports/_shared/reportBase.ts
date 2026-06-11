@@ -222,11 +222,26 @@ export function addKeyValueGrid(
 ): void {
   const { pdf, pageWidth } = ctx;
   const colW = (pageWidth - MARGIN_X * 2) / 2;
+  const valueMaxW = colW - 40;
+  // Altura por linha de texto (9pt * fator de linha do jsPDF) e folga entre linhas.
+  const TEXT_LH = 3.7;
+  const ROW_GAP = 1.3;
 
   for (let i = 0; i < rows.length; i += 2) {
-    ensureSpace(ctx, 6);
     const left = rows[i];
     const right = rows[i + 1];
+
+    // Mede quantas linhas cada valor ocupa apos a quebra, para dimensionar a
+    // altura da linha. Valores longos (nome completo, profissao) quebravam em
+    // 2+ linhas e a proxima linha era desenhada por cima -> sobreposicao.
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    const leftLines = pdf.splitTextToSize(String(left[1] ?? '—'), valueMaxW);
+    const rightLines = right ? pdf.splitTextToSize(String(right[1] ?? '—'), valueMaxW) : [];
+    const rowLines = Math.max(leftLines.length, rightLines.length, 1);
+    const rowH = Math.max(5, rowLines * TEXT_LH + ROW_GAP);
+
+    ensureSpace(ctx, rowH);
 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(9);
@@ -234,7 +249,7 @@ export function addKeyValueGrid(
     pdf.text(`${left[0]}:`, MARGIN_X, ctx.cursorY);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(TEXT_DARK);
-    pdf.text(String(left[1] ?? '—'), MARGIN_X + 38, ctx.cursorY, { maxWidth: colW - 40 });
+    pdf.text(leftLines, MARGIN_X + 38, ctx.cursorY);
 
     if (right) {
       pdf.setFont('helvetica', 'bold');
@@ -242,11 +257,9 @@ export function addKeyValueGrid(
       pdf.text(`${right[0]}:`, MARGIN_X + colW, ctx.cursorY);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(TEXT_DARK);
-      pdf.text(String(right[1] ?? '—'), MARGIN_X + colW + 38, ctx.cursorY, {
-        maxWidth: colW - 40,
-      });
+      pdf.text(rightLines, MARGIN_X + colW + 38, ctx.cursorY);
     }
-    ctx.cursorY += 5;
+    ctx.cursorY += rowH;
   }
 }
 
