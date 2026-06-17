@@ -73,6 +73,12 @@ interface ProductWithStock {
 // categoria so precisa: Prisma enum + Zod backend + categoryVisuals/labels.
 const CATEGORIES = [...CATEGORY_KEYS];
 
+// Categorias que NAO controlam estoque (day-use, inscricoes, etc.). Aparecem
+// sem quantidade no formulario e na listagem, e ficam fora do alerta de
+// "estoque baixo". Para incluir mais uma, basta adicionar aqui.
+const STOCKLESS_CATEGORIES = new Set(['SERVICE', 'COURSE']);
+const isStockless = (category?: string | null) => STOCKLESS_CATEGORIES.has(category ?? '');
+
 const QUICK_QTY = [10, 50, 100];
 
 // ── Icone do produto ────────────────────────────────────────────────────
@@ -220,8 +226,8 @@ const ProductsPage = () => {
   const filteredItems = useMemo(() => {
     return items.filter((it) => {
       if (categoryFilter && it.product?.category !== categoryFilter) return false;
-      // SERVICE nao controla estoque, nunca entra no filtro "estoque baixo".
-      if (showLowOnly && (it.product?.category === 'SERVICE' || !(it.currentStock <= it.minimumStock))) return false;
+      // Categorias sem estoque (Servico, Curso) nunca entram no filtro "estoque baixo".
+      if (showLowOnly && (isStockless(it.product?.category) || !(it.currentStock <= it.minimumStock))) return false;
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         if (!it.product?.name?.toLowerCase().includes(q)) return false;
@@ -231,7 +237,7 @@ const ProductsPage = () => {
   }, [items, categoryFilter, showLowOnly, search]);
 
   const totalProducts = items.length;
-  const lowCount = items.filter((i) => i.product?.category !== 'SERVICE' && i.currentStock <= i.minimumStock).length;
+  const lowCount = items.filter((i) => !isStockless(i.product?.category) && i.currentStock <= i.minimumStock).length;
   const totalValue = items.reduce(
     (sum, i) => sum + i.currentStock * Number(i.product?.unitPrice ?? 0),
     0,
@@ -568,7 +574,7 @@ const ProductsPage = () => {
             <TableBody>
               {filteredItems.map((item) => {
                 const p = item.product;
-                const isService = p.category === 'SERVICE';
+                const isService = isStockless(p.category);
                 const isLow = !isService && item.currentStock <= item.minimumStock;
                 return (
                   <TableRow key={item.id} className="border-border hover:bg-muted/40">
@@ -597,7 +603,7 @@ const ProductsPage = () => {
                     </TableCell>
                     <TableCell className="text-right font-tactical text-sm">
                       {isService ? (
-                        <span className="text-muted-foreground/70 italic">Serviço</span>
+                        <span className="text-muted-foreground/70 italic">{categoryLabels[p.category] || 'Sem estoque'}</span>
                       ) : (
                         <>
                           <span
@@ -753,8 +759,8 @@ const ProductsPage = () => {
               </div>
             </div>
 
-            {/* Serviços (day-use, limpeza…) nao controlam estoque */}
-            {productForm.category !== 'SERVICE' && (
+            {/* Serviços e Cursos (day-use, inscrições…) nao controlam estoque */}
+            {!isStockless(productForm.category) && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="font-tactical text-xs">

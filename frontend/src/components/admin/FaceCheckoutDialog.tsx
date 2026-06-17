@@ -73,6 +73,16 @@ const FaceCheckoutDialog = ({
     null,
   );
 
+  // Origem da habitualidade: treino (default) ou competicao. O reconhecimento
+  // roda em loop (setInterval), entao guardamos tambem num ref para o tick ler
+  // sempre o valor atual, sem closure obsoleto.
+  const [activityType, setActivityType] = useState<'TRAINING' | 'COMPETITION'>('TRAINING');
+  const activityTypeRef = useRef<'TRAINING' | 'COMPETITION'>('TRAINING');
+  const selectActivityType = useCallback((next: 'TRAINING' | 'COMPETITION') => {
+    activityTypeRef.current = next;
+    setActivityType(next);
+  }, []);
+
   const updatePhase = useCallback((next: Phase) => {
     phaseRef.current = next;
     setPhase(next);
@@ -109,6 +119,7 @@ const FaceCheckoutDialog = ({
       descriptor: captured.descriptor,
       memberId: target.memberId,
       visitId: target.visitId,
+      activityType: activityTypeRef.current,
     });
 
     if (cancelledRef.current) return;
@@ -167,6 +178,7 @@ const FaceCheckoutDialog = ({
       consecutiveDetectionsRef.current = 0;
       setResult(null);
       setPendingCapture(null);
+      selectActivityType('TRAINING');
       updatePhase('scanning');
     } else {
       cancelledRef.current = true;
@@ -176,7 +188,7 @@ const FaceCheckoutDialog = ({
       cancelledRef.current = true;
       stopScanning();
     };
-  }, [open, target, stopScanning, updatePhase]);
+  }, [open, target, stopScanning, updatePhase, selectActivityType]);
 
   const handleCameraReady = useCallback(() => {
     startScanning();
@@ -200,6 +212,7 @@ const FaceCheckoutDialog = ({
       thumbnail: pendingCapture.thumbnail,
       source: 'CHECK_OUT',
       visitId: target.visitId,
+      activityType: activityTypeRef.current,
     });
 
     if (cancelledRef.current) return;
@@ -239,6 +252,33 @@ const FaceCheckoutDialog = ({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Origem da habitualidade — escolhido antes da verificacao. Bloqueado
+              depois que o reconhecimento ja foi enviado/concluido. */}
+          <div className="space-y-1.5">
+            <span className="text-foreground/85 font-tactical text-sm">Origem da habitualidade</span>
+            <div className="grid grid-cols-2 gap-2">
+              {(['TRAINING', 'COMPETITION'] as const).map((t) => {
+                const active = activityType === t;
+                const locked = phase === 'analyzing' || phase === 'matched' || phase === 'saving';
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    disabled={locked}
+                    onClick={() => selectActivityType(t)}
+                    className={`px-3 py-2 rounded border font-tactical text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                      active
+                        ? 'bg-cbt-orange/15 border-cbt-orange text-cbt-orange font-semibold'
+                        : 'bg-muted border-border text-foreground/80 hover:bg-secondary'
+                    }`}
+                  >
+                    {t === 'TRAINING' ? 'Treino' : 'Competição'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {phase !== 'capture-pending' ? (
             <CameraStream ref={cameraRef} onReady={handleCameraReady} />
           ) : (

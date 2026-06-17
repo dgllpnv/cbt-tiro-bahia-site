@@ -40,6 +40,8 @@ export interface CreateFaceProfileData {
   source: 'CHECK_IN' | 'CHECK_OUT' | 'MANUAL';
   visitId?: string | null;
   notes?: string | null;
+  // Origem da habitualidade gerada no checkout (treino/competicao).
+  activityType?: 'TRAINING' | 'COMPETITION';
 }
 
 export interface CreateFaceProfileResult {
@@ -90,6 +92,7 @@ export async function verifyFaceForCheckout(params: {
   memberId: string;
   visitId: string;
   threshold?: number;
+  activityType?: 'TRAINING' | 'COMPETITION';
 }) {
   try {
     const response = await api.post('/api/face-profiles/verify-checkout', params);

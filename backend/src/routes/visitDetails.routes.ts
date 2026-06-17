@@ -60,7 +60,7 @@ router.get('/visit/:visitId', async (req: Request, res: Response): Promise<void>
     }
 
     // ASSOCIATE can only see own visit details
-    if (req.user!.role !== 'ADMIN' && visit.memberId !== req.user!.id) {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'CASHIER' && visit.memberId !== req.user!.id) {
       res.status(403).json({ success: false, error: 'Acesso negado. Permissao insuficiente' });
       return;
     }
@@ -98,7 +98,7 @@ router.post('/visit/:visitId', async (req: Request, res: Response): Promise<void
     }
 
     // ASSOCIATE can only add details to own visit
-    if (req.user!.role !== 'ADMIN' && visit.memberId !== req.user!.id) {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'CASHIER' && visit.memberId !== req.user!.id) {
       res.status(403).json({ success: false, error: 'Acesso negado. Permissao insuficiente' });
       return;
     }
@@ -162,7 +162,7 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
     }
 
     // ASSOCIATE can only update own visit details
-    if (req.user!.role !== 'ADMIN' && existing.visit.memberId !== req.user!.id) {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'CASHIER' && existing.visit.memberId !== req.user!.id) {
       res.status(403).json({ success: false, error: 'Acesso negado. Permissao insuficiente' });
       return;
     }
@@ -219,7 +219,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     }
 
     // ASSOCIATE can only delete own visit details
-    if (req.user!.role !== 'ADMIN' && existing.visit.memberId !== req.user!.id) {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'CASHIER' && existing.visit.memberId !== req.user!.id) {
       res.status(403).json({ success: false, error: 'Acesso negado. Permissao insuficiente' });
       return;
     }

@@ -216,6 +216,49 @@ router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Respo
 });
 
 // =====================================================
+// GET /next-member-number — Sugere o proximo numero de associado
+// (ADMIN, CASHIER). Pega o maior numero PURAMENTE numerico ja usado e
+// soma 1, preservando o zero-padding (ex: 1361 -> '1362'). Ignora numeros
+// com letras (ADM001, CAX001, CBT0101...). DEVE vir antes de GET /:id.
+// =====================================================
+
+router.get('/next-member-number', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const rows = await prisma.user.findMany({
+      where: { memberNumber: { not: null } },
+      select: { memberNumber: true },
+    });
+
+    let maxNum = 0;
+    let width = 4; // padding minimo padrao do clube (ex: 0001)
+    let lastNumeric: string | null = null;
+
+    for (const r of rows) {
+      const mn = r.memberNumber!;
+      // So considera numeros puramente numericos (sem prefixo de letra)
+      if (!/^\d+$/.test(mn)) continue;
+      const n = parseInt(mn, 10);
+      if (n > maxNum) {
+        maxNum = n;
+        lastNumeric = mn;
+      }
+      if (mn.length > width) width = mn.length;
+    }
+
+    const next = maxNum + 1;
+    const suggestion = String(next).padStart(width, '0');
+
+    res.json({
+      success: true,
+      data: { suggestion, lastNumber: lastNumeric },
+    });
+  } catch (error) {
+    console.error('[USERS] Erro ao sugerir numero de associado:', error);
+    res.status(500).json({ success: false, error: 'Erro ao sugerir numero de associado' });
+  }
+});
+
+// =====================================================
 // GET /:id — Get user by ID (ADMIN, CASHIER ou self)
 // =====================================================
 

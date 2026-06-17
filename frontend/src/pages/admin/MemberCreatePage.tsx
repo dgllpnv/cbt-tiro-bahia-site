@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, Save, Upload, FileText, X } from 'lucide-react';
 
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api';
-import { createUser, type CreateUserData } from '@/services/usersService';
+import { createUser, getNextMemberNumber, type CreateUserData } from '@/services/usersService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,6 +103,29 @@ const MemberCreatePage = () => {
   const [form, setForm] = useState<FormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [files, setFiles] = useState<{name: string, type: string, size: number, data: string}[]>([]);
+  // Dica do ultimo numero de associado usado (para o admin se localizar).
+  const [lastMemberNumber, setLastMemberNumber] = useState<string | null>(null);
+  const [memberNumberEdited, setMemberNumberEdited] = useState(false);
+
+  // Ao abrir a tela, sugere automaticamente o proximo numero de associado.
+  // O campo continua editavel (numeracao automatica COM opcao manual). Nao
+  // sobrescreve se o admin ja tiver digitado algo.
+  useEffect(() => {
+    let active = true;
+    getNextMemberNumber().then((res) => {
+      if (!active || !res.success || !res.data) return;
+      setLastMemberNumber(res.data.lastNumber);
+      setForm((prev) =>
+        prev.memberNumber.trim() === '' && !memberNumberEdited
+          ? { ...prev, memberNumber: res.data!.suggestion }
+          : prev,
+      );
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
@@ -346,10 +369,18 @@ const MemberCreatePage = () => {
                 name="memberNumber"
                 placeholder="Ex: 0001"
                 value={form.memberNumber}
-                onChange={handleChange}
+                onChange={(e) => {
+                  setMemberNumberEdited(true);
+                  handleChange(e);
+                }}
                 className={inputClasses}
                 required
               />
+              <p className="mt-1 text-xs text-muted-foreground font-tactical">
+                {lastMemberNumber
+                  ? `Sugestao automatica — ultimo numero usado: ${lastMemberNumber}. Voce pode editar.`
+                  : 'Numeracao automatica — editavel se precisar definir manualmente.'}
+              </p>
             </div>
 
             {/* role */}

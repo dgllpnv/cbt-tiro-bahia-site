@@ -6,6 +6,7 @@ import {
   Copy,
   Check,
   CreditCard,
+  Receipt,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,8 +33,10 @@ import {
   createAnnuityPayment,
   getExpiringAnnuities,
   type ExpiringAnnuity,
+  type AnnuityPayment,
 } from '@/services/annuitiesService';
-import { getClubSettings } from '@/services/clubSettingsService';
+import { getClubSettings, type ClubSettings } from '@/services/clubSettingsService';
+import { exportAnnuityReceiptPdf } from '@/lib/reports/pdfReceipt';
 
 interface OverdueAnnuitiesPanelProps {
   /** Disparado após registrar pagamento, para o pai refrescar KPIs/dashboard. */
@@ -60,6 +63,10 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
   const [amount, setAmount] = useState<number>(600);
   const [paymentMethod, setPaymentMethod] = useState('PIX');
   const [submitting, setSubmitting] = useState(false);
+  // Pagamento recém-registrado (habilita o recibo) + dados do clube p/ o PDF.
+  const [paid, setPaid] = useState<AnnuityPayment | null>(null);
+  const [club, setClub] = useState<ClubSettings | null>(null);
+  const [generatingReceipt, setGeneratingReceipt] = useState(false);
 
   const fetch = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -69,6 +76,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
     ]);
     if (listRes.success) setItems(listRes.data);
     if (settingsRes.success) {
+      setClub(settingsRes.data);
       const a = Number((settingsRes.data as any).annuityAmount ?? 600);
       if (a > 0) setDefaultAmount(a);
     }
@@ -81,6 +89,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
 
   const handleOpenPayment = (item: ExpiringAnnuity) => {
     setPaying(item);
+    setPaid(null);
     setAmount(defaultAmount);
     setPaymentMethod('PIX');
   };
@@ -104,7 +113,8 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
         title: 'Anuidade registrada',
         description: `${paying.fullName} · ${formatCurrency(amount)} · ${paymentMethod}`,
       });
-      setPaying(null);
+      // Mantém o diálogo aberto no estado de sucesso para oferecer o recibo.
+      setPaid(res.data ?? null);
       // Otimista: remove do painel + refetch silencioso
       setItems((prev) => prev.filter((p) => p.id !== paying.id));
       fetch(true);
@@ -116,6 +126,23 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
         description: res.error,
       });
     }
+  };
+
+  const handleGenerateAnnuityReceipt = async () => {
+    if (!paid) return;
+    setGeneratingReceipt(true);
+    try {
+      await exportAnnuityReceiptPdf(paid, club);
+    } catch {
+      toast({ variant: 'destructive', title: 'Erro ao gerar recibo' });
+    } finally {
+      setGeneratingReceipt(false);
+    }
+  };
+
+  const closePaymentDialog = () => {
+    setPaying(null);
+    setPaid(null);
   };
 
   const handleCopyMessage = async (item: ExpiringAnnuity) => {
@@ -231,7 +258,7 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
       )}
 
       {/* Diálogo de registro de pagamento (inline) */}
-      <Dialog open={!!paying} onOpenChange={(o) => !submitting && !o && setPaying(null)}>
+      <Dialog open={!!paying} onOpenChange={(o) => !submitting && !o && closePaymentDialog()}>
         <DialogContent className="bg-card border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle className="text-foreground font-military tracking-wide flex items-center gap-2">
@@ -243,67 +270,108 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
-                Valor
-              </Label>
-              <NumberStepper
-                value={amount}
-                onChange={(v) => setAmount(Math.max(0, v))}
-                min={0}
-                step={50}
-                decimals={2}
-                prefix="R$"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
-                Forma de pagamento
-              </Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="bg-muted border-border text-foreground">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-muted border-border">
-                  {PAYMENT_METHODS.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-[10px] font-tactical text-muted-foreground/80 leading-relaxed">
-              A anuidade será válida por 12 meses a partir da data atual e o lançamento aparecerá em{' '}
-              /admin/lancamentos e no fechamento financeiro.
-            </p>
-          </div>
+          {!paid ? (
+            <>
+              <div className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
+                    Valor
+                  </Label>
+                  <NumberStepper
+                    value={amount}
+                    onChange={(v) => setAmount(Math.max(0, v))}
+                    min={0}
+                    step={50}
+                    decimals={2}
+                    prefix="R$"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-foreground/85 font-tactical text-xs uppercase tracking-wider">
+                    Forma de pagamento
+                  </Label>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger className="bg-muted border-border text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-muted border-border">
+                      {PAYMENT_METHODS.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-[10px] font-tactical text-muted-foreground/80 leading-relaxed">
+                  A anuidade será válida por 12 meses a partir da data atual e o lançamento aparecerá em{' '}
+                  /admin/lancamentos e no fechamento financeiro.
+                </p>
+              </div>
 
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setPaying(null)}
-              disabled={submitting}
-              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleConfirmPayment}
-              disabled={submitting || amount <= 0}
-              className="bg-green-600 hover:bg-green-700 text-foreground font-tactical font-bold"
-            >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Check className="h-4 w-4 mr-1" />
-                  Confirmar pagamento
-                </>
-              )}
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={closePaymentDialog}
+                  disabled={submitting}
+                  className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleConfirmPayment}
+                  disabled={submitting || amount <= 0}
+                  className="bg-green-600 hover:bg-green-700 text-foreground font-tactical font-bold"
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-1" />
+                      Confirmar pagamento
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="py-4 flex flex-col items-center text-center gap-2">
+                <div className="h-12 w-12 rounded-full bg-green-500/15 flex items-center justify-center">
+                  <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <p className="text-foreground font-tactical font-semibold">Pagamento registrado</p>
+                <p className="text-sm text-muted-foreground font-tactical">
+                  {paying?.fullName} · {formatCurrency(Number(paid.amount))} · {paid.paymentMethod ?? '—'}
+                </p>
+                <p className="text-xs text-muted-foreground/80 font-tactical">
+                  Gere o recibo para entregar ao associado, se desejar.
+                </p>
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={closePaymentDialog}
+                  className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical"
+                >
+                  Concluir
+                </Button>
+                <Button
+                  onClick={handleGenerateAnnuityReceipt}
+                  disabled={generatingReceipt}
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical font-bold"
+                >
+                  {generatingReceipt ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Receipt className="h-4 w-4 mr-1" />
+                  )}
+                  Gerar recibo
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

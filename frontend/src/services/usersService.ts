@@ -164,6 +164,26 @@ export async function getUserById(id: string): Promise<UserResponse> {
   }
 }
 
+// Sugere o proximo numero de associado (maior numerico + 1, zero-padded).
+export async function getNextMemberNumber(): Promise<{
+  success: boolean;
+  data?: { suggestion: string; lastNumber: string | null };
+  error?: string;
+}> {
+  try {
+    const response = await api.get('/api/users/next-member-number');
+    if (response.data.success) {
+      return { success: true, data: response.data.data };
+    }
+    return { success: false, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Erro ao sugerir numero de associado',
+    };
+  }
+}
+
 export async function createUser(data: CreateUserData): Promise<UserResponse> {
   try {
     const response = await api.post('/api/users', data);

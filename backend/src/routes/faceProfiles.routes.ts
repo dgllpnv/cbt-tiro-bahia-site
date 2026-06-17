@@ -26,6 +26,8 @@ const createSchema = z.object({
   source: z.enum(['CHECK_IN', 'CHECK_OUT', 'MANUAL']),
   visitId: z.string().uuid().optional().nullable(),
   notes: z.string().optional().nullable(),
+  // Origem da habitualidade gerada no checkout (default TRAINING na lib).
+  activityType: z.enum(['TRAINING', 'COMPETITION']).optional(),
 });
 
 const verifyCheckoutSchema = z.object({
@@ -33,6 +35,8 @@ const verifyCheckoutSchema = z.object({
   memberId: z.string().uuid(),
   visitId: z.string().uuid(),
   threshold: z.number().min(0).max(1).optional(),
+  // Origem da habitualidade gerada no checkout (default TRAINING na lib).
+  activityType: z.enum(['TRAINING', 'COMPETITION']).optional(),
 });
 
 // =====================================================
@@ -254,6 +258,7 @@ router.post('/verify-checkout', async (req: Request, res: Response): Promise<voi
         visitId: data.visitId,
         memberId: data.memberId,
         verifiedById: req.user!.id,
+        activityType: data.activityType,
       });
     });
 
@@ -369,6 +374,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
           visitId: data.visitId,
           memberId: data.memberId,
           verifiedById: req.user!.id,
+          activityType: data.activityType,
         });
       }
 

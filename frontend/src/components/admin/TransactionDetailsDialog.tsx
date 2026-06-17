@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, formatDateTime } from '@/lib/formatters';
 import { getTransactionById, type Transaction } from '@/services/transactionsService';
+import { getClubSettings } from '@/services/clubSettingsService';
+import { exportSaleReceiptPdf } from '@/lib/reports/pdfReceipt';
 
 interface TransactionDetailsDialogProps {
   transactionId: string | null;
@@ -71,6 +73,24 @@ const TransactionDetailsDialog = ({
   const { toast } = useToast();
   const [tx, setTx] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
+  const [generatingReceipt, setGeneratingReceipt] = useState(false);
+
+  const handleGenerateReceipt = async () => {
+    if (!tx) return;
+    setGeneratingReceipt(true);
+    try {
+      const clubRes = await getClubSettings();
+      await exportSaleReceiptPdf(tx, clubRes.success ? clubRes.data : null);
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao gerar recibo',
+        description: 'Nao foi possivel gerar o PDF. Tente novamente.',
+      });
+    } finally {
+      setGeneratingReceipt(false);
+    }
+  };
 
   useEffect(() => {
     if (!open || !transactionId) {
@@ -245,7 +265,7 @@ const TransactionDetailsDialog = ({
           </div>
         ) : null}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:justify-between">
           <Button
             type="button"
             variant="outline"
@@ -254,6 +274,21 @@ const TransactionDetailsDialog = ({
           >
             Fechar
           </Button>
+          {tx && tx.status === 'COMPLETED' && (
+            <Button
+              type="button"
+              onClick={handleGenerateReceipt}
+              disabled={generatingReceipt}
+              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
+            >
+              {generatingReceipt ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Receipt className="h-4 w-4 mr-2" />
+              )}
+              Gerar recibo
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

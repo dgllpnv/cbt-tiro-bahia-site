@@ -17,9 +17,16 @@ type PrismaTx = Omit<
  */
 export async function createHabitualityFromVisit(
   tx: PrismaTx,
-  params: { visitId: string; memberId: string; verifiedById: string },
+  params: {
+    visitId: string;
+    memberId: string;
+    verifiedById: string;
+    // Origem da habitualidade: treino (default) ou competicao. Definido pelo
+    // operador no checkout. Sai no relatorio/declaracao de habitualidade.
+    activityType?: 'TRAINING' | 'COMPETITION';
+  },
 ): Promise<{ created: number; calibers: string[] }> {
-  const { visitId, memberId, verifiedById } = params;
+  const { visitId, memberId, verifiedById, activityType = 'TRAINING' } = params;
 
   const visit = await tx.visit.findUnique({
     where: { id: visitId },
@@ -60,7 +67,7 @@ export async function createHabitualityFromVisit(
       memberId,
       caliber,
       activityDate: visit.visitDate,
-      activityType: 'TRAINING',
+      activityType,
       visitId,
       description: 'Validado por reconhecimento facial',
       verifiedById,
