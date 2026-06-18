@@ -7,9 +7,20 @@ import {
   Check,
   CreditCard,
   Receipt,
+  ChevronDown,
+  FileImage,
+  Scroll,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -36,7 +47,7 @@ import {
   type AnnuityPayment,
 } from '@/services/annuitiesService';
 import { getClubSettings, type ClubSettings } from '@/services/clubSettingsService';
-import { exportAnnuityReceiptPdf } from '@/lib/reports/pdfReceipt';
+import { exportAnnuityReceiptPdf, type ReceiptFormat } from '@/lib/reports/pdfReceipt';
 
 interface OverdueAnnuitiesPanelProps {
   /** Disparado após registrar pagamento, para o pai refrescar KPIs/dashboard. */
@@ -128,11 +139,11 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
     }
   };
 
-  const handleGenerateAnnuityReceipt = async () => {
+  const handleGenerateAnnuityReceipt = async (format: ReceiptFormat) => {
     if (!paid) return;
     setGeneratingReceipt(true);
     try {
-      await exportAnnuityReceiptPdf(paid, club);
+      await exportAnnuityReceiptPdf(paid, club, null, format);
     } catch {
       toast({ variant: 'destructive', title: 'Erro ao gerar recibo' });
     } finally {
@@ -357,18 +368,34 @@ const OverdueAnnuitiesPanel = ({ onPaymentRegistered }: OverdueAnnuitiesPanelPro
                 >
                   Concluir
                 </Button>
-                <Button
-                  onClick={handleGenerateAnnuityReceipt}
-                  disabled={generatingReceipt}
-                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical font-bold"
-                >
-                  {generatingReceipt ? (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Receipt className="h-4 w-4 mr-1" />
-                  )}
-                  Gerar recibo
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={generatingReceipt}
+                      className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical font-bold"
+                    >
+                      {generatingReceipt ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Receipt className="h-4 w-4 mr-1" />
+                      )}
+                      Gerar recibo
+                      <ChevronDown className="h-4 w-4 ml-2 opacity-80" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="font-tactical">
+                    <DropdownMenuLabel>Formato do recibo</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleGenerateAnnuityReceipt('a4')}>
+                      <FileImage className="h-4 w-4 mr-2" />
+                      Folha A4
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleGenerateAnnuityReceipt('thermal')}>
+                      <Scroll className="h-4 w-4 mr-2" />
+                      Bobina 80mm (térmica)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </DialogFooter>
             </>
           )}

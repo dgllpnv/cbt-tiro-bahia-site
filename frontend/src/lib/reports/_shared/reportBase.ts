@@ -335,9 +335,19 @@ export function addParagraph(
   const maxWidth = pageWidth - MARGIN_X * 2;
   const lines: string[] = pdf.splitTextToSize(text, maxWidth);
   const lineHeight = fontSize * 0.4;
+  // Ancora horizontal por alinhamento. No jsPDF, 'right' ancora o FIM do texto
+  // no x informado e 'center' o meio — entao right precisa da margem DIREITA
+  // (antes usava MARGIN_X, jogando totais/linhas right-align para fora da pagina
+  // pela esquerda). 'justify'/'left' ancoram o inicio na margem esquerda.
+  const anchorX =
+    align === 'center'
+      ? pageWidth / 2
+      : align === 'right'
+        ? pageWidth - MARGIN_X
+        : MARGIN_X;
   for (const line of lines) {
     ensureSpace(ctx, lineHeight + 1);
-    pdf.text(line, align === 'center' ? pageWidth / 2 : MARGIN_X, ctx.cursorY, {
+    pdf.text(line, anchorX, ctx.cursorY, {
       align: align === 'justify' ? 'left' : align,
       maxWidth,
     });

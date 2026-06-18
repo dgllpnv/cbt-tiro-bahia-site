@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Receipt, User, CalendarDays, CreditCard, Tag, FileText, UserCheck } from 'lucide-react';
+import { Loader2, Receipt, User, CalendarDays, CreditCard, Tag, FileText, UserCheck, ChevronDown, FileImage, Scroll } from 'lucide-react';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import {
   Dialog,
@@ -15,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, formatDateTime } from '@/lib/formatters';
 import { getTransactionById, type Transaction } from '@/services/transactionsService';
 import { getClubSettings } from '@/services/clubSettingsService';
-import { exportSaleReceiptPdf } from '@/lib/reports/pdfReceipt';
+import { exportSaleReceiptPdf, type ReceiptFormat } from '@/lib/reports/pdfReceipt';
 
 interface TransactionDetailsDialogProps {
   transactionId: string | null;
@@ -75,12 +84,12 @@ const TransactionDetailsDialog = ({
   const [loading, setLoading] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
 
-  const handleGenerateReceipt = async () => {
+  const handleGenerateReceipt = async (format: ReceiptFormat) => {
     if (!tx) return;
     setGeneratingReceipt(true);
     try {
       const clubRes = await getClubSettings();
-      await exportSaleReceiptPdf(tx, clubRes.success ? clubRes.data : null);
+      await exportSaleReceiptPdf(tx, clubRes.success ? clubRes.data : null, null, format);
     } catch (err) {
       toast({
         variant: 'destructive',
@@ -275,19 +284,35 @@ const TransactionDetailsDialog = ({
             Fechar
           </Button>
           {tx && tx.status === 'COMPLETED' && (
-            <Button
-              type="button"
-              onClick={handleGenerateReceipt}
-              disabled={generatingReceipt}
-              className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
-            >
-              {generatingReceipt ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Receipt className="h-4 w-4 mr-2" />
-              )}
-              Gerar recibo
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  disabled={generatingReceipt}
+                  className="bg-cbt-orange hover:bg-cbt-orange/90 text-foreground font-tactical"
+                >
+                  {generatingReceipt ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Receipt className="h-4 w-4 mr-2" />
+                  )}
+                  Gerar recibo
+                  <ChevronDown className="h-4 w-4 ml-2 opacity-80" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="font-tactical">
+                <DropdownMenuLabel>Formato do recibo</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleGenerateReceipt('a4')}>
+                  <FileImage className="h-4 w-4 mr-2" />
+                  Folha A4
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleGenerateReceipt('thermal')}>
+                  <Scroll className="h-4 w-4 mr-2" />
+                  Bobina 80mm (térmica)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </DialogFooter>
       </DialogContent>
