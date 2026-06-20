@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { createAuditLog } from '../services/auditService.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -239,6 +240,106 @@ router.post('/manual', requireRole('ADMIN'), async (req: Request, res: Response)
     }
     console.error('[HABITUALITY] Erro no lancamento manual:', error);
     res.status(500).json({ success: false, error: 'Erro ao lancar sessao manual' });
+  }
+});
+
+// =====================================================
+// PUT /api/habituality/:id — Editar um registro de habitualidade
+//
+// Permite corrigir calibre, data, tipo e descricao/notas de um registro
+// existente (ex.: calibre digitado errado). NAO permite trocar o associado
+// (memberId) nem os vinculos visitId/eventId. Toda edicao e auditada
+// (guarda os dados anteriores no AuditLog). ADMIN e CASHIER.
+// =====================================================
+const updateSchema = z.object({
+  caliber: z.string().min(1, 'Calibre obrigatorio'),
+  activityDate: z.string(),
+  activityType: z.enum(['TRAINING', 'COMPETITION']),
+  description: z.string().max(500).nullable().optional(),
+});
+
+router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = updateSchema.parse(req.body);
+
+    const existing = await prisma.habitualityRecord.findUnique({ where: { id: req.params.id } });
+    if (!existing) {
+      res.status(404).json({ success: false, error: 'Habitualidade nao encontrada' });
+      return;
+    }
+
+    const activityDate = new Date(data.activityDate);
+    if (Number.isNaN(activityDate.getTime())) {
+      res.status(400).json({ success: false, error: 'Data invalida' });
+      return;
+    }
+
+    const updated = await prisma.habitualityRecord.update({
+      where: { id: existing.id },
+      data: {
+        caliber: data.caliber,
+        activityDate,
+        activityType: data.activityType,
+        description: data.description ?? null,
+      },
+    });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'UPDATE',
+      entityType: 'HabitualityRecord',
+      entityId: existing.id,
+      userId: existing.memberId,
+      previousData: existing,
+      newData: updated,
+      description: `Habitualidade editada (${existing.caliber} → ${data.caliber})`,
+      ipAddress: req.ip,
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ success: false, error: error.errors[0].message, details: error.errors });
+      return;
+    }
+    console.error('Erro ao editar habitualidade:', error);
+    res.status(500).json({ success: false, error: 'Erro ao editar habitualidade' });
+  }
+});
+
+// =====================================================
+// DELETE /api/habituality/:id — Excluir um registro de habitualidade
+//
+// Usado para remover duplicatas/lancamentos errados. Remove SOMENTE o
+// registro de habitualidade — eventuais Visit/VisitDetail de origem (ex.:
+// lancamento [MANUAL]) permanecem. Auditado com os dados anteriores.
+// ADMIN e CASHIER.
+// =====================================================
+router.delete('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const existing = await prisma.habitualityRecord.findUnique({ where: { id: req.params.id } });
+    if (!existing) {
+      res.status(404).json({ success: false, error: 'Habitualidade nao encontrada' });
+      return;
+    }
+
+    await prisma.habitualityRecord.delete({ where: { id: existing.id } });
+
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'DELETE',
+      entityType: 'HabitualityRecord',
+      entityId: existing.id,
+      userId: existing.memberId,
+      previousData: existing,
+      description: `Habitualidade excluida (${existing.caliber}, ${existing.activityDate.toISOString().slice(0, 10)})`,
+      ipAddress: req.ip,
+    });
+
+    res.json({ success: true, data: { id: existing.id } });
+  } catch (error) {
+    console.error('Erro ao excluir habitualidade:', error);
+    res.status(500).json({ success: false, error: 'Erro ao excluir habitualidade' });
   }
 });
 

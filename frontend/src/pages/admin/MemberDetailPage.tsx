@@ -31,6 +31,7 @@ import LoanTransferDialog from '@/components/admin/LoanTransferDialog';
 import LoanReturnDialog from '@/components/admin/LoanReturnDialog';
 import MemberFaceProfilesSection from '@/components/admin/MemberFaceProfilesSection';
 import MemberFirearmsSection from '@/components/admin/MemberFirearmsSection';
+import MemberHabitualitySection from '@/components/admin/MemberHabitualitySection';
 import { getLoanById, type EquipmentLoan } from '@/services/loansService';
 
 import PageHeader from '@/components/shared/PageHeader';
@@ -809,6 +810,13 @@ const MemberDetailPage = () => {
             Armas
           </TabsTrigger>
           <TabsTrigger
+            value="habitualidade"
+            className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
+          >
+            <Crosshair className="h-4 w-4 mr-2" />
+            Habitualidade
+          </TabsTrigger>
+          <TabsTrigger
             value="emprestimos"
             className="font-tactical data-[state=active]:bg-cbt-orange data-[state=active]:text-primary-foreground text-muted-foreground"
           >
@@ -834,6 +842,11 @@ const MemberDetailPage = () => {
         {/* ══════════════════════ TAB: ARMAS ══════════════════════ */}
         <TabsContent value="armas">
           <MemberFirearmsSection memberId={member.id} />
+        </TabsContent>
+
+        {/* ══════════════════════ TAB: HABITUALIDADE ══════════════════════ */}
+        <TabsContent value="habitualidade">
+          <MemberHabitualitySection memberId={member.id} />
         </TabsContent>
 
         {/* ══════════════════════ TAB 1: DADOS ══════════════════════ */}

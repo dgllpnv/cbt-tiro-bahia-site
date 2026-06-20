@@ -19,7 +19,7 @@ import { buildMembersInactivePdf } from '../pdfMembersInactive';
 import { buildMembersExpiringPdf } from '../pdfMembersExpiring';
 import { buildMembersOverduePdf } from '../pdfMembersOverdue';
 import { buildHabitualityBookPdf } from '../pdfHabitualityBook';
-import { buildHabitualityIndividualPdf } from '../pdfHabitualityIndividual';
+import { buildHabitualityIndividualPdf, buildHabitualityIndividualMultiPdf } from '../pdfHabitualityIndividual';
 import { buildHabitualityLowPdf } from '../pdfHabitualityLow';
 import { buildEquipmentInventoryPdf } from '../pdfEquipmentInventory';
 import { buildAmmoInPdf } from '../pdfAmmoIn';
@@ -101,6 +101,15 @@ function fileSafeDate(d = new Date()): string {
 const today = () => new Date().toISOString().slice(0, 10);
 const startOfYearISO = (year = new Date().getFullYear()) => `${year}-01-01`;
 const endOfYearISO = (year = new Date().getFullYear()) => `${year}-12-31`;
+
+// Anos disponiveis para selecao (2023 ate o ano corrente), do mais novo
+// para o mais antigo. Usado no relatorio de Habitualidade Individual.
+const YEAR_OPTIONS = (() => {
+  const current = new Date().getFullYear();
+  const opts: Array<{ value: string; label: string }> = [];
+  for (let y = current; y >= 2023; y--) opts.push({ value: String(y), label: String(y) });
+  return opts;
+})();
 
 export const REPORT_REGISTRY: ReportConfig[] = [
   // ── ASSOCIADOS ──────────────────────────────────────────────────────────
@@ -280,19 +289,37 @@ export const REPORT_REGISTRY: ReportConfig[] = [
   {
     id: 'habituality-individual',
     title: 'Habitualidade individual (Anexo E)',
-    description: 'Declaração individual completa do atirador para apresentação ao Exército.',
+    description: 'Declaração individual completa do atirador para apresentação ao Exército. Selecione um ou mais anos — com 2+ anos o PDF traz uma seção por ano.',
     category: 'HABITUALIDADE',
     isOfficial: true,
     legalRef: 'Portaria 166-COLOG/2023 (Anexo E); Portaria 260-COLOG/2025',
     filters: [
       { kind: 'memberSelect', key: 'memberId', label: 'Associado' },
-      { kind: 'year', key: 'year', label: 'Ano', default: new Date().getFullYear() },
+      { kind: 'multiSelect', key: 'years', label: 'Anos', default: [String(new Date().getFullYear())], options: YEAR_OPTIONS },
     ],
     async generate(f) {
-      const result = await getHabitualityDeclarationData(f.memberId, f.year);
-      if (!result.success) throw new Error(result.error || 'Falha ao carregar dados do associado');
-      const pdf = await buildHabitualityIndividualPdf(result.data);
-      const filename = `habitualidade-${result.data.member.fullName.replace(/\s+/g, '_')}-${f.year}.pdf`;
+      // Anos selecionados (strings dos checkboxes) -> numeros, do mais novo ao mais antigo.
+      const years: number[] = ((f.years as string[]) ?? [])
+        .map((y) => Number(y))
+        .filter((y) => !Number.isNaN(y))
+        .sort((a, b) => b - a);
+      if (years.length === 0) throw new Error('Selecione ao menos um ano');
+
+      // Busca o pacote de cada ano (endpoint existente, 1 chamada por ano).
+      const packets = [];
+      for (const year of years) {
+        const result = await getHabitualityDeclarationData(f.memberId, year);
+        if (!result.success) throw new Error(result.error || `Falha ao carregar dados de ${year}`);
+        packets.push(result.data);
+      }
+
+      const memberName = packets[0].member.fullName.replace(/\s+/g, '_');
+      // 1 ano -> layout oficial de sempre; 2+ anos -> uma secao por ano.
+      const pdf =
+        packets.length === 1
+          ? await buildHabitualityIndividualPdf(packets[0])
+          : await buildHabitualityIndividualMultiPdf(packets);
+      const filename = `habitualidade-${memberName}-${years.join('-')}.pdf`;
       return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
     },
   },

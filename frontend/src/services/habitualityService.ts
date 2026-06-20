@@ -24,6 +24,26 @@ export interface ManualSessionResult {
   details: number;
 }
 
+export type ActivityType = 'TRAINING' | 'COMPETITION';
+
+export interface HabitualityRecord {
+  id: string;
+  caliber: string;
+  activityDate: string;
+  activityType: ActivityType;
+  description?: string | null;
+  visit?: { id: string; visitDate: string } | null;
+  event?: { id: string; title: string; eventType: string } | null;
+  verifiedBy?: { id: string; fullName: string } | null;
+}
+
+export interface UpdateHabitualityPayload {
+  caliber: string;
+  activityDate: string; // ISO YYYY-MM-DD
+  activityType: ActivityType;
+  description?: string | null;
+}
+
 // ── Service Functions ───────────────────────────────────────────────────────
 
 /**
@@ -46,6 +66,57 @@ export async function createManualSession(payload: ManualSessionPayload) {
     return {
       success: false as const,
       error: error.response?.data?.error || 'Erro ao lancar sessao manual',
+    };
+  }
+}
+
+/**
+ * Lista as habitualidades de um associado num ano (com notas/origem).
+ * ADMIN pode consultar qualquer associado; associado so o proprio.
+ */
+export async function getMemberHabituality(memberId: string, year: number) {
+  try {
+    const response = await api.get(`/api/habituality/member/${memberId}`, { params: { year } });
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as HabitualityRecord[] };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar habitualidade',
+    };
+  }
+}
+
+/** Edita um registro de habitualidade (ADMIN/CASHIER). */
+export async function updateHabituality(id: string, payload: UpdateHabitualityPayload) {
+  try {
+    const response = await api.put(`/api/habituality/${id}`, payload);
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as HabitualityRecord };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao editar habitualidade',
+    };
+  }
+}
+
+/** Exclui um registro de habitualidade (ADMIN/CASHIER). */
+export async function deleteHabituality(id: string) {
+  try {
+    const response = await api.delete(`/api/habituality/${id}`);
+    if (response.data.success) {
+      return { success: true as const };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao excluir habitualidade',
     };
   }
 }

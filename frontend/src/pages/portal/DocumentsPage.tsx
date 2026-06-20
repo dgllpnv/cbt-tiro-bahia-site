@@ -31,7 +31,7 @@ const DocumentsPage = () => {
     try {
       const res = await getFiliacaoDeclarationData(user.id);
       if (!res.success) throw new Error(res.error);
-      const pdf = buildFiliacaoPdf(res.data);
+      const pdf = await buildFiliacaoPdf(res.data);
       pdf.save(`declaracao-filiacao-${user.memberNumber || 'cbt'}.pdf`);
       toast({ title: 'Declaração de filiação gerada' });
     } catch (e: any) {

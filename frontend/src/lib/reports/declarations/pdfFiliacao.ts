@@ -1,13 +1,26 @@
 // FILIACAO — Declaracao de Filiacao a Entidade de Tiro (Anexo B)
 import {
   newDeclaration, declTitle, declParagraph, declCenterDate, declTwoSignatures, declTable,
+  declHeaderLogo, declClubHeaderLines,
   formatLongDate, formatShortDate, formatCnpj, formatCep,
 } from './_shared/declarationBase';
 import type { DeclarationDataPacket } from '@/services/reportsService';
 
-export function buildFiliacaoPdf(packet: DeclarationDataPacket) {
+export async function buildFiliacaoPdf(packet: DeclarationDataPacket) {
   const { member, club } = packet;
   const ctx = newDeclaration();
+
+  await declHeaderLogo(ctx);
+  declClubHeaderLines(ctx, {
+    cnpj: club.cnpj,
+    addressLine: club.addressLine,
+    city: club.city,
+    state: club.state,
+    zipCode: club.zipCode,
+    crPj: club.crPj,
+    phone: club.phone,
+    email: club.email,
+  });
 
   declTitle(ctx, 'DECLARAÇÃO DE FILIAÇÃO A ENTIDADE DE TIRO', 'ANEXO B');
   declParagraph(ctx, '(Inciso XVII do art. 2º do Decreto nº 11.615/2023)', {
