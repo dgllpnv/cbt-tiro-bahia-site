@@ -110,7 +110,7 @@ export function declTitle(ctx: DeclContext, title: string, subtitle?: string): v
  * Insere um logo opcional do clube acima do titulo. Se o logo nao
  * carregar, ignora silenciosamente — declaracao continua valida.
  */
-export async function declHeaderLogo(ctx: DeclContext): Promise<void> {
+export async function declHeaderLogo(ctx: DeclContext, opts: { width?: number } = {}): Promise<void> {
   try {
     const res = await fetch('/branding/cbt-logo.png');
     if (!res.ok) return;
@@ -121,9 +121,9 @@ export async function declHeaderLogo(ctx: DeclContext): Promise<void> {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-    const w = 22;
+    const w = opts.width ?? 22;
     ctx.pdf.addImage(dataUrl, 'PNG', (ctx.pageWidth - w) / 2, ctx.cursorY, w, w);
-    ctx.cursorY += w + 4;
+    ctx.cursorY += w + 3;
   } catch {
     /* ignora */
   }
@@ -199,12 +199,12 @@ export function declParagraph(
 }
 
 export function declCenterDate(ctx: DeclContext, city: string, state: string, dateLong: string): void {
-  ctx.cursorY += 6;
+  ctx.cursorY += 4;
   ensureSpace(ctx, 10);
   ctx.pdf.setFont('times', 'normal');
   ctx.pdf.setFontSize(11);
   ctx.pdf.text(`${city}/${state}, ${dateLong}.`, ctx.pageWidth / 2, ctx.cursorY, { align: 'center' });
-  ctx.cursorY += 16;
+  ctx.cursorY += 12;
 }
 
 export function declSignature(
@@ -243,7 +243,7 @@ export function declTwoSignatures(
   left: { name: string; cpf: string; role: string },
   right: { name: string; cpf: string; role: string },
 ): void {
-  ensureSpace(ctx, 30);
+  ensureSpace(ctx, 22);
   const { pdf, pageWidth } = ctx;
   const colW = (pageWidth - MARGIN_X * 2) / 2;
   const baseY = ctx.cursorY;

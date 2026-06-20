@@ -10,7 +10,7 @@ export async function buildFiliacaoPdf(packet: DeclarationDataPacket) {
   const { member, club } = packet;
   const ctx = newDeclaration();
 
-  await declHeaderLogo(ctx);
+  await declHeaderLogo(ctx, { width: 16 });
   declClubHeaderLines(ctx, {
     cnpj: club.cnpj,
     addressLine: club.addressLine,
@@ -58,7 +58,7 @@ export async function buildFiliacaoPdf(packet: DeclarationDataPacket) {
       ['Dados de Filiação', `Numero: ${member.memberNumber ?? '—'}`, 'Data:', formatShortDate(member.memberSince)],
     ],
     {
-      styles: { fontSize: 10, cellPadding: 2 },
+      styles: { fontSize: 9, cellPadding: 1.4 },
       columnStyles: {
         0: { fontStyle: 'bold', cellWidth: 42 },
         2: { fontStyle: 'bold', cellWidth: 28 },
@@ -91,7 +91,7 @@ export async function buildFiliacaoPdf(packet: DeclarationDataPacket) {
       ['Endereço:', { content: enderecoMembro || '—', colSpan: 3 }],
     ],
     {
-      styles: { fontSize: 10, cellPadding: 2 },
+      styles: { fontSize: 9, cellPadding: 1.4 },
       columnStyles: {
         0: { fontStyle: 'bold', cellWidth: 42 },
         2: { fontStyle: 'bold', cellWidth: 28 },
