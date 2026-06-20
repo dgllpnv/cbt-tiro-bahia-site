@@ -552,7 +552,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
     filters: [{ kind: 'memberSelect', key: 'memberId', label: 'Associado' }],
     async generate(f) {
       const data = await reportsService.declarationData(f.memberId);
-      const pdf = buildFiliacaoPdf(data);
+      const pdf = await buildFiliacaoPdf(data);
       const filename = `FILIACAO-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
       return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
     },
