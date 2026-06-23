@@ -144,6 +144,161 @@ router.get('/daily-closing', requireRole('ADMIN', 'CASHIER'), async (_req: Reque
 router.use(requireRole('ADMIN'));
 
 // =====================================================
+// GET /api/financial/period-closing?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+// Fechamento de um periodo arbitrario. Admin-only (declarado apos o
+// router.use(requireRole('ADMIN')) acima — a pagina Financeiro tambem
+// e admin-only). Mesmo formato do daily-closing, mas para o intervalo
+// escolhido. Lista TODAS as transacoes e despesas do periodo, com um
+// teto de seguranca (CAP); sinaliza `truncated` se atingido para o PDF
+// avisar o usuario.
+// =====================================================
+const PERIOD_CLOSING_CAP = 5000;
+
+router.get('/period-closing', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const startStr = (req.query.startDate as string) || '';
+    const endStr = (req.query.endDate as string) || '';
+
+    const startParsed = new Date(startStr);
+    const endParsed = new Date(endStr);
+    if (
+      !startStr || !endStr ||
+      Number.isNaN(startParsed.getTime()) || Number.isNaN(endParsed.getTime())
+    ) {
+      res.status(400).json({ success: false, error: 'Informe startDate e endDate validos (YYYY-MM-DD)' });
+      return;
+    }
+
+    const start = startOfDay(startParsed);
+    const end = endOfDay(endParsed);
+    if (end < start) {
+      res.status(400).json({ success: false, error: 'endDate nao pode ser anterior a startDate' });
+      return;
+    }
+
+    const [
+      revAgg, expAgg, txCountAgg,
+      paymentRows, typeRows,
+      transactions, expenses,
+    ] = await Promise.all([
+      prisma.transaction.aggregate({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+      }),
+      prisma.expense.aggregate({
+        where: { expenseDate: { gte: start, lte: end } },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+      }),
+      prisma.transaction.groupBy({
+        by: ['paymentMethod'],
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ['type'],
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      prisma.transaction.findMany({
+        where: { transactionDate: { gte: start, lte: end }, status: 'COMPLETED' },
+        orderBy: { transactionDate: 'asc' },
+        include: {
+          member: { select: { id: true, fullName: true, memberNumber: true } },
+          registeredBy: { select: { id: true, fullName: true } },
+          items: { select: { description: true, quantity: true, subtotal: true } },
+        },
+        take: PERIOD_CLOSING_CAP,
+      }),
+      prisma.expense.findMany({
+        where: { expenseDate: { gte: start, lte: end } },
+        orderBy: { expenseDate: 'asc' },
+        include: { registeredBy: { select: { id: true, fullName: true } } },
+        take: PERIOD_CLOSING_CAP,
+      }),
+    ]);
+
+    const revenue = Number(revAgg._sum.totalAmount ?? 0);
+    const expensesTotal = Number(expAgg._sum.amount ?? 0);
+    const balance = revenue - expensesTotal;
+
+    const paymentBreakdown = paymentRows
+      .map((r) => ({
+        method: r.paymentMethod ?? '—',
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const typeBreakdown = typeRows
+      .map((r) => ({
+        type: r.type,
+        total: Number(r._sum.totalAmount ?? 0),
+        count: r._count.id,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const truncated =
+      transactions.length >= PERIOD_CLOSING_CAP || expenses.length >= PERIOD_CLOSING_CAP;
+
+    res.json({
+      success: true,
+      data: {
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        truncated,
+        totals: {
+          revenue,
+          expenses: expensesTotal,
+          balance,
+          transactionCount: txCountAgg,
+          expenseCount: expenses.length,
+        },
+        paymentBreakdown,
+        typeBreakdown,
+        transactions: transactions.map((t) => ({
+          id: t.id,
+          transactionDate: t.transactionDate.toISOString(),
+          type: t.type,
+          totalAmount: Number(t.totalAmount),
+          paymentMethod: t.paymentMethod,
+          notes: t.notes,
+          member: t.member
+            ? { id: t.member.id, fullName: t.member.fullName, memberNumber: t.member.memberNumber }
+            : null,
+          registeredBy: t.registeredBy
+            ? { id: t.registeredBy.id, fullName: t.registeredBy.fullName }
+            : null,
+          items: t.items.map((i) => ({
+            description: i.description,
+            quantity: i.quantity,
+            subtotal: Number(i.subtotal),
+          })),
+        })),
+        expenses: expenses.map((e) => ({
+          id: e.id,
+          expenseDate: e.expenseDate.toISOString(),
+          category: e.category,
+          description: e.description,
+          amount: Number(e.amount),
+          vendor: e.vendor,
+          registeredBy: e.registeredBy
+            ? { id: e.registeredBy.id, fullName: e.registeredBy.fullName }
+            : null,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao montar fechamento por periodo:', error);
+    res.status(500).json({ success: false, error: 'Erro ao montar fechamento por periodo' });
+  }
+});
+
+// =====================================================
 // Helper: get date range for a period
 // =====================================================
 function getDateRange(period: string, referenceDate: Date): { start: Date; end: Date } {

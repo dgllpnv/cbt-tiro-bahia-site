@@ -76,3 +76,38 @@ export async function getDailyClosing() {
     };
   }
 }
+
+// Fechamento por periodo arbitrario (admin-only no backend). Mesmo shape do
+// DailyClosing, trocando `date/endOfDay` por `startDate/endDate` + `truncated`
+// (sinaliza se o teto de seguranca de registros foi atingido).
+export interface PeriodClosing {
+  startDate: string;
+  endDate: string;
+  truncated: boolean;
+  totals: {
+    revenue: number;
+    expenses: number;
+    balance: number;
+    transactionCount: number;
+    expenseCount: number;
+  };
+  paymentBreakdown: Array<{ method: string; total: number; count: number }>;
+  typeBreakdown: Array<{ type: string; total: number; count: number }>;
+  transactions: DailyClosingTransaction[];
+  expenses: DailyClosingExpense[];
+}
+
+export async function getPeriodClosing(params: { startDate: string; endDate: string }) {
+  try {
+    const response = await api.get('/api/financial/period-closing', { params });
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as PeriodClosing };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar fechamento por periodo',
+    };
+  }
+}

@@ -126,6 +126,8 @@ router.get('/events', async (req: Request, res: Response): Promise<void> => {
         endTime: true,
         location: true,
         imageUrl: true,
+        maxParticipants: true,
+        registrationDeadline: true,
       },
     });
     res.json({ success: true, data: events });

@@ -51,6 +51,7 @@ import {
   AlertTriangle,
   Download,
   CreditCard,
+  Printer,
 } from 'lucide-react';
 
 import api from '@/services/api';
@@ -67,7 +68,10 @@ import {
   type ExpiringAnnuity,
 } from '@/services/annuitiesService';
 import { getClubSettings, type ClubSettings } from '@/services/clubSettingsService';
+import { getPeriodClosing } from '@/services/cashierService';
 import { generateFinancialReportPdf } from '@/lib/pdfFinancialReport';
+import { exportPeriodClosingPdf } from '@/lib/reports/pdfPeriodClosing';
+import { useAuth } from '@/contexts/AuthContext';
 
 import PeriodPicker, {
   buildPresets,
@@ -91,6 +95,7 @@ const PAYMENT_OPTIONS = [
 
 const FinancialPage = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // ── Período ────────────────────────────────────────────────────────────
   const [range, setRange] = useState<PeriodRange>(() => buildPresets()['this-month']);
@@ -126,6 +131,11 @@ const FinancialPage = () => {
 
   // ── Export PDF ────────────────────────────────────────────────────────
   const [exportingPdf, setExportingPdf] = useState(false);
+
+  // ── Diálogo: imprimir fechamento por período ──────────────────────────
+  const [periodDialog, setPeriodDialog] = useState(false);
+  const [periodRange, setPeriodRange] = useState<PeriodRange>(() => buildPresets()['this-month']);
+  const [generatingPeriodPdf, setGeneratingPeriodPdf] = useState(false);
 
   // ── Fetchers ──────────────────────────────────────────────────────────
   const fetchDashboard = useCallback(
@@ -287,6 +297,49 @@ const FinancialPage = () => {
     }
   };
 
+  // ── Imprimir fechamento por período (lista completa) ───────────────────
+  const handlePeriodClosingPdf = async () => {
+    setGeneratingPeriodPdf(true);
+    try {
+      const [closingRes, clubRes] = await Promise.all([
+        getPeriodClosing({ startDate: periodRange.startDate, endDate: periodRange.endDate }),
+        getClubSettings(),
+      ]);
+
+      if (!closingRes.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao gerar fechamento',
+          description: closingRes.error || 'Tente novamente em instantes.',
+        });
+        return;
+      }
+
+      const club: ClubSettings | null = clubRes.success ? clubRes.data : null;
+
+      await exportPeriodClosingPdf({
+        closing: closingRes.data,
+        club,
+        generatedByName: user?.fullName ?? null,
+      });
+
+      setPeriodDialog(false);
+      toast({
+        title: 'Fechamento gerado',
+        description: `Período ${periodRange.label} exportado em PDF.`,
+      });
+    } catch (err) {
+      console.error('Erro ao gerar fechamento por período:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao gerar PDF',
+        description: 'Tente novamente em instantes.',
+      });
+    } finally {
+      setGeneratingPeriodPdf(false);
+    }
+  };
+
   // ── Adornos derivados ────────────────────────────────────────────────
   const revenueByTypeEntries = useMemo(
     () =>
@@ -343,6 +396,17 @@ const FinancialPage = () => {
               Exportar PDF
             </Button>
             <Button
+              variant="outline"
+              onClick={() => {
+                setPeriodRange(range);
+                setPeriodDialog(true);
+              }}
+              className="bg-muted border-border text-foreground/85 hover:bg-secondary hover:text-foreground font-tactical h-9"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir fechamento por período
+            </Button>
+            <Button
               onClick={() => setExpenseDialog(true)}
               className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90 h-9"
             >
@@ -352,6 +416,47 @@ const FinancialPage = () => {
           </div>
         }
       />
+
+      {/* ── Diálogo: imprimir fechamento por período ─────────────────────── */}
+      <Dialog open={periodDialog} onOpenChange={setPeriodDialog}>
+        <DialogContent className="bg-card border-border text-foreground">
+          <DialogHeader>
+            <DialogTitle className="font-military">Imprimir fechamento por período</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground font-tactical">
+              Escolha o período. O relatório em PDF lista <strong>todas</strong> as receitas e
+              despesas com detalhes, no padrão dos demais documentos do clube.
+            </p>
+            <div className="space-y-2">
+              <Label className="font-tactical">Período</Label>
+              <PeriodPicker value={periodRange} onChange={setPeriodRange} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPeriodDialog(false)}
+              disabled={generatingPeriodPdf}
+              className="font-tactical"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handlePeriodClosingPdf}
+              disabled={generatingPeriodPdf}
+              className="bg-cbt-orange text-primary-foreground font-tactical hover:bg-cbt-orange/90"
+            >
+              {generatingPeriodPdf ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4 mr-2" />
+              )}
+              Gerar PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── KPIs ─────────────────────────────────────────────────────── */}
       {dashboardLoading ? (

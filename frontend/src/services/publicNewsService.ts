@@ -37,6 +37,8 @@ export interface PublicEvent {
   endTime: string | null;
   location: string | null;
   imageUrl: string | null;
+  maxParticipants: number | null;
+  registrationDeadline: string | null;
 }
 
 export async function fetchPublicNews(limit = 6) {

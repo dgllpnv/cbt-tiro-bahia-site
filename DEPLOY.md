@@ -213,7 +213,7 @@ rm data/backup_adm_clube.csv   # contém CPFs em texto puro — não pode ficar
 
 ### Passo 5 — Verificação em produção
 
-Em **https://clubebaianodetiro.tech/**, confirme:
+Em **https://www.clubebaianodetiro.com.br/**, confirme:
 
 - [ ] Site público abre rápido; logo e imagens carregam.
 - [ ] Login **admin** funciona.
@@ -250,7 +250,7 @@ npx tsx -e "import {PrismaClient} from '@prisma/client'; const p=new PrismaClien
 | **VITE_API_URL** | É **Build Arg** do cbt-frontend, não env var. Faltando = site sem API. |
 | **MIGRATION_PASSPHRASE** | Env var do cbt-backend. Necessária para o bootstrap e para descriptografar o CSV. Nunca colar a senha em chat/commit. |
 | **Bootstrap automático** | `bootstrapMissingMembers()` roda no startup; é idempotente (checa sócio `0001`). Em prod populado, é no-op. Não interferir. |
-| **CORS** | Aceita `*.easypanel.host` por regex + o domínio em `ALLOWED_ORIGINS`. Domínio próprio (`clubebaianodetiro.tech`) precisa estar no `ALLOWED_ORIGINS`. |
+| **CORS** | Aceita `*.easypanel.host` por regex + os domínios em `ALLOWED_ORIGINS`. O domínio próprio precisa estar no `ALLOWED_ORIGINS` — hoje `https://www.clubebaianodetiro.com.br` e `https://clubebaianodetiro.com.br` (apex). O antigo `https://clubebaianodetiro.tech` segue na lista durante a transição. |
 | **Galeria por arquivo** | Fotos em `/site/galeria/*` são servidas como estáticos. Trocar extensão/nome exige `UPDATE` nas referências do banco. |
 | **Cap da galeria** | Máx. **50** imagens (front e back). |
 | **`firearmsCatalog.ts`** | Duplicado em `frontend/src/lib` e `backend/src/lib`. Mudou um, mude o outro. |
