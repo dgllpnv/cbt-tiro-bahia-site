@@ -80,6 +80,7 @@ pnpm-lock.yaml
 # Claude / IA local (workspace pessoal)
 # =====================================================
 .claude/
+CLAUDE.md
 
 # Arquivo de memória pessoal entre sessões do Claude — não commitar
 ARQUIVO CONTEXTO.txt

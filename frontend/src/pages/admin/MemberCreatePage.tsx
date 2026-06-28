@@ -40,6 +40,7 @@ interface FormData {
   role: string;
   cr: string;
   crLevel: string;
+  crExpiry: string;
   membershipTier: string;
   address: string;
   neighborhood: string;
@@ -67,6 +68,7 @@ const initialFormData: FormData = {
   role: 'ASSOCIATE',
   cr: '',
   crLevel: '',
+  crExpiry: '',
   membershipTier: 'STANDARD',
   address: '',
   neighborhood: '',
@@ -177,6 +179,7 @@ const MemberCreatePage = () => {
     if (form.dateOfBirth) payload.dateOfBirth = form.dateOfBirth;
     if (form.cr.trim()) payload.cr = form.cr.trim();
     if (form.crLevel) payload.crLevel = Number(form.crLevel);
+    if (form.crExpiry) payload.crExpiry = form.crExpiry;
     if (form.membershipTier) payload.membershipTier = form.membershipTier;
     if (form.address.trim()) payload.address = form.address.trim();
     if (form.neighborhood.trim()) payload.neighborhood = form.neighborhood.trim();
@@ -434,6 +437,21 @@ const MemberCreatePage = () => {
                 <option value="2">2</option>
                 <option value="3">3</option>
               </select>
+            </div>
+
+            {/* crExpiry */}
+            <div>
+              <label htmlFor="crExpiry" className={labelClasses}>
+                Validade do CR
+              </label>
+              <input
+                type="date"
+                id="crExpiry"
+                name="crExpiry"
+                value={form.crExpiry}
+                onChange={handleChange}
+                className={inputClasses}
+              />
             </div>
 
             {/* membershipTier */}

@@ -19,6 +19,7 @@ export interface CreateUserData {
   zipCode?: string;
   cr?: string;
   crLevel?: number;
+  crExpiry?: string;
   membershipTier?: string;
   // Dados civis usados em declaracoes oficiais (DGA, DSA, DIC, etc.)
   rg?: string;
@@ -39,6 +40,7 @@ export interface UpdateUserData {
   role?: string;
   cr?: string;
   crLevel?: number;
+  crExpiry?: string | null;
   dateOfBirth?: string;
   memberSince?: string;
   annuityValidUntil?: string;

@@ -83,7 +83,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     if (!user.isActive) {
       res.status(403).json({
         success: false,
-        error: 'Conta desativada. Entre em contato com a administracao',
+        error: 'Sua conta esta inativa. Procure a administracao do CBT para reativar o seu acesso ao sistema.',
       });
       return;
     }
@@ -120,7 +120,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         res.status(403).json({
           success: false,
           error:
-            'Anuidade vencida ou nao registrada. Entre em contato com o clube para renovar sua anuidade e liberar o acesso ao sistema.',
+            'Seu acesso esta bloqueado porque a anuidade esta vencida ou nao foi registrada. Procure a administracao do CBT para regularizar a anuidade e liberar o seu acesso ao sistema.',
         });
         return;
       }

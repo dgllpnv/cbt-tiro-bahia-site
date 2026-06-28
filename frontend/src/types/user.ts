@@ -11,6 +11,7 @@ export interface User {
   phone?: string;
   cr?: string;
   crLevel?: number;
+  crExpiry?: string;
   annuityValidUntil?: string;
   memberSince?: string;
   status: string;

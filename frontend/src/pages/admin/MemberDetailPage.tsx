@@ -144,6 +144,7 @@ interface MemberFormData {
   annuityValidUntil: string;
   cr: string;
   crLevel: string;
+  crExpiry: string;
   address: string;
   neighborhood: string;
   city: string;
@@ -188,6 +189,7 @@ const MemberDetailPage = () => {
     annuityValidUntil: '',
     cr: '',
     crLevel: '',
+    crExpiry: '',
     address: '',
     neighborhood: '',
     city: '',
@@ -264,6 +266,7 @@ const MemberDetailPage = () => {
         annuityValidUntil: m.annuityValidUntil ? String(m.annuityValidUntil).slice(0, 10) : '',
         cr: m.cr || '',
         crLevel: m.crLevel?.toString() || '',
+        crExpiry: (m as any).crExpiry ? String((m as any).crExpiry).slice(0, 10) : '',
         address: (m as any).address || '',
         neighborhood: (m as any).neighborhood || '',
         city: (m as any).city || '',
@@ -398,6 +401,7 @@ const MemberDetailPage = () => {
       memberSince: form.memberSince || undefined,
       cr: form.cr || undefined,
       crLevel: form.crLevel ? Number(form.crLevel) : undefined,
+      crExpiry: form.crExpiry || null,
       address: form.address || null,
       neighborhood: form.neighborhood || null,
       city: form.city || null,
@@ -1018,6 +1022,17 @@ const MemberDetailPage = () => {
                     onChange={(e) => handleFormChange('crLevel', e.target.value)}
                     className={inputClass}
                     placeholder="1-5"
+                  />
+                </div>
+
+                {/* CR Expiry */}
+                <div>
+                  <label className={labelClass}>Validade do CR</label>
+                  <Input
+                    type="date"
+                    value={form.crExpiry}
+                    onChange={(e) => handleFormChange('crExpiry', e.target.value)}
+                    className={inputClass}
                   />
                 </div>
               </div>
