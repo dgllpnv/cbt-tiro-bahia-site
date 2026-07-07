@@ -140,11 +140,11 @@ const App = () => (
               <Route path="equipamentos/novo" element={<EquipmentCreatePage />} />
               <Route path="equipamentos/:id" element={<EquipmentDetailPage />} />
               <Route path="relatorios" element={<ReportsPage />} />
-              {/* Habitualidade Manual — admin-only (poder retroativo) */}
+              {/* Habitualidade Manual — admin e caixa (lançamento retroativo) */}
               <Route
                 path="habitualidade-manual"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={['admin', 'cashier']}>
                     <HabitualityManualPage />
                   </ProtectedRoute>
                 }

@@ -126,7 +126,7 @@ router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Resp
 // Reaproveita 100% da infra existente (Livro de Habitualidade, Declaracao
 // Individual e contagem de "8 por calibre/ano" leem dessas tabelas).
 //
-// Restrito a ADMIN: cashier nao tem poder de lancamento retroativo.
+// ADMIN e CASHIER (operacao de balcao): ambos podem lancar sessao retroativa.
 // =====================================================
 
 const manualDetailSchema = z.object({
@@ -144,7 +144,7 @@ const manualSessionSchema = z.object({
   details: z.array(manualDetailSchema).min(1, 'Adicione ao menos uma linha de tiro'),
 });
 
-router.post('/manual', requireRole('ADMIN'), async (req: Request, res: Response): Promise<void> => {
+router.post('/manual', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
   try {
     const data = manualSessionSchema.parse(req.body);
 

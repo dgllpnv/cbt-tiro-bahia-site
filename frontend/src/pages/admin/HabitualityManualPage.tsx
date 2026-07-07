@@ -30,7 +30,7 @@ import type { AmmunitionType } from '@/services/visitDetailsService';
 // registrada no momento. Cria Visit fantasma (notes [MANUAL]) +
 // VisitDetail + HabitualityRecord no backend, em uma transaction.
 //
-// Acessivel apenas a ADMIN (poder retroativo). Posicionado entre
+// Acessivel a ADMIN e CASHIER (operacao de balcao). Posicionado entre
 // Relatorios e Associados na sidebar.
 // =====================================================
 
