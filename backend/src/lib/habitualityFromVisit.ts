@@ -21,21 +21,31 @@ export async function createHabitualityFromVisit(
     visitId: string;
     memberId: string;
     verifiedById: string;
-    // Origem da habitualidade: treino (default) ou competicao. Definido pelo
-    // operador no checkout. Sai no relatorio/declaracao de habitualidade.
+    // Origem da habitualidade: treino ou competicao. Quando o operador
+    // escolhe explicitamente (ex.: no checkout facial), o valor recebido tem
+    // prioridade; senao usa o activityType ja gravado na visita (definido no
+    // registro de tiros); por fim cai em 'TRAINING'. Sai no relatorio/
+    // declaracao de habitualidade.
     activityType?: 'TRAINING' | 'COMPETITION';
   },
 ): Promise<{ created: number; calibers: string[] }> {
-  const { visitId, memberId, verifiedById, activityType = 'TRAINING' } = params;
+  const { visitId, memberId, verifiedById } = params;
 
   const visit = await tx.visit.findUnique({
     where: { id: visitId },
-    select: { id: true, visitDate: true, clubId: true },
+    select: { id: true, visitDate: true, clubId: true, activityType: true },
   });
 
   if (!visit) {
     return { created: 0, calibers: [] };
   }
+
+  // Prioridade: escolha explicita do chamador > activityType da visita > TRAINING.
+  const activityType =
+    params.activityType ??
+    (visit.activityType === 'COMPETITION' || visit.activityType === 'TRAINING'
+      ? visit.activityType
+      : 'TRAINING');
 
   const details = await tx.visitDetail.findMany({
     where: { visitId },

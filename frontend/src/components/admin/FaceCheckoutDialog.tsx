@@ -31,6 +31,9 @@ export interface FaceCheckoutTarget {
   memberId: string;
   memberName: string;
   visitId: string;
+  // Tipo de atividade ja gravado na visita (definido no registro de tiros).
+  // Pre-seleciona o toggle para manter a escolha consistente no checkout.
+  activityType?: 'TRAINING' | 'COMPETITION' | null;
 }
 
 interface FaceCheckoutDialogProps {
@@ -178,7 +181,8 @@ const FaceCheckoutDialog = ({
       consecutiveDetectionsRef.current = 0;
       setResult(null);
       setPendingCapture(null);
-      selectActivityType('TRAINING');
+      // Pre-seleciona a partir do valor ja gravado na visita (registro de tiros).
+      selectActivityType(target.activityType === 'COMPETITION' ? 'COMPETITION' : 'TRAINING');
       updatePhase('scanning');
     } else {
       cancelledRef.current = true;

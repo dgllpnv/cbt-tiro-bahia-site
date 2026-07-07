@@ -12,6 +12,9 @@ export interface Visit {
   laneId: string | null;
   purpose: string | null;
   instructorName: string | null;
+  // Tipo da atividade da visita: treino ou competicao (pode ser null em
+  // visitas antigas). Definido no registro de tiros; origem da habitualidade.
+  activityType: 'TRAINING' | 'COMPETITION' | null;
   notes: string | null;
   isGuestVisit: boolean;
   guestName: string | null;
@@ -73,6 +76,7 @@ export interface CreateVisitData {
   laneId?: string;
   purpose?: string;
   instructorName?: string;
+  activityType?: 'TRAINING' | 'COMPETITION';
   notes?: string;
   isGuestVisit?: boolean;
   guestName?: string;

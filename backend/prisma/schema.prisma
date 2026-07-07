@@ -352,6 +352,11 @@ model Visit {
   lane            Lane?     @relation(fields: [laneId], references: [id])
   purpose         String?
   instructorName  String?
+  // Tipo da atividade da visita: 'TRAINING' (treino) ou 'COMPETITION'
+  // (competicao). Definido no registro de tiros e usado como origem da
+  // habitualidade (createHabitualityFromVisit) e nas declaracoes/Livro.
+  // Opcional — visitas antigas ficam null (default de habitualidade = TRAINING).
+  activityType    String?
   notes           String?   @db.Text
   isGuestVisit    Boolean   @default(false)
   guestName       String?

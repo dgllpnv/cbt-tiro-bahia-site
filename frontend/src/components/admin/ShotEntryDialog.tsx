@@ -23,6 +23,9 @@ import {
   type AmmunitionType,
   type VisitDetailItem,
 } from '@/services/visitDetailsService';
+import { updateVisit } from '@/services/visitsService';
+
+type ActivityType = 'TRAINING' | 'COMPETITION';
 import { ammunitionTypeLabels } from '@/lib/constants';
 import {
   FIREARM_CATEGORIES,
@@ -55,16 +58,24 @@ interface ShotEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
+  // Tipo de atividade ja gravado na visita (treino/competicao). Usado para
+  // pre-selecionar o toggle. Null em visitas sem escolha ainda.
+  initialActivityType?: ActivityType | null;
 }
 
 const FIREARM_CAT_KEYS: FirearmCategory[] = ['PISTOL', 'REVOLVER', 'RIFLE', 'SHOTGUN'];
 
-const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: ShotEntryDialogProps) => {
+const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, initialActivityType }: ShotEntryDialogProps) => {
   const { toast } = useToast();
 
   // Existing details
   const [details, setDetails] = useState<VisitDetailItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
+
+  // Tipo de atividade da visita (treino/competicao) — nivel da visita, nao
+  // por linha. Salvo na visita ao trocar; vira a origem da habitualidade.
+  const [activityType, setActivityType] = useState<ActivityType>('TRAINING');
+  const [savingActivityType, setSavingActivityType] = useState(false);
 
   // Form state
   const [firearmCategory, setFirearmCategory] = useState<FirearmCategory>('PISTOL');
@@ -90,8 +101,32 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
       setAmmunitionType(null);
       setNotes('');
       setTouchedAny(false);
+      // Pre-seleciona o tipo de atividade a partir do valor ja gravado na
+      // visita; sem valor, cai em treino (default de habitualidade).
+      setActivityType(initialActivityType === 'COMPETITION' ? 'COMPETITION' : 'TRAINING');
     }
-  }, [open, visitId]);
+  }, [open, visitId, initialActivityType]);
+
+  // Salva o tipo de atividade na visita ao trocar. So persiste na escolha
+  // explicita do operador, para nao sobrescrever visitas antigas sem querer.
+  const handleSelectActivityType = async (next: ActivityType) => {
+    if (!visitId || savingActivityType || next === activityType) return;
+    const previous = activityType;
+    setActivityType(next);
+    setSavingActivityType(true);
+    const res = await updateVisit(visitId, { activityType: next });
+    setSavingActivityType(false);
+    if (res.success) {
+      setTouchedAny(true);
+    } else {
+      setActivityType(previous);
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao salvar tipo de atividade',
+        description: res.error || 'Tente novamente.',
+      });
+    }
+  };
 
   // Load existing details when dialog opens
   const refreshList = useCallback(async () => {
@@ -197,6 +232,35 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved }: S
             Para <span className="text-foreground font-semibold">{memberName}</span>
           </DialogDescription>
         </DialogHeader>
+
+        {/* Tipo de atividade da visita (treino/competicao) — aplica a visita
+            inteira e define a origem da habitualidade. */}
+        <div className="space-y-2">
+          <Label className="text-foreground/85 font-tactical text-sm flex items-center gap-2">
+            Tipo de atividade
+            {savingActivityType && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground/80" />}
+          </Label>
+          <div className="flex gap-2">
+            {(['TRAINING', 'COMPETITION'] as const).map((t) => {
+              const active = activityType === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  disabled={!visitId || savingActivityType}
+                  onClick={() => handleSelectActivityType(t)}
+                  className={`flex-1 px-3 py-2 rounded-md border text-sm font-tactical transition-colors disabled:opacity-60 ${
+                    active
+                      ? 'bg-cbt-orange/20 border-cbt-orange text-cbt-orange'
+                      : 'bg-muted border-border text-foreground/85 hover:border-muted-foreground/30'
+                  }`}
+                >
+                  {t === 'TRAINING' ? 'Treino' : 'Competição'}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Already-registered list */}
         <div className="space-y-2">

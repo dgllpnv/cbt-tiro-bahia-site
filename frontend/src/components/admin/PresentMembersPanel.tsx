@@ -404,7 +404,7 @@ const PresentMembersPanel = () => {
   );
 
   // ShotEntryDialog state
-  const [shotDialog, setShotDialog] = useState<{ visitId: string; memberName: string } | null>(null);
+  const [shotDialog, setShotDialog] = useState<{ visitId: string; memberName: string; activityType: 'TRAINING' | 'COMPETITION' | null } | null>(null);
 
   // Checkout prompt state (sem tiros + sem comanda)
   const [checkoutPrompt, setCheckoutPrompt] = useState<Visit | null>(null);
@@ -769,7 +769,7 @@ const PresentMembersPanel = () => {
               }
               onNewSale={handleNewSale}
               onRegisterShot={(visit) =>
-                setShotDialog({ visitId: visit.id, memberName: visit.member.fullName })
+                setShotDialog({ visitId: visit.id, memberName: visit.member.fullName, activityType: visit.activityType })
               }
               onIssueLoan={handleIssueLoan}
               onReturnLoan={handleReturnLoan}
@@ -783,6 +783,7 @@ const PresentMembersPanel = () => {
       <ShotEntryDialog
         visitId={shotDialog?.visitId ?? null}
         memberName={shotDialog?.memberName ?? ''}
+        initialActivityType={shotDialog?.activityType ?? null}
         open={!!shotDialog}
         onOpenChange={(open) => !open && setShotDialog(null)}
         onSaved={() => fetchPresent(true)}
@@ -818,6 +819,7 @@ const PresentMembersPanel = () => {
                   setShotDialog({
                     visitId: checkoutPrompt.id,
                     memberName: checkoutPrompt.member.fullName,
+                    activityType: checkoutPrompt.activityType,
                   });
                 }
                 setCheckoutPrompt(null);
@@ -916,6 +918,7 @@ const PresentMembersPanel = () => {
               memberId: v.member.id,
               memberName: v.member.fullName,
               visitId: v.id,
+              activityType: v.activityType,
             });
           }}
         />
