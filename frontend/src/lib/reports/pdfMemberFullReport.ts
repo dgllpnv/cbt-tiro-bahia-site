@@ -343,13 +343,14 @@ export async function buildMemberFullReportPdf(input: MemberFullReportInput) {
       ['Armas distintas', String(stats.shotsByFirearm.length)],
     ]);
 
-    // Top 5 calibres
+    // Calibres — lista completa (sem limite). A tabela auto-pagina no PDF,
+    // entao todos os calibres do associado sao mostrados (antes cortava em 5).
     if (stats.shotsByCaliber.length > 0) {
       ctx.cursorY += 1;
       addAutoTable(
         ctx,
         [['Calibre', 'Disparos', '% do total']],
-        stats.shotsByCaliber.slice(0, 5).map((c) => [
+        stats.shotsByCaliber.map((c) => [
           c.caliber,
           c.shots.toLocaleString('pt-BR'),
           `${c.percentage}%`,
