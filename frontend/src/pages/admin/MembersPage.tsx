@@ -298,7 +298,11 @@ const MembersPage = () => {
                     </TableCell>
                     <TableCell className="text-foreground/85">{user.memberNumber || '—'}</TableCell>
                     <TableCell className="text-foreground/85">
-                      {user.role === 'admin' ? 'Admin' : 'Associado'}
+                      {user.role === 'admin'
+                        ? 'Admin'
+                        : user.role === 'cashier'
+                          ? 'Caixa'
+                          : 'Associado'}
                     </TableCell>
                     <TableCell>
                       <MemberStatusBadge status={user.status} />

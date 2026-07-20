@@ -158,14 +158,15 @@ router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Respo
       : [{ fullName: 'asc' as const }];
 
     // Build where clause — por padrao, /api/users NAO retorna VISITOR
-    // (visitantes vivem em /api/visitors). Filtro aceita ADMIN, ASSOCIATE ou VISITOR
-    // explicitamente quando solicitado.
+    // (visitantes vivem em /api/visitors). Inclui CASHIER (operador de caixa)
+    // na listagem para o admin gerenciar a conta. Filtro aceita ADMIN,
+    // ASSOCIATE, CASHIER ou VISITOR explicitamente quando solicitado.
     const where: any = {};
 
-    if (role && (role === 'ADMIN' || role === 'ASSOCIATE' || role === 'VISITOR')) {
+    if (role && (role === 'ADMIN' || role === 'ASSOCIATE' || role === 'CASHIER' || role === 'VISITOR')) {
       where.role = role;
     } else {
-      where.role = { in: ['ADMIN', 'ASSOCIATE'] };
+      where.role = { in: ['ADMIN', 'ASSOCIATE', 'CASHIER'] };
     }
 
     if (status && (status === 'ACTIVE' || status === 'INACTIVE' || status === 'SUSPENDED')) {
