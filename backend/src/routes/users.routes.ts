@@ -226,33 +226,44 @@ router.get('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Respo
 
 router.get('/next-member-number', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
   try {
+    // Numeracao pertence aos MEMBROS do clube — visitantes (role VISITOR) nao
+    // entram na sequencia, entao ficam fora do calculo.
     const rows = await prisma.user.findMany({
-      where: { memberNumber: { not: null } },
+      where: { memberNumber: { not: null }, role: { not: 'VISITOR' } },
       select: { memberNumber: true },
     });
 
+    // So numeros puramente numericos (ignora ADM001, CAX001, CBT0101...).
+    const numeric = rows
+      .map((r) => r.memberNumber!)
+      .filter((mn) => /^\d+$/.test(mn));
+
+    // Blindagem contra outliers: um cadastro com numero gigante (ex.: 99999
+    // digitado por engano) NAO pode empurrar a sugestao para 100000. So
+    // consideramos numeros dentro de uma faixa plausivel para o tamanho do
+    // clube (quantidade de numeros + folga larga). Assim a sequencia real
+    // (...1377, 1378) manda e o 99999 e ignorado. O campo continua editavel,
+    // entao um caso legitimo fora da faixa ainda pode ser digitado a mao.
+    const ceiling = numeric.length + 1000;
+    const real = numeric.filter((mn) => parseInt(mn, 10) <= ceiling);
+
     let maxNum = 0;
     let width = 4; // padding minimo padrao do clube (ex: 0001)
-    let lastNumeric: string | null = null;
-
-    for (const r of rows) {
-      const mn = r.memberNumber!;
-      // So considera numeros puramente numericos (sem prefixo de letra)
-      if (!/^\d+$/.test(mn)) continue;
+    let lastNumber: string | null = null;
+    for (const mn of real) {
       const n = parseInt(mn, 10);
+      if (mn.length > width) width = mn.length;
       if (n > maxNum) {
         maxNum = n;
-        lastNumeric = mn;
+        lastNumber = mn;
       }
-      if (mn.length > width) width = mn.length;
     }
 
-    const next = maxNum + 1;
-    const suggestion = String(next).padStart(width, '0');
+    const suggestion = String(maxNum + 1).padStart(width, '0');
 
     res.json({
       success: true,
-      data: { suggestion, lastNumber: lastNumeric },
+      data: { suggestion, lastNumber },
     });
   } catch (error) {
     console.error('[USERS] Erro ao sugerir numero de associado:', error);
