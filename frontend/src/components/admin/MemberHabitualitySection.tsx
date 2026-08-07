@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { calendarKey, formatCalendarDate } from '@/lib/dateOnly';
 import {
   getMemberHabituality,
   updateHabituality,
@@ -53,11 +54,9 @@ interface FormState {
   description: string;
 }
 
-const fmtDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('pt-BR');
-};
+// activityDate e `@db.Date` (meia-noite UTC). Formatar no fuso local (UTC-3)
+// mostrava o dia anterior — usar o formatador compartilhado. Ver lib/dateOnly.ts.
+const fmtDate = (iso: string) => formatCalendarDate(iso);
 
 // Origem legivel a partir dos vinculos/descricao.
 const originLabel = (r: HabitualityRecord): string => {
@@ -109,20 +108,21 @@ const MemberHabitualitySection = ({ memberId }: MemberHabitualitySectionProps) =
   const duplicateKeys = useMemo(() => {
     const counts = new Map<string, number>();
     for (const r of records) {
-      const key = `${r.caliber}|${r.activityDate.slice(0, 10)}`;
+      const key = `${r.caliber}|${calendarKey(r.activityDate)}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return new Set([...counts.entries()].filter(([, c]) => c > 1).map(([k]) => k));
   }, [records]);
 
   const isDuplicate = (r: HabitualityRecord) =>
-    duplicateKeys.has(`${r.caliber}|${r.activityDate.slice(0, 10)}`);
+    duplicateKeys.has(`${r.caliber}|${calendarKey(r.activityDate)}`);
 
   const openEdit = (r: HabitualityRecord) => {
     setEditingId(r.id);
     setForm({
       caliber: r.caliber,
-      activityDate: r.activityDate.slice(0, 10),
+      // O <input type="date"> exige "YYYY-MM-DD" na data-calendario correta.
+      activityDate: calendarKey(r.activityDate) ?? '',
       activityType: r.activityType,
       description: r.description ?? '',
     });

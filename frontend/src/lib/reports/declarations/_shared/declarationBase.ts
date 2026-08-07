@@ -9,6 +9,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
+import { calendarParts, formatCalendarDate } from '@/lib/dateOnly';
 
 export const MARGIN_X = 25;
 export const MARGIN_Y = 30;
@@ -20,15 +21,20 @@ const MONTHS_PT = [
 ];
 
 export function formatLongDate(d: Date | string | null = new Date()): string {
-  const dt = d ? (typeof d === 'string' ? new Date(d) : d) : new Date();
-  return `${String(dt.getDate()).padStart(2, '0')} de ${MONTHS_PT[dt.getMonth()]} de ${dt.getFullYear()}`;
+  const p = calendarParts(d ?? new Date());
+  if (!p) return formatLongDate(new Date());
+  return `${String(p.day).padStart(2, '0')} de ${MONTHS_PT[p.month - 1]} de ${p.year}`;
 }
 
+/**
+ * Data-calendario em DD/MM/YYYY para as declaracoes oficiais.
+ *
+ * Campos `@db.Date` (dateOfBirth, memberSince, crExpiry) chegam como meia-noite
+ * UTC; lidos no fuso local (UTC-3) saiam com 1 dia a menos no documento
+ * entregue a PF/Exercito. Ver `lib/dateOnly.ts`.
+ */
 export function formatShortDate(iso: string | Date | null | undefined): string {
-  if (!iso) return '—';
-  const d = typeof iso === 'string' ? new Date(iso) : iso;
-  if (Number.isNaN(d.getTime())) return '—';
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  return formatCalendarDate(iso);
 }
 
 export function formatCpf(cpf: string | null | undefined): string {

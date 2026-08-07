@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns';
+import { formatCalendarDate } from './dateOnly';
 
 /**
  * Formats a CPF string as ###.###.###-##
@@ -47,24 +48,11 @@ export function formatCurrency(value: number): string {
  *
  * Campos `@db.Date` do Prisma chegam como meia-noite UTC ("2026-06-10T00:00:00.000Z").
  * Formatar em horario local (Brasil UTC-3) recuava para o dia anterior (21h do dia -1).
- * Lemos a data-calendario em UTC para preservar o dia correto.
+ * `formatCalendarDate` distingue data-calendario (lida em UTC) de timestamp real
+ * (lido no fuso local) — ver `lib/dateOnly.ts`.
  */
 export function formatDate(date: string): string {
-  try {
-    // String date-only (yyyy-MM-dd): reformata direto, sem envolver fuso.
-    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-    if (dateOnly) {
-      const [, y, m, d] = dateOnly;
-      return `${d}/${m}/${y}`;
-    }
-    const parsed = parseISO(date);
-    if (Number.isNaN(parsed.getTime())) return date;
-    const dd = String(parsed.getUTCDate()).padStart(2, '0');
-    const mm = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-    return `${dd}/${mm}/${parsed.getUTCFullYear()}`;
-  } catch {
-    return date;
-  }
+  return formatCalendarDate(date, date);
 }
 
 /**

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
+import { isAnnuityExpired } from '../lib/annuityCycle.js';
 
 const router = Router();
 
@@ -111,12 +112,13 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
     // Bloqueio por anuidade: associado com anuidade vencida OU sem registro
     // nao acessa o sistema (decisao do clube). Admin e Caixa nunca sao bloqueados.
-    // Comparacao por inicio do dia — nao bloqueia no ultimo dia de validade.
+    //
+    // A comparacao e feita apenas entre dias do calendario (isAnnuityExpired).
+    // Antes, `annuityValidUntil` (meia-noite UTC) era comparado com a meia-noite
+    // LOCAL: em UTC-3 a local e 3h maior, entao o associado era barrado no
+    // proprio dia do vencimento, que ainda e valido.
     if (user.role === 'ASSOCIATE') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const annuityExpired = !user.annuityValidUntil || user.annuityValidUntil < today;
-      if (annuityExpired) {
+      if (isAnnuityExpired(user.annuityValidUntil)) {
         res.status(403).json({
           success: false,
           error:

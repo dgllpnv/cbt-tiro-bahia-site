@@ -19,6 +19,9 @@
     "db:seed:all": "npm run db:seed && npm run db:seed:demo && npm run db:seed:news-events && npm run db:seed:financial && npm run db:seed:gallery",
     "db:studio": "prisma studio",
     "db:reset": "prisma db push --force-reset && npm run db:seed:all",
+    "test:annuity": "tsx scripts/test-annuity-cycle.ts",
+    "fix:anuidade": "tsx scripts/fix-annuity-anniversary.ts",
+    "fix:anuidade:apply": "tsx scripts/fix-annuity-anniversary.ts --apply",
     "migrate:adm:dry-run": "tsx scripts/migrate-adm-clube.ts --dry-run",
     "migrate:adm:apply": "tsx scripts/migrate-adm-clube.ts --apply",
     "migrate:adm:cleanup": "tsx scripts/migrate-adm-clube.ts --cleanup-only"

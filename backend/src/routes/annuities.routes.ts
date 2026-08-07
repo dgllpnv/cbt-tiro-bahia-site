@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
+import { computeAnnuityCycle } from '../lib/annuityCycle.js';
+import { formatIsoDate } from '../lib/dateOnly.js';
 
 const router = Router();
 
@@ -164,27 +166,17 @@ router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Resp
       return;
     }
 
-    // Calculate validFrom and validUntil
-    const now = new Date();
-    let validFrom: Date;
-
-    if (member.annuityValidUntil && member.annuityValidUntil > now) {
-      // If current annuity is still valid, start day after it expires
-      validFrom = new Date(member.annuityValidUntil);
-      validFrom.setDate(validFrom.getDate() + 1);
-    } else {
-      // Otherwise start today
-      validFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
-
-    // validUntil = validFrom + 1 year
-    const validUntil = new Date(validFrom);
-    validUntil.setFullYear(validUntil.getFullYear() + 1);
+    // Vigencia ancorada na data de filiacao — a anuidade sempre vence no
+    // aniversario de filiacao, mesmo quando paga com atraso. Ver lib/annuityCycle.ts.
+    const { validFrom, validUntil } = computeAnnuityCycle({
+      memberSince: member.memberSince,
+      currentValidUntil: member.annuityValidUntil,
+    });
 
     // Cria pagamento + atualiza user + cria Transaction COMPLETED de forma atomica.
     // O Transaction garante que a anuidade aparece em /admin/lancamentos, dashboard
     // (monthRevenue) e /admin/financeiro (summary/revenue), que so agregam Transaction.
-    const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+    const fmtDate = formatIsoDate;
     const result = await prisma.$transaction(async (tx) => {
       const newPayment = await tx.annuityPayment.create({
         data: {
@@ -256,7 +248,9 @@ router.post('/', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Resp
         paymentMethod: data.paymentMethod ?? null,
         transactionId: result.transaction.id,
       },
-      description: `Anuidade ${data.referenceYear} paga (R$ ${data.amount.toFixed(2)})`,
+      description:
+        `Anuidade ${data.referenceYear} paga (R$ ${data.amount.toFixed(2)}) — ` +
+        `vigencia ${fmtDate(validFrom)} a ${fmtDate(validUntil)}`,
       ipAddress: req.ip as string | undefined,
     });
 

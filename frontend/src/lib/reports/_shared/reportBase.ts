@@ -16,6 +16,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
+import { formatCalendarDate } from '@/lib/dateOnly';
 
 // ── Constantes de marca ─────────────────────────────────────────────────────
 export const ORANGE = '#FF8C00';
@@ -80,24 +81,28 @@ const MONTH_NAMES = [
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
 ];
 
+/**
+ * Data-calendario em DD/MM/YYYY.
+ *
+ * Usa `formatCalendarDate` porque campos `@db.Date` (activityDate, memberSince,
+ * crExpiry, dateOfBirth, validUntil…) chegam como meia-noite UTC: lidos com os
+ * getters locais em UTC-3 saiam com 1 dia a menos nos PDFs oficiais.
+ * Timestamps reais (com hora) continuam sendo lidos no fuso local.
+ */
 export function fmtDate(iso: string | Date | null | undefined): string {
+  return formatCalendarDate(iso);
+}
+
+/** Timestamp real (com hora): sempre lido no fuso local, dia e hora coerentes. */
+export function fmtDateTime(iso: string | Date | null | undefined): string {
   if (!iso) return '—';
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   if (Number.isNaN(d.getTime())) return '—';
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-}
-
-export function fmtDateTime(iso: string | Date | null | undefined): string {
-  if (!iso) return '—';
-  const d = typeof iso === 'string' ? new Date(iso) : iso;
-  if (Number.isNaN(d.getTime())) return '—';
-  const date = fmtDate(d);
   const hh = String(d.getHours()).padStart(2, '0');
   const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${date} ${hh}:${mi}`;
+  return `${dd}/${mm}/${d.getFullYear()} ${hh}:${mi}`;
 }
 
 export function fmtDateLong(d: Date): string {

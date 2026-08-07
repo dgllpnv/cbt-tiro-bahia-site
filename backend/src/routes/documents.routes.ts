@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -156,8 +157,10 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
     }
 
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+    // Limites em UTC — activityDate e `@db.Date`. Em horario local o inicio
+    // caia em 01/01 03:00Z e a declaracao perdia os treinos do dia 01/01.
+    const startDate = startOfYearUtc(year);
+    const endDate = endOfYearUtc(year);
 
     const [member, club, records] = await Promise.all([
       prisma.user.findUnique({

@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
+import { computeAnnuityCycle } from '../lib/annuityCycle.js';
+import { formatIsoDate, todayUtc } from '../lib/dateOnly.js';
 
 const router = Router();
 
@@ -433,20 +435,19 @@ router.post('/:id/convert', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // Calcula validFrom/validUntil (mesma regra de annuities.routes)
-    const now = new Date();
-    let validFrom: Date;
-    if (visitor.annuityValidUntil && visitor.annuityValidUntil > now) {
-      validFrom = new Date(visitor.annuityValidUntil);
-      validFrom.setDate(validFrom.getDate() + 1);
-    } else {
-      validFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
-    const validUntil = new Date(validFrom);
-    validUntil.setFullYear(validUntil.getFullYear() + 1);
+    // A filiacao como ASSOCIADO acontece AGORA — o `memberSince` do registro de
+    // visitante e a data em que ele visitou o clube pela primeira vez, nao a de
+    // filiacao. Ancorar a anuidade nela daria menos de 12 meses ao novo socio.
+    const memberSince = todayUtc();
+
+    // Mesma regra de annuities.routes: vigencia ancorada na data de filiacao.
+    const { validFrom, validUntil } = computeAnnuityCycle({
+      memberSince,
+      currentValidUntil: visitor.annuityValidUntil,
+    });
 
     const passwordHash = await bcrypt.hash(data.password, 10);
-    const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+    const fmtDate = formatIsoDate;
 
     const result = await prisma.$transaction(async (tx) => {
       // 1) Promove visitante para ASSOCIATE
@@ -460,7 +461,7 @@ router.post('/:id/convert', async (req: Request, res: Response): Promise<void> =
           cr: data.cr ?? null,
           crLevel: data.crLevel ?? null,
           membershipTier: data.membershipTier ?? 'STANDARD',
-          memberSince: visitor.memberSince ?? new Date(),
+          memberSince,
           annuityValidUntil: validUntil,
         },
         select: {

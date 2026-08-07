@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
+import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -19,8 +20,10 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
     }
 
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
+    // Limites em UTC: activityDate e `@db.Date`. Com new Date(year,0,1) local
+    // o inicio virava 01/01 03:00Z e os registros do dia 01/01 ficavam de fora.
+    const startDate = startOfYearUtc(year);
+    const endDate = endOfYearUtc(year);
 
     const records = await prisma.habitualityRecord.findMany({
       where: {
@@ -53,8 +56,10 @@ router.get('/member/:id/summary', async (req: Request, res: Response): Promise<v
     }
 
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
+    // Limites em UTC: activityDate e `@db.Date`. Com new Date(year,0,1) local
+    // o inicio virava 01/01 03:00Z e os registros do dia 01/01 ficavam de fora.
+    const startDate = startOfYearUtc(year);
+    const endDate = endOfYearUtc(year);
 
     const records = await prisma.habitualityRecord.groupBy({
       by: ['caliber'],
@@ -182,8 +187,12 @@ router.post('/manual', requireRole('ADMIN', 'CASHIER'), async (req: Request, res
       // Visit fantasma — checkInTime = activityDate 12:00 (meio-dia) como
       // representacao convencional. checkOutTime fica null (nao houve sessao
       // fisica do clube). laneId tambem null. registeredById = admin atual.
+      //
+      // setUTCHours (e nao setHours): activityDate e meia-noite UTC do dia
+      // escolhido. Em UTC-3 isso e 21h do dia ANTERIOR, entao setHours(12)
+      // fixava o meio-dia no dia errado e a visita aparecia com 1 dia a menos.
       const checkInTime = new Date(activityDate);
-      checkInTime.setHours(12, 0, 0, 0);
+      checkInTime.setUTCHours(12, 0, 0, 0);
 
       const visit = await tx.visit.create({
         data: {
@@ -347,8 +356,8 @@ router.delete('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res:
 router.get('/alerts', requireRole('ADMIN', 'CASHIER'), async (_req: Request, res: Response): Promise<void> => {
   try {
     const year = new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
+    const startDate = startOfYearUtc(year);
+    const endDate = endOfYearUtc(year);
 
     const associates = await prisma.user.findMany({
       where: { role: 'ASSOCIATE', status: 'ACTIVE' },

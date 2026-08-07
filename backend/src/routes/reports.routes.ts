@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { startOfDay, endOfDay, startOfYear, endOfYear, addDays, subDays, startOfQuarter, endOfQuarter } from 'date-fns';
+import { startOfDay, endOfDay, startOfYear, addDays, subDays, startOfQuarter, endOfQuarter } from 'date-fns';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
+import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -306,8 +307,10 @@ const habLowSchema = z.object({
 router.get('/habituality-low', async (req: Request, res: Response): Promise<void> => {
   try {
     const { year = new Date().getFullYear() } = habLowSchema.parse(req.query);
-    const yearStart = startOfYear(new Date(year, 0, 1));
-    const yearEnd = endOfYear(new Date(year, 0, 1));
+    // Limites em UTC — campos de data-calendario (`@db.Date`). Com startOfYear
+    // local o inicio ficava em 01/01 03:00Z e perdia os registros do dia 01/01.
+    const yearStart = startOfYearUtc(year);
+    const yearEnd = endOfYearUtc(year);
 
     const associates = await prisma.user.findMany({
       where: { role: 'ASSOCIATE', isActive: true, status: 'ACTIVE' },
@@ -561,8 +564,10 @@ const yearOnlySchema = z.object({
 router.get('/annual-plan', async (req: Request, res: Response): Promise<void> => {
   try {
     const { year = new Date().getFullYear() } = yearOnlySchema.parse(req.query);
-    const yearStart = startOfYear(new Date(year, 0, 1));
-    const yearEnd = endOfYear(new Date(year, 0, 1));
+    // Limites em UTC — campos de data-calendario (`@db.Date`). Com startOfYear
+    // local o inicio ficava em 01/01 03:00Z e perdia os registros do dia 01/01.
+    const yearStart = startOfYearUtc(year);
+    const yearEnd = endOfYearUtc(year);
 
     const events = await prisma.event.findMany({
       where: { eventDate: { gte: yearStart, lte: yearEnd } },
