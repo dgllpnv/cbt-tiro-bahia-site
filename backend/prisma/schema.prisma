@@ -660,6 +660,29 @@ model ClubSettings {
 }
 
 // =====================================================
+// ClubDigitalSignature — certificado digital (.pfx/.p12) do responsavel
+// legal, usado para assinar documentos do sistema (declaracoes, etc.)
+// com PKCS#7/ICP-Brasil real, via @signpdf + node-forge (POST
+// /api/documents/sign em documents.routes.ts) — nos moldes do sistema
+// antigo (pyHanko), 100% gratuito/local. fileData/passwordEncrypted
+// NUNCA devem ser incluidos em nenhum `select` que alimente uma resposta
+// HTTP — so a rota de assinatura os le, server-side.
+// =====================================================
+model ClubDigitalSignature {
+  id                String    @id @default(uuid())
+  clubId            String    @unique @default("cbt-bahia")
+  fileName          String
+  fileData          String    @db.Text // base64 puro do .pfx/.p12 — sensivel
+  passwordEncrypted String    @db.Text // senha do certificado, cifrada (AES-256-GCM) — sensivel
+  holderName        String?   // titular do certificado (CN), extraido automaticamente do .pfx no upload
+  issuer            String?   // emissor/AC do certificado (CN), extraido automaticamente do .pfx no upload
+  validFrom         DateTime? @db.Date // inicio de validade, extraido automaticamente do .pfx no upload
+  validUntil        DateTime? @db.Date // fim de validade, extraido automaticamente do .pfx no upload
+  uploadedByEmail   String
+  uploadedAt        DateTime  @default(now())
+}
+
+// =====================================================
 // NOVOS MODELS - Habitualidade, Eventos, Documentos, Baias
 // =====================================================
 

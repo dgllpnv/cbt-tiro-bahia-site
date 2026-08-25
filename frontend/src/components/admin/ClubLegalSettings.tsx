@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import DigitalSignatureSettings from '@/components/admin/DigitalSignatureSettings';
 import {
   getClubSettings,
   getMissingDeclarationFields,
@@ -292,6 +293,9 @@ const ClubLegalSettings = () => {
           />
         </Field>
       </Section>
+
+      {/* Assinatura Digital */}
+      <DigitalSignatureSettings />
 
       {/* Save */}
       <div className="flex justify-end pt-2">

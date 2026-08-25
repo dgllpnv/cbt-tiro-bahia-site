@@ -95,3 +95,73 @@ export async function updateClubSettings(data: UpdateClubSettingsData) {
     };
   }
 }
+
+// =====================================================
+// Assinatura Digital — usada para assinar PDFs (POST /api/documents/sign).
+// O arquivo do certificado (.pfx/.p12) e a senha nunca voltam do backend
+// (write-only) — so metadados, extraidos automaticamente do certificado
+// no upload (titular/emissor/validade vem do proprio .pfx, node-forge).
+// =====================================================
+
+export interface DigitalSignatureMeta {
+  configured: boolean;
+  fileName?: string;
+  holderName?: string | null;
+  issuer?: string | null;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  uploadedByEmail?: string;
+  uploadedAt?: string;
+}
+
+export interface UploadDigitalSignaturePayload {
+  fileName: string;
+  /** base64 puro do arquivo .pfx/.p12 (sem prefixo data:...;base64,). */
+  fileData: string;
+  password: string;
+}
+
+export async function getDigitalSignature() {
+  try {
+    const response = await api.get('/api/club-settings/digital-signature');
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as DigitalSignatureMeta };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar assinatura digital',
+    };
+  }
+}
+
+export async function uploadDigitalSignature(payload: UploadDigitalSignaturePayload) {
+  try {
+    const response = await api.post('/api/club-settings/digital-signature', payload);
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as DigitalSignatureMeta };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao anexar assinatura digital',
+    };
+  }
+}
+
+export async function removeDigitalSignature() {
+  try {
+    const response = await api.delete('/api/club-settings/digital-signature');
+    if (response.data.success) {
+      return { success: true as const };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao remover assinatura digital',
+    };
+  }
+}

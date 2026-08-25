@@ -13,6 +13,7 @@ import {
 } from '@/services/documentsService';
 import { buildFiliacaoPdf } from '@/lib/reports/declarations/pdfFiliacao';
 import { generateHabitualityPdf } from '@/lib/pdfHabituality';
+import { downloadPdfSigned } from '@/lib/reports/_shared/pdfSigning';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 // O associado gera as declarações como PDF real no proprio navegador (mesmos
@@ -32,7 +33,7 @@ const DocumentsPage = () => {
       const res = await getFiliacaoDeclarationData(user.id);
       if (!res.success) throw new Error(res.error);
       const pdf = await buildFiliacaoPdf(res.data);
-      pdf.save(`declaracao-filiacao-${user.memberNumber || 'cbt'}.pdf`);
+      await downloadPdfSigned(pdf, `declaracao-filiacao-${user.memberNumber || 'cbt'}.pdf`);
       toast({ title: 'Declaração de filiação gerada' });
     } catch (e: any) {
       toast({
@@ -52,7 +53,7 @@ const DocumentsPage = () => {
       const res = await getHabitualityDeclarationData(user.id);
       if (!res.success) throw new Error(res.error);
       const pdf = await generateHabitualityPdf(res.data);
-      pdf.save(`declaracao-habitualidade-${user.memberNumber || 'cbt'}.pdf`);
+      await downloadPdfSigned(pdf, `declaracao-habitualidade-${user.memberNumber || 'cbt'}.pdf`);
       toast({ title: 'Declaração de habitualidade gerada' });
     } catch (e: any) {
       toast({

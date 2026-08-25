@@ -46,6 +46,7 @@ import {
 } from '@/services/clubSettingsService';
 import { getHabitualityDeclarationData } from '@/services/documentsService';
 import { generateHabitualityPdf } from '@/lib/pdfHabituality';
+import { downloadPdfSigned } from '@/lib/reports/_shared/pdfSigning';
 
 const REQUIRED_TRAININGS = 8;
 
@@ -148,7 +149,7 @@ const HabitualityPage = () => {
       }
       const pdf = await generateHabitualityPdf(packetRes.data);
       const fileName = `declaracao-habitualidade-${user.memberNumber || 'cbt'}-${declarationYear}.pdf`;
-      pdf.save(fileName);
+      await downloadPdfSigned(pdf, fileName);
 
       toast({
         title: 'Declaração gerada',

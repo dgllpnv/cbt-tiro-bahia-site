@@ -1,7 +1,12 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
+import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
+import { createAuditLog } from '../services/auditService.js';
+import { decryptSecret } from '../lib/secretCrypto.js';
+import { signPdfWithCertificate } from '../lib/pdfSigning.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -322,6 +327,73 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
   } catch (error) {
     console.error('Erro ao montar pacote da declaracao:', error);
     res.status(500).json({ success: false, error: 'Erro ao montar pacote da declaracao' });
+  }
+});
+
+// =====================================================
+// POST /api/documents/sign — assina digitalmente um PDF ja gerado no
+// cliente, usando o certificado A1 configurado em ClubDigitalSignature
+// (assinatura PKCS#7/ICP-Brasil real, via @signpdf + node-forge — sem
+// nenhum custo/servico pago). Qualquer usuario autenticado pode chamar
+// (associados assinam suas proprias declaracoes em /portal/documentos),
+// mas TODA chamada gera AuditLog com hash sha256 do PDF original, para
+// rastreabilidade — o texto do documento em si nunca e guardado.
+//
+// A chave privada e a senha do certificado NUNCA saem do backend: o
+// cliente so envia o PDF pronto e recebe de volta o PDF assinado.
+// =====================================================
+const signPdfSchema = z.object({
+  // base64 puro do PDF gerado no navegador (sem prefixo data:...;base64,).
+  pdfData: z.string().min(1, 'PDF vazio'),
+  documentLabel: z.string().max(200).optional(),
+});
+
+router.post('/sign', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const data = signPdfSchema.parse(req.body);
+
+    const cert = await prisma.clubDigitalSignature.findUnique({ where: { clubId: 'cbt-bahia' } });
+    if (!cert) {
+      res.status(404).json({ success: false, error: 'Nenhuma assinatura digital configurada' });
+      return;
+    }
+    if (cert.validUntil && cert.validUntil.getTime() < Date.now()) {
+      res.status(400).json({
+        success: false,
+        error: `Certificado de assinatura vencido em ${cert.validUntil.toISOString().slice(0, 10)} — anexe um novo em Dados do Clube.`,
+      });
+      return;
+    }
+
+    const pdfBytes = Buffer.from(data.pdfData, 'base64');
+    const p12Buffer = Buffer.from(cert.fileData, 'base64');
+    const password = decryptSecret(cert.passwordEncrypted);
+
+    const signed = await signPdfWithCertificate(pdfBytes, p12Buffer, password, {
+      signerName: cert.holderName || cert.uploadedByEmail,
+      reason: 'Documento assinado digitalmente pelo clube',
+    });
+
+    // Auditoria: nunca guarda o PDF em si — so um hash pra rastreabilidade
+    // em caso de disputa sobre o conteudo assinado.
+    const hash = crypto.createHash('sha256').update(pdfBytes).digest('hex');
+    await createAuditLog({
+      performedById: req.user!.id,
+      action: 'CREATE',
+      entityType: 'DigitalSignatureUse',
+      description: `PDF assinado digitalmente${data.documentLabel ? ` (${data.documentLabel})` : ''}`,
+      newData: { documentLabel: data.documentLabel ?? null, sha256: hash, sizeBytes: pdfBytes.length },
+      ipAddress: req.ip,
+    });
+
+    res.json({ success: true, data: { signedPdfData: signed.toString('base64') } });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ success: false, error: error.errors[0].message });
+      return;
+    }
+    console.error('[DOCUMENTS] Erro ao assinar PDF:', error);
+    res.status(500).json({ success: false, error: 'Erro ao assinar documento' });
   }
 });
 

@@ -8,7 +8,7 @@
 // =====================================================
 
 import type { ReportCategory, ReportClubInfo } from './reportBase';
-import { savePdf, pdfToBlobUrl } from './reportBase';
+import { finalizeReportOutput } from './pdfSigning';
 import type { ClubSettings } from '@/services/clubSettingsService';
 import { reportsService } from '@/services/reportsService';
 import { getHabitualityDeclarationData } from '@/services/documentsService';
@@ -137,7 +137,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.birthdays(f.month, f.roles);
       const pdf = await buildBirthdaysPdf(data, clubToInfo(club));
       const filename = `aniversariantes-${String(f.month).padStart(2, '0')}-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -152,7 +152,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersActive();
       const pdf = await buildMembersActivePdf(data, clubToInfo(club));
       const filename = `associados-ativos-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -167,7 +167,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersInactive();
       const pdf = await buildMembersInactivePdf(data, clubToInfo(club));
       const filename = `associados-inativos-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -182,7 +182,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersActive(true);
       const pdf = await buildMembersActivePdf(data, clubToInfo(club), { crVariant: 'with' });
       const filename = `associados-ativos-com-cr-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -197,7 +197,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersActive(false);
       const pdf = await buildMembersActivePdf(data, clubToInfo(club), { crVariant: 'without' });
       const filename = `associados-ativos-sem-cr-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -212,7 +212,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersInactive(true);
       const pdf = await buildMembersInactivePdf(data, clubToInfo(club), { crVariant: 'with' });
       const filename = `associados-inativos-com-cr-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -227,7 +227,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersInactive(false);
       const pdf = await buildMembersInactivePdf(data, clubToInfo(club), { crVariant: 'without' });
       const filename = `associados-inativos-sem-cr-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -245,7 +245,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersExpiring(f.days);
       const pdf = await buildMembersExpiringPdf(data, clubToInfo(club));
       const filename = `anuidades-vencendo-${f.days}d-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -263,7 +263,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.membersOverdue(f.days);
       const pdf = await buildMembersOverduePdf(data, clubToInfo(club));
       const filename = `anuidades-vencidas-${f.days}d-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -282,7 +282,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.habitualityBook(f.period.from, f.period.to);
       const pdf = await buildHabitualityBookPdf(data, clubToInfo(club));
       const filename = `livro-habitualidade-${f.period.from}-a-${f.period.to}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -320,7 +320,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
           ? await buildHabitualityIndividualPdf(packets[0])
           : await buildHabitualityIndividualMultiPdf(packets);
       const filename = `habitualidade-${memberName}-${years.join('-')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -338,7 +338,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.habitualityLow(f.year);
       const pdf = await buildHabitualityLowPdf(data, clubToInfo(club));
       const filename = `habitualidade-inferior-${f.year}-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -355,7 +355,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.equipmentInventory();
       const pdf = await buildEquipmentInventoryPdf(data, clubToInfo(club));
       const filename = `acervo-clube-${fileSafeDate()}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -373,7 +373,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.ammoIn(f.period.from, f.period.to);
       const pdf = await buildAmmoInPdf(data, clubToInfo(club));
       const filename = `municoes-entrada-${f.period.from}-a-${f.period.to}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -391,7 +391,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.ammoOut(f.period.from, f.period.to);
       const pdf = await buildAmmoOutPdf(data, clubToInfo(club));
       const filename = `municoes-saida-${f.period.from}-a-${f.period.to}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -409,7 +409,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.shootersAmmo(f.period.from, f.period.to);
       const pdf = await buildShootersAmmoPdf(data, clubToInfo(club));
       const filename = `atiradores-municoes-${f.period.from}-a-${f.period.to}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -428,7 +428,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.annualPlan(f.year);
       const pdf = await buildAnnualPlanPdf(data, clubToInfo(club));
       const filename = `plano-anual-${f.year}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -446,7 +446,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.complianceChecklist(f.quarter.quarter, f.quarter.year);
       const pdf = await buildComplianceChecklistPdf(data, clubToInfo(club));
       const filename = `conformidade-Q${f.quarter.quarter}-${f.quarter.year}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 
@@ -464,7 +464,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDGAPdf(data);
       const filename = `DGA-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -479,7 +479,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDGA2Pdf(data);
       const filename = `DGA2-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -494,7 +494,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDSAPdf(data);
       const filename = `DSA-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -509,7 +509,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDSA2Pdf(data);
       const filename = `DSA2-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -524,7 +524,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDICPdf(data);
       const filename = `DIC-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -539,7 +539,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildDCPdf(data);
       const filename = `DC-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -554,7 +554,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = await buildFiliacaoPdf(data);
       const filename = `FILIACAO-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -569,7 +569,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = await buildDMPPdf(data);
       const filename = `DMP-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -584,7 +584,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = await buildDHIPdf(data);
       const filename = `DHI-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -599,7 +599,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = await buildDSFPdf(data);
       const filename = `DSF-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
   {
@@ -614,7 +614,7 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.declarationData(f.memberId);
       const pdf = buildRSDPdf(data);
       const filename = `RSD-${data.member.fullName.replace(/\s+/g, '_')}.pdf`;
-      return { filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) };
+      return finalizeReportOutput(pdf, filename);
     },
   },
 ];
