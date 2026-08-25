@@ -19,26 +19,53 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const year = parseInt(req.query.year as string) || new Date().getFullYear();
-    // Limites em UTC: activityDate e `@db.Date`. Com new Date(year,0,1) local
-    // o inicio virava 01/01 03:00Z e os registros do dia 01/01 ficavam de fora.
-    const startDate = startOfYearUtc(year);
-    const endDate = endOfYearUtc(year);
+    // all=true retorna o livro completo do socio (todos os anos), usado pela
+    // tela de lancamento manual. Sem o parametro, mantem o comportamento
+    // historico de filtrar por ano (usado no perfil do associado por ano).
+    const showAll = req.query.all === 'true';
+
+    const where: any = { memberId };
+    if (!showAll) {
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      // Limites em UTC: activityDate e `@db.Date`. Com new Date(year,0,1) local
+      // o inicio virava 01/01 03:00Z e os registros do dia 01/01 ficavam de fora.
+      where.activityDate = { gte: startOfYearUtc(year), lte: endOfYearUtc(year) };
+    }
 
     const records = await prisma.habitualityRecord.findMany({
-      where: {
-        memberId,
-        activityDate: { gte: startDate, lte: endDate },
-      },
+      where,
       orderBy: { activityDate: 'desc' },
       include: {
         event: { select: { id: true, title: true, eventType: true } },
-        visit: { select: { id: true, visitDate: true } },
+        visit: {
+          select: {
+            id: true,
+            visitDate: true,
+            details: { select: { id: true, caliber: true, firearmName: true, shotsFired: true, ammunitionType: true } },
+          },
+        },
         verifiedBy: { select: { id: true, fullName: true } },
       },
     });
 
-    res.json({ success: true, data: records });
+    // Enriquece com arma/tiros/tipo de municao da visita vinculada (best-effort:
+    // casa pelo calibre, igual ao pacote da declaracao em documents.routes.ts).
+    // Registros sem visita (evento) ou sem VisitDetail casando o calibre ficam null.
+    // visitDetailId vai junto para a edicao (PUT) atualizar exatamente essa linha,
+    // sem precisar re-casar por calibre (evita ambiguidade se houver duas linhas
+    // do mesmo calibre na mesma visita).
+    const data = records.map((r) => {
+      const detail = r.visit?.details.find((d) => d.caliber === r.caliber);
+      return {
+        ...r,
+        visitDetailId: detail?.id ?? null,
+        firearmName: detail?.firearmName ?? null,
+        shotsFired: detail?.shotsFired ?? null,
+        ammunitionType: detail?.ammunitionType ?? null,
+      };
+    });
+
+    res.json({ success: true, data });
   } catch (error) {
     console.error('Erro ao buscar habitualidade:', error);
     res.status(500).json({ success: false, error: 'Erro ao buscar habitualidade' });
@@ -255,8 +282,9 @@ router.post('/manual', requireRole('ADMIN', 'CASHIER'), async (req: Request, res
 // =====================================================
 // PUT /api/habituality/:id — Editar um registro de habitualidade
 //
-// Permite corrigir calibre, data, tipo e descricao/notas de um registro
-// existente (ex.: calibre digitado errado). NAO permite trocar o associado
+// Permite corrigir calibre, data, tipo, descricao/notas e, quando o registro
+// esta ligado a uma visita (visitDetailId), tambem a arma, os tiros e o tipo
+// de municao daquela linha do VisitDetail. NAO permite trocar o associado
 // (memberId) nem os vinculos visitId/eventId. Toda edicao e auditada
 // (guarda os dados anteriores no AuditLog). ADMIN e CASHIER.
 // =====================================================
@@ -265,6 +293,12 @@ const updateSchema = z.object({
   activityDate: z.string(),
   activityType: z.enum(['TRAINING', 'COMPETITION']),
   description: z.string().max(500).nullable().optional(),
+  // Linha do VisitDetail casada com este registro (retornada pelo GET como
+  // `visitDetailId`) — so enviada quando o registro tem visita vinculada.
+  visitDetailId: z.string().uuid().optional(),
+  firearmName: z.string().max(100).nullable().optional(),
+  shotsFired: z.number().int().min(1, 'Minimo 1 tiro').nullable().optional(),
+  ammunitionType: z.enum(['RELOADED', 'FACTORY']).nullable().optional(),
 });
 
 router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
@@ -283,15 +317,49 @@ router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Re
       return;
     }
 
-    const updated = await prisma.habitualityRecord.update({
-      where: { id: existing.id },
-      data: {
-        caliber: data.caliber,
-        activityDate,
-        activityType: data.activityType,
-        description: data.description ?? null,
-      },
-    });
+    // Se veio visitDetailId, confere que a linha pertence de fato a visita
+    // deste registro antes de tocar nela (evita editar VisitDetail de outro
+    // socio/visita via id arbitrario).
+    let visitDetail: { id: string } | null = null;
+    if (data.visitDetailId) {
+      if (!existing.visitId) {
+        res.status(400).json({ success: false, error: 'Registro nao possui visita vinculada' });
+        return;
+      }
+      visitDetail = await prisma.visitDetail.findFirst({
+        where: { id: data.visitDetailId, visitId: existing.visitId },
+        select: { id: true },
+      });
+      if (!visitDetail) {
+        res.status(400).json({ success: false, error: 'Linha de detalhe nao encontrada nesta visita' });
+        return;
+      }
+    }
+
+    const [updated] = await prisma.$transaction([
+      prisma.habitualityRecord.update({
+        where: { id: existing.id },
+        data: {
+          caliber: data.caliber,
+          activityDate,
+          activityType: data.activityType,
+          description: data.description ?? null,
+        },
+      }),
+      ...(visitDetail
+        ? [
+            prisma.visitDetail.update({
+              where: { id: visitDetail.id },
+              data: {
+                caliber: data.caliber,
+                firearmName: data.firearmName?.trim() || null,
+                ...(data.shotsFired != null ? { shotsFired: data.shotsFired } : {}),
+                ammunitionType: data.ammunitionType ?? null,
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     await createAuditLog({
       performedById: req.user!.id,

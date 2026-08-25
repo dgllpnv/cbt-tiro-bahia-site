@@ -35,6 +35,12 @@ export interface HabitualityRecord {
   visit?: { id: string; visitDate: string } | null;
   event?: { id: string; title: string; eventType: string } | null;
   verifiedBy?: { id: string; fullName: string } | null;
+  /** Enriquecido pelo backend a partir do VisitDetail casado por calibre — mesmo dado que sai na Declaração de Habitualidade. */
+  firearmName?: string | null;
+  shotsFired?: number | null;
+  ammunitionType?: AmmunitionType | null;
+  /** Id da linha do VisitDetail casada (para reenviar no PUT e editar arma/tiros/munição). Null se o registro não tem visita vinculada. */
+  visitDetailId?: string | null;
 }
 
 export interface UpdateHabitualityPayload {
@@ -42,6 +48,11 @@ export interface UpdateHabitualityPayload {
   activityDate: string; // ISO YYYY-MM-DD
   activityType: ActivityType;
   description?: string | null;
+  /** Repassa o mesmo id vindo em HabitualityRecord.visitDetailId — so envie quando o registro tiver visita vinculada. */
+  visitDetailId?: string | null;
+  firearmName?: string | null;
+  shotsFired?: number | null;
+  ammunitionType?: AmmunitionType | null;
 }
 
 // ── Service Functions ───────────────────────────────────────────────────────
@@ -77,6 +88,25 @@ export async function createManualSession(payload: ManualSessionPayload) {
 export async function getMemberHabituality(memberId: string, year: number) {
   try {
     const response = await api.get(`/api/habituality/member/${memberId}`, { params: { year } });
+    if (response.data.success) {
+      return { success: true as const, data: response.data.data as HabitualityRecord[] };
+    }
+    return { success: false as const, error: response.data.error };
+  } catch (error: any) {
+    return {
+      success: false as const,
+      error: error.response?.data?.error || 'Erro ao buscar habitualidade',
+    };
+  }
+}
+
+/**
+ * Lista o livro de habitualidade COMPLETO de um associado (todos os anos),
+ * mais recente primeiro. Usado na tela de lancamento manual.
+ */
+export async function getAllMemberHabituality(memberId: string) {
+  try {
+    const response = await api.get(`/api/habituality/member/${memberId}`, { params: { all: 'true' } });
     if (response.data.success) {
       return { success: true as const, data: response.data.data as HabitualityRecord[] };
     }
