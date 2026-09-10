@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Eye, Download, AlertCircle } from 'lucide-react';
+import { Loader2, Eye, Download, AlertCircle, ShieldAlert } from 'lucide-react';
 import MemberSearch from '@/components/shared/MemberSearch';
 import type { ReportConfig, ReportFilterValues } from '@/lib/reports/_shared/reportRegistry';
 import type { ClubSettings } from '@/services/clubSettingsService';
+import { signatureWarning } from '@/lib/reports/_shared/pdfSigning';
 
 interface ReportGenerateDialogProps {
   report: ReportConfig | null;
@@ -27,6 +28,7 @@ const ReportGenerateDialog = ({ report, club, onClose }: ReportGenerateDialogPro
   const [resultBlobUrl, setResultBlobUrl] = useState<string | null>(null);
   const [resultFilename, setResultFilename] = useState<string | null>(null);
   const [resultSave, setResultSave] = useState<(() => void) | null>(null);
+  const [signatureWarn, setSignatureWarn] = useState<string | null>(null);
 
   // Inicializa valores default ao abrir
   useEffect(() => {
@@ -40,6 +42,7 @@ const ReportGenerateDialog = ({ report, club, onClose }: ReportGenerateDialogPro
       setResultBlobUrl(null);
       setResultFilename(null);
       setResultSave(null);
+      setSignatureWarn(null);
     }
   }, [report]);
 
@@ -68,12 +71,14 @@ const ReportGenerateDialog = ({ report, club, onClose }: ReportGenerateDialogPro
     setError(null);
     if (resultBlobUrl) URL.revokeObjectURL(resultBlobUrl);
     setResultBlobUrl(null);
+    setSignatureWarn(null);
 
     try {
       const result = await report.generate(filterValues, club);
       setResultBlobUrl(result.blobUrl);
       setResultFilename(result.filename);
       setResultSave(() => result.save);
+      setSignatureWarn(signatureWarning(result.signature));
     } catch (err: any) {
       console.error('[ReportGenerate]', err);
       setError(err?.response?.data?.error || err?.message || 'Erro ao gerar relatório');
@@ -281,6 +286,18 @@ const ReportGenerateDialog = ({ report, club, onClose }: ReportGenerateDialogPro
           <div className="flex items-center gap-2 p-3 rounded-md bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-sm font-tactical">
             <AlertCircle size={16} />
             {error}
+          </div>
+        )}
+
+        {signatureWarn && (
+          <div className="flex items-start gap-2 p-3 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm font-tactical">
+            <ShieldAlert size={16} className="flex-shrink-0 mt-0.5" />
+            <span>
+              {signatureWarn}
+              <span className="block mt-1 text-xs opacity-80">
+                Corrija o certificado em Dados do Clube → Assinatura Digital e gere o documento novamente.
+              </span>
+            </span>
           </div>
         )}
 

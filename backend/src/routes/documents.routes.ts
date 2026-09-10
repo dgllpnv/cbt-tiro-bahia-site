@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
+import { startOfYearUtc, endOfYearUtc, compareDateOnly, todayUtc } from '../lib/dateOnly.js';
 import { createAuditLog } from '../services/auditService.js';
 import { decryptSecret } from '../lib/secretCrypto.js';
 import { signPdfWithCertificate } from '../lib/pdfSigning.js';
@@ -357,7 +357,11 @@ router.post('/sign', async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ success: false, error: 'Nenhuma assinatura digital configurada' });
       return;
     }
-    if (cert.validUntil && cert.validUntil.getTime() < Date.now()) {
+    // Comparacao so por dia de calendario: `validUntil` e uma coluna @db.Date
+    // (meia-noite UTC), entao comparar com o instante atual barraria o
+    // certificado durante todo o seu ultimo dia de validade — mesmo bug que
+    // ja foi corrigido no ciclo de anuidade (ver lib/annuityCycle.ts).
+    if (cert.validUntil && compareDateOnly(cert.validUntil, todayUtc()) < 0) {
       res.status(400).json({
         success: false,
         error: `Certificado de assinatura vencido em ${cert.validUntil.toISOString().slice(0, 10)} — anexe um novo em Dados do Clube.`,

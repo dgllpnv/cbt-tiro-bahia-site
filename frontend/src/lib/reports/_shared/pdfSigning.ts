@@ -8,11 +8,28 @@ import api from '@/services/api';
 // Quando o clube tem um certificado configurado (ClubDigitalSignature),
 // o PDF ja pronto (bytes) e enviado para POST /api/documents/sign, que
 // devolve o mesmo arquivo com uma assinatura PKCS#7/ICP-Brasil real
-// embutida (ver backend/src/lib/pdfSigning.ts). Sem certificado
-// configurado, ou se a assinatura falhar por qualquer motivo, o
-// comportamento cai de volta para o download normal sem assinatura —
-// NUNCA bloqueia a geracao do documento.
+// embutida (ver backend/src/lib/pdfSigning.ts).
+//
+// REGRA: falha de assinatura NUNCA bloqueia a geracao do documento — o
+// arquivo sai mesmo assim, so que sem assinatura. Mas o chamador SEMPRE
+// recebe o desfecho (`SignatureOutcome`) e e obrigado a avisar o usuario
+// quando um documento oficial saiu sem a assinatura que era esperada.
+// Baixar um documento nao assinado achando que esta assinado e pior do
+// que nao baixar: foi exatamente assim que o certificado vencido passou
+// despercebido, com a tela dizendo "Declaracao gerada" normalmente.
 // =====================================================
+
+/** Desfecho da tentativa de assinatura de um PDF. */
+export interface SignatureOutcome {
+  /** PDF saiu com assinatura PKCS#7 embutida. */
+  signed: boolean;
+  /** Havia certificado configurado — ou seja, a assinatura era esperada. */
+  attempted: boolean;
+  /** Motivo da falha (mensagem do backend), quando `attempted && !signed`. */
+  reason?: string;
+}
+
+const NOT_CONFIGURED: SignatureOutcome = { signed: false, attempted: false };
 
 // Cache curto do status "configurado" — evita bater a API a cada PDF numa
 // sessao onde o usuario baixa varios documentos em sequencia.
@@ -26,7 +43,12 @@ async function isSignatureConfigured(): Promise<boolean> {
     const value = !!res.data?.data?.configured;
     signatureCache = { value, expiresAt: now + 30_000 };
     return value;
-  } catch {
+  } catch (err) {
+    // Nao da pra saber se ha certificado. Trata como "sem certificado" para
+    // nao alarmar clubes que nao usam assinatura — o proprio painel de Dados
+    // do Clube ja mostra o erro de leitura para o admin. Sem cache: a
+    // proxima geracao tenta de novo.
+    console.error('[pdfSigning] Nao foi possivel checar o certificado do clube:', err);
     return false;
   }
 }
@@ -52,20 +74,36 @@ function base64ToBlob(base64: string): Blob {
   return new Blob([bytes], { type: 'application/pdf' });
 }
 
-async function trySignPdf(pdf: jsPDF, documentLabel?: string): Promise<Blob | null> {
-  if (!(await isSignatureConfigured())) return null;
+/** Mensagem util do backend (`{ success:false, error }`) ou fallback generico. */
+function extractReason(err: any): string {
+  return (
+    err?.response?.data?.error ||
+    err?.message ||
+    'Nao foi possivel falar com o servidor de assinatura.'
+  );
+}
+
+async function trySignPdf(
+  pdf: jsPDF,
+  documentLabel?: string,
+): Promise<{ blob: Blob | null; outcome: SignatureOutcome }> {
+  if (!(await isSignatureConfigured())) return { blob: null, outcome: NOT_CONFIGURED };
   try {
     const bytes = pdf.output('arraybuffer') as ArrayBuffer;
     const pdfData = uint8ToBase64(new Uint8Array(bytes));
     const res = await api.post('/api/documents/sign', { pdfData, documentLabel });
     if (res.data?.success && res.data.data?.signedPdfData) {
-      return base64ToBlob(res.data.data.signedPdfData);
+      return { blob: base64ToBlob(res.data.data.signedPdfData), outcome: { signed: true, attempted: true } };
     }
-    return null;
+    return {
+      blob: null,
+      outcome: { signed: false, attempted: true, reason: res.data?.error || 'Resposta invalida do servidor.' },
+    };
   } catch (err) {
     // Nao bloqueia o usuario — o documento ainda sai, so sem assinatura.
+    // O motivo sobe junto para quem chamou avisar na tela.
     console.error('[pdfSigning] Falha ao assinar PDF, baixando sem assinatura:', err);
-    return null;
+    return { blob: null, outcome: { signed: false, attempted: true, reason: extractReason(err) } };
   }
 }
 
@@ -84,34 +122,55 @@ export interface ReportOutput {
   filename: string;
   blobUrl: string;
   save: () => void;
+  /** Desfecho da assinatura — a tela deve avisar quando `attempted && !signed`. */
+  signature: SignatureOutcome;
 }
 
 /**
  * Usado pelo funil de Relatorios (reportRegistry.ts). Mesmo shape que
  * `{ filename, blobUrl: pdfToBlobUrl(pdf), save: () => savePdf(pdf, filename) }`
- * de antes — so que assina primeiro quando ha certificado configurado.
+ * de antes — so que assina primeiro quando ha certificado configurado e
+ * informa em `signature` se a assinatura realmente saiu.
  */
 export async function finalizeReportOutput(pdf: jsPDF, filename: string): Promise<ReportOutput> {
-  const signedBlob = await trySignPdf(pdf, filename);
-  if (signedBlob) {
-    return { filename, blobUrl: URL.createObjectURL(signedBlob), save: () => downloadBlob(signedBlob, filename) };
+  const { blob, outcome } = await trySignPdf(pdf, filename);
+  if (blob) {
+    return {
+      filename,
+      blobUrl: URL.createObjectURL(blob),
+      save: () => downloadBlob(blob, filename),
+      signature: outcome,
+    };
   }
   return {
     filename,
     blobUrl: URL.createObjectURL(pdf.output('blob')),
     save: () => pdf.save(filename),
+    signature: outcome,
   };
 }
 
 /**
  * Usado pelos pontos que baixam direto (`pdf.save(filename)`) fora do
  * funil de Relatorios — ex.: Meus Documentos e Habitualidade no portal.
+ * Devolve o desfecho para a pagina avisar quando o documento saiu sem a
+ * assinatura esperada.
  */
-export async function downloadPdfSigned(pdf: jsPDF, filename: string): Promise<void> {
-  const signedBlob = await trySignPdf(pdf, filename);
-  if (signedBlob) {
-    downloadBlob(signedBlob, filename);
-    return;
+export async function downloadPdfSigned(pdf: jsPDF, filename: string): Promise<SignatureOutcome> {
+  const { blob, outcome } = await trySignPdf(pdf, filename);
+  if (blob) {
+    downloadBlob(blob, filename);
+  } else {
+    pdf.save(filename);
   }
-  pdf.save(filename);
+  return outcome;
+}
+
+/**
+ * Texto pronto para toast/banner quando um documento oficial saiu sem a
+ * assinatura que era esperada. `null` quando nao ha nada a avisar.
+ */
+export function signatureWarning(outcome: SignatureOutcome): string | null {
+  if (!outcome.attempted || outcome.signed) return null;
+  return `O arquivo foi baixado SEM assinatura digital. ${outcome.reason ?? ''}`.trim();
 }

@@ -46,7 +46,7 @@ import {
 } from '@/services/clubSettingsService';
 import { getHabitualityDeclarationData } from '@/services/documentsService';
 import { generateHabitualityPdf } from '@/lib/pdfHabituality';
-import { downloadPdfSigned } from '@/lib/reports/_shared/pdfSigning';
+import { downloadPdfSigned, signatureWarning } from '@/lib/reports/_shared/pdfSigning';
 
 const REQUIRED_TRAININGS = 8;
 
@@ -149,12 +149,23 @@ const HabitualityPage = () => {
       }
       const pdf = await generateHabitualityPdf(packetRes.data);
       const fileName = `declaracao-habitualidade-${user.memberNumber || 'cbt'}-${declarationYear}.pdf`;
-      await downloadPdfSigned(pdf, fileName);
+      const signature = await downloadPdfSigned(pdf, fileName);
 
-      toast({
-        title: 'Declaração gerada',
-        description: `Salva como ${fileName}`,
-      });
+      // A declaracao vale para a PF/Exercito — se a assinatura digital do
+      // clube falhou, o associado precisa saber ANTES de protocolar.
+      const warning = signatureWarning(signature);
+      if (warning) {
+        toast({
+          variant: 'destructive',
+          title: 'Declaração gerada SEM assinatura digital',
+          description: `${warning} Procure a administração do clube antes de protocolar.`,
+        });
+      } else {
+        toast({
+          title: 'Declaração gerada',
+          description: `Salva como ${fileName}`,
+        });
+      }
       setDeclarationOpen(false);
     } catch (err) {
       console.error('Erro ao gerar PDF da declaração:', err);

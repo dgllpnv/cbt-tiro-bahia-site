@@ -11,6 +11,11 @@ router.use(authMiddleware);
 
 const CLUB_ID = 'cbt-bahia';
 
+/** dd/mm/aaaa em UTC — datas de validade sao dias de calendario, nao instantes. */
+function formatDateBr(date: Date): string {
+  return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+}
+
 // Campos seguros para expor via API — NUNCA inclui fileData/passwordEncrypted.
 const digitalSignatureMetaSelect = {
   fileName: true,
@@ -177,6 +182,20 @@ router.post('/digital-signature', requireRole('ADMIN'), async (req: Request, res
       res.status(400).json({
         success: false,
         error: 'Nao foi possivel abrir o certificado — senha incorreta ou arquivo invalido.',
+      });
+      return;
+    }
+
+    // Certificado vencido nao produz assinatura valida: POST /api/documents/sign
+    // recusaria todo documento depois. Rejeitar aqui evita o pior estado
+    // possivel — a tela dizendo "configurado" enquanto os PDFs saem sem
+    // assinatura nenhuma.
+    if (info.validUntil.getTime() < Date.now()) {
+      res.status(400).json({
+        success: false,
+        error:
+          `Este certificado venceu em ${formatDateBr(info.validUntil)} e nao pode mais assinar documentos. ` +
+          `Emita/renove o e-CPF A1 do responsavel legal e anexe o arquivo novo.`,
       });
       return;
     }

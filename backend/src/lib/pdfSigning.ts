@@ -30,6 +30,23 @@ export interface SignPdfOptions {
   signerName: string;
 }
 
+// Espaco reservado no PDF para a assinatura PKCS#7, em bytes.
+//
+// O default do @signpdf e 8192 — suficiente para um certificado avulso,
+// mas PEQUENO DEMAIS para um e-CPF ICP-Brasil de verdade: o .pfx da AC
+// traz a cadeia inteira (folha + AC intermediarias + AC Raiz) e o PKCS#7
+// embute todas elas. O e-CPF do responsavel legal gera ~15 KB de
+// assinatura e estourava o placeholder com
+// "Signature exceeds placeholder length: 15238 > 8192", derrubando a
+// assinatura de TODO documento (o certificado de teste usado no
+// desenvolvimento era autoassinado, sem cadeia, e cabia nos 8192 — por
+// isso o bug so apareceu com o certificado real).
+//
+// 32 KB da folga para cadeias mais longas e para um eventual carimbo de
+// tempo. O espaco nao usado vira padding no arquivo final — custo
+// irrelevante perto de quebrar a assinatura.
+const SIGNATURE_LENGTH_BYTES = 32768;
+
 export async function signPdfWithCertificate(
   pdfBytes: Buffer,
   p12Buffer: Buffer,
@@ -44,6 +61,7 @@ export async function signPdfWithCertificate(
     contactInfo: opts.contactInfo ?? '',
     name: opts.signerName,
     location: opts.location ?? '',
+    signatureLength: SIGNATURE_LENGTH_BYTES,
   });
 
   // useObjectStreams:false e obrigatorio — a assinatura precisa localizar
