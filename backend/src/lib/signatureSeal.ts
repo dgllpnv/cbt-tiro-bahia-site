@@ -36,9 +36,8 @@ const BAND_HEIGHT_PT = 19;
 const MIN_PAGE_WIDTH_PT = 300;
 const MIN_PAGE_HEIGHT_PT = 400;
 
-// Paleta oficial do gov.br (azul #1351B4, verde #168821).
-const GOV_BLUE = rgb(0.075, 0.318, 0.706);
-const GOV_GREEN = rgb(0.086, 0.533, 0.129);
+// Azul-marinho institucional do ICP-Brasil.
+const ICP_NAVY = rgb(0.086, 0.196, 0.361);
 const WHITE = rgb(1, 1, 1);
 const INK = rgb(0.1, 0.1, 0.1);
 const MUTED = rgb(0.35, 0.35, 0.35);
@@ -116,9 +115,12 @@ function drawCentered(
 }
 
 /**
- * Selo no padrao do Assinador Digital do gov.br: moldura clara, marca
- * "gov.br" a esquerda e, a direita, "Documento assinado digitalmente" +
- * nome do signatario + data/hora + endereco do validador oficial.
+ * Selo de assinatura: LAYOUT do Assinador Digital do gov.br (moldura
+ * clara, marca a esquerda, filete separador e as linhas de identificacao
+ * a direita) com a MARCA do ICP-Brasil — que e a autoridade que de fato
+ * emitiu o certificado do clube (e-CPF A1 da Receita Federal). O selo nao
+ * pode dizer "gov.br": o documento nao foi assinado pelo assinador do
+ * gov.br, e sim pelo certificado proprio do responsavel legal.
  */
 function drawBadge(
   page: PDFPage,
@@ -129,24 +131,23 @@ function drawBadge(
   const { x, y, w, h } = box;
   const { regular, bold } = fonts;
 
-  // Moldura clara com fundo branco — o gov.br carimba sobre a folha, nao
-  // num bloco solido.
+  // Moldura clara sobre a folha — nao um bloco solido.
   page.drawRectangle({
     x, y, width: w, height: h,
     color: WHITE,
-    borderColor: GOV_BLUE,
+    borderColor: ICP_NAVY,
     borderWidth: 0.6,
   });
 
-  // ── Marca gov.br, centralizada na coluna da esquerda ──────────────
+  // ── Marca "ICP / Brasil", centralizada na coluna da esquerda ──────
   const logoColW = 30;
-  const logoSize = Math.min(9, h / 3);
-  const govW = bold.widthOfTextAtSize('gov', logoSize);
-  const brW = bold.widthOfTextAtSize('.br', logoSize);
-  const logoX = x + (logoColW - (govW + brW)) / 2;
-  const logoY = y + (h - logoSize * 0.72) / 2;
-  page.drawText('gov', { x: logoX, y: logoY, size: logoSize, font: bold, color: GOV_BLUE });
-  page.drawText('.br', { x: logoX + govW, y: logoY, size: logoSize, font: bold, color: GOV_GREEN });
+  const icpSize = Math.min(8, h / 3.4);
+  const brasilSize = icpSize * 0.62;
+  const cxLogo = x + logoColW / 2;
+  const blocoH = icpSize + brasilSize + 1.2;
+  const baseLogo = y + (h - blocoH) / 2 + brasilSize + 1.2;
+  drawCentered(page, 'ICP', { cx: cxLogo, y: baseLogo, size: icpSize, font: bold, color: ICP_NAVY });
+  drawCentered(page, 'Brasil', { cx: cxLogo, y: baseLogo - brasilSize - 1.2, size: brasilSize, font: bold, color: ICP_NAVY });
 
   // Filete separando a marca do texto
   page.drawLine({
@@ -162,7 +163,7 @@ function drawBadge(
   const { name } = splitHolder(info.signerName);
 
   const linhas: Array<{ txt: string; size: number; font: PDFFont; color: ReturnType<typeof rgb> }> = [
-    { txt: 'Documento assinado digitalmente', size: 4.8, font: bold, color: GOV_BLUE },
+    { txt: 'Documento assinado digitalmente', size: 4.8, font: bold, color: ICP_NAVY },
     { txt: toWinAnsi(name), size: 4.4, font: bold, color: INK },
     { txt: toWinAnsi(`Data: ${formatSignedAt(info.signedAt)}`), size: 3.9, font: regular, color: MUTED },
     { txt: 'Verifique em validar.iti.gov.br', size: 3.9, font: regular, color: MUTED },
