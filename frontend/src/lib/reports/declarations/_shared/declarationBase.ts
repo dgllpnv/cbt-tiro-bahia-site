@@ -10,6 +10,7 @@
 import jsPDF from 'jspdf';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { calendarParts, formatCalendarDate } from '@/lib/dateOnly';
+import { SEAL_H_MM, SEAL_W_MM, currentPage, setSignatureAnchor } from '../../_shared/signatureAnchor';
 
 export const MARGIN_X = 25;
 export const MARGIN_Y = 30;
@@ -223,10 +224,21 @@ export function declSignature(
   const { pdf, pageWidth } = ctx;
   const lineW = 90;
   const lineX1 = (pageWidth - lineW) / 2;
+  const lineY = ctx.cursorY;
   pdf.setDrawColor(0, 0, 0);
   pdf.setLineWidth(0.3);
-  pdf.line(lineX1, ctx.cursorY, lineX1 + lineW, ctx.cursorY);
+  pdf.line(lineX1, lineY, lineX1 + lineW, lineY);
   ctx.cursorY += 5;
+
+  // Espaco da rubrica reservado para o selo de assinatura digital — o
+  // nome/cargo/CPF logo abaixo continuam sendo desenhados aqui.
+  setSignatureAnchor(pdf, {
+    page: currentPage(pdf),
+    xMm: (pageWidth - SEAL_W_MM) / 2,
+    yMm: lineY - SEAL_H_MM - 1,
+    wMm: SEAL_W_MM,
+    hMm: SEAL_H_MM,
+  });
 
   pdf.setFont('times', 'bold');
   pdf.setFontSize(11);
@@ -270,6 +282,22 @@ export function declTwoSignatures(
   pdf.text(`CPF: ${formatCpf(right.cpf)}`, MARGIN_X + colW + colW / 2, baseY + 11, { align: 'center' });
 
   ctx.cursorY = baseY + 18;
+
+  // Selo sob a coluna da DIREITA (o responsavel legal do clube, dono do
+  // certificado) — mesma posicao do modelo que o clube usava antes. So
+  // reserva se couber na pagina: empurrar a Declaracao de Filiacao para
+  // uma 2a pagina seria pior que nao ter selo (ver commit aa4ce83).
+  const sealY = baseY + 13;
+  if (sealY + SEAL_H_MM <= ctx.pageHeight - MARGIN_Y) {
+    setSignatureAnchor(pdf, {
+      page: currentPage(pdf),
+      xMm: MARGIN_X + colW + colW / 2 - SEAL_W_MM / 2,
+      yMm: sealY,
+      wMm: SEAL_W_MM,
+      hMm: SEAL_H_MM,
+    });
+    ctx.cursorY = sealY + SEAL_H_MM + 3;
+  }
 }
 
 export function declTable(

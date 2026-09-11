@@ -7,6 +7,7 @@ import { startOfYearUtc, endOfYearUtc, compareDateOnly, todayUtc } from '../lib/
 import { createAuditLog } from '../services/auditService.js';
 import { decryptSecret } from '../lib/secretCrypto.js';
 import { signPdfWithCertificate } from '../lib/pdfSigning.js';
+import type { SealAnchor } from '../lib/signatureSeal.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -346,6 +347,17 @@ const signPdfSchema = z.object({
   // base64 puro do PDF gerado no navegador (sem prefixo data:...;base64,).
   pdfData: z.string().min(1, 'PDF vazio'),
   documentLabel: z.string().max(200).optional(),
+  // Espaco da rubrica reservado pelo gerador (mm, a partir do topo-esquerda
+  // da pagina). Opcional: sem ele o selo sai no rodape.
+  anchor: z
+    .object({
+      page: z.number().int().min(1).max(500),
+      xMm: z.number().min(0).max(1000),
+      yMm: z.number().min(0).max(1000),
+      wMm: z.number().min(5).max(1000),
+      hMm: z.number().min(5).max(1000),
+    })
+    .optional(),
 });
 
 router.post('/sign', async (req: Request, res: Response): Promise<void> => {
@@ -373,9 +385,18 @@ router.post('/sign', async (req: Request, res: Response): Promise<void> => {
     const p12Buffer = Buffer.from(cert.fileData, 'base64');
     const password = decryptSecret(cert.passwordEncrypted);
 
+    // Zod valida os campos, mas o tsconfig sem `strict` infere o objeto com
+    // props opcionais — normaliza para o shape exigido por SealAnchor.
+    const a = data.anchor;
+    const anchor: SealAnchor | null =
+      a && a.page != null && a.xMm != null && a.yMm != null && a.wMm != null && a.hMm != null
+        ? { page: a.page, xMm: a.xMm, yMm: a.yMm, wMm: a.wMm, hMm: a.hMm }
+        : null;
+
     const signed = await signPdfWithCertificate(pdfBytes, p12Buffer, password, {
       signerName: cert.holderName || cert.uploadedByEmail,
       reason: 'Documento assinado digitalmente pelo clube',
+      anchor: anchor,
     });
 
     // Auditoria: nunca guarda o PDF em si — so um hash pra rastreabilidade

@@ -3,7 +3,7 @@ import { PDFDocument } from 'pdf-lib';
 import { pdflibAddPlaceholder } from '@signpdf/placeholder-pdf-lib';
 import signpdfPkg from '@signpdf/signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
-import { drawSignatureSeal } from './signatureSeal.js';
+import { drawSignatureSeal, type SealAnchor } from './signatureSeal.js';
 
 // @signpdf/signpdf e um pacote CJS (Babel) — sob a interop ESM do Node, o
 // "default import" traz o objeto exports inteiro ({ SignPdf, Signer,
@@ -36,6 +36,12 @@ export interface SignPdfOptions {
    * nao assinado (ver signatureSeal.ts).
    */
   drawSeal?: boolean;
+  /**
+   * Espaco da rubrica reservado pelo gerador do PDF. Com ele o selo sai
+   * no lugar da assinatura (nome/cargo/CPF logo abaixo); sem ele, numa
+   * faixa discreta de rodape.
+   */
+  anchor?: SealAnchor | null;
 }
 
 // Espaco reservado no PDF para a assinatura PKCS#7, em bytes.
@@ -74,6 +80,7 @@ export async function signPdfWithCertificate(
       holderName: opts.signerName,
       sha256: crypto.createHash('sha256').update(pdfBytes).digest('hex'),
       signedAt,
+      anchor: opts.anchor ?? null,
     });
   }
 

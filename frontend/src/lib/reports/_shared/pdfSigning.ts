@@ -1,5 +1,6 @@
 import type jsPDF from 'jspdf';
 import api from '@/services/api';
+import { getSignatureAnchor } from './signatureAnchor';
 
 // =====================================================
 // pdfSigning — ponto unico que decide se um PDF gerado no navegador deve
@@ -91,7 +92,10 @@ async function trySignPdf(
   try {
     const bytes = pdf.output('arraybuffer') as ArrayBuffer;
     const pdfData = uint8ToBase64(new Uint8Array(bytes));
-    const res = await api.post('/api/documents/sign', { pdfData, documentLabel });
+    // Onde o gerador reservou o espaco da rubrica. Sem ancora o backend
+    // carimba o selo discreto no rodape.
+    const anchor = getSignatureAnchor(pdf) ?? undefined;
+    const res = await api.post('/api/documents/sign', { pdfData, documentLabel, anchor });
     if (res.data?.success && res.data.data?.signedPdfData) {
       return { blob: base64ToBlob(res.data.data.signedPdfData), outcome: { signed: true, attempted: true } };
     }

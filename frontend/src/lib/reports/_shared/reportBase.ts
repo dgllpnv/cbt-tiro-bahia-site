@@ -17,6 +17,7 @@
 import jsPDF from 'jspdf';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { formatCalendarDate } from '@/lib/dateOnly';
+import { SEAL_H_MM, SEAL_W_MM, currentPage, setSignatureAnchor } from './signatureAnchor';
 
 // ── Constantes de marca ─────────────────────────────────────────────────────
 export const ORANGE = '#FF8C00';
@@ -381,10 +382,23 @@ export function addSignatureBlock(
   // Linha de assinatura
   const lineW = 80;
   const lineX1 = (pageWidth - lineW) / 2;
+  const lineY = ctx.cursorY;
   pdf.setDrawColor(150, 150, 150);
   pdf.setLineWidth(0.3);
-  pdf.line(lineX1, ctx.cursorY, lineX1 + lineW, ctx.cursorY);
+  pdf.line(lineX1, lineY, lineX1 + lineW, lineY);
   ctx.cursorY += 4;
+
+  // Reserva o espaco da rubrica (logo acima da linha) para o selo de
+  // assinatura digital — nome/cargo/CPF ja sao desenhados abaixo. O selo
+  // so aparece se o documento for realmente assinado; se nao for, o
+  // espaco fica em branco como sempre foi.
+  setSignatureAnchor(pdf, {
+    page: currentPage(pdf),
+    xMm: (pageWidth - SEAL_W_MM) / 2,
+    yMm: lineY - SEAL_H_MM - 1,
+    wMm: SEAL_W_MM,
+    hMm: SEAL_H_MM,
+  });
 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(9.5);
