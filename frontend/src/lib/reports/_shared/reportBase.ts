@@ -222,6 +222,26 @@ export function addSectionTitle(ctx: PdfReportContext, title: string): void {
 
 // ── Grid 2 colunas de chave/valor ───────────────────────────────────────────
 
+/**
+ * Rotulo da grade chave/valor. O valor e desenhado sempre a 38mm do inicio
+ * da coluna, entao um rotulo que passe disso invade o valor — era o caso de
+ * "CR (Certificado de Registro):", que saia colado no numero do CR. Encolhe
+ * a fonte do rotulo ate caber na faixa reservada.
+ */
+function drawLabel(pdf: jsPDF, label: string, x: number, y: number): void {
+  const LABEL_MAX_W = 36; // 38mm ate a coluna do valor, menos 2mm de respiro
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(TEXT_MUTED);
+  let size = 9;
+  pdf.setFontSize(size);
+  while (size > 6 && pdf.getTextWidth(label) > LABEL_MAX_W) {
+    size -= 0.25;
+    pdf.setFontSize(size);
+  }
+  pdf.text(label, x, y);
+  pdf.setFontSize(9);
+}
+
 export function addKeyValueGrid(
   ctx: PdfReportContext,
   rows: Array<[string, string]>,
@@ -249,18 +269,13 @@ export function addKeyValueGrid(
 
     ensureSpace(ctx, rowH);
 
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(9);
-    pdf.setTextColor(TEXT_MUTED);
-    pdf.text(`${left[0]}:`, MARGIN_X, ctx.cursorY);
+    drawLabel(pdf, `${left[0]}:`, MARGIN_X, ctx.cursorY);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(TEXT_DARK);
     pdf.text(leftLines, MARGIN_X + 38, ctx.cursorY);
 
     if (right) {
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(TEXT_MUTED);
-      pdf.text(`${right[0]}:`, MARGIN_X + colW, ctx.cursorY);
+      drawLabel(pdf, `${right[0]}:`, MARGIN_X + colW, ctx.cursorY);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(TEXT_DARK);
       pdf.text(rightLines, MARGIN_X + colW + 38, ctx.cursorY);
@@ -504,20 +519,33 @@ function drawFooterOnPage(ctx: PdfReportContext, pageIdx: number, totalPages: nu
   ].join('  ·  ');
   pdf.text(leftLine, MARGIN_X, footerY);
 
-  // Centro: citacao legal compactada (se houver)
-  if (meta.legalRefs && meta.legalRefs.length > 0) {
-    const refs = meta.legalRefs.join(' · ');
-    const maxWidth = pageWidth - MARGIN_X * 2 - 100;
-    pdf.text(`Conforme ${refs}`, pageWidth / 2, footerY, {
-      align: 'center',
-      maxWidth,
-    });
-  }
-
   // Direita: pagina X de Y
   pdf.text(`Pagina ${pageIdx} de ${totalPages}`, pageWidth - MARGIN_X, footerY, {
     align: 'right',
   });
+
+  // Citacao legal em LINHA PROPRIA, abaixo da primeira.
+  //
+  // Antes as tres partes eram desenhadas na mesma baseline: a citacao
+  // centralizada ficava presa a um maxWidth estreito (pageWidth - 2*MARGIN_X
+  // - 100), quebrava em varias linhas e essas linhas atravessavam o email a
+  // esquerda e a numeracao a direita — o rodape saia com texto sobreposto
+  // ("Gerado em ... Conforme Decreto 11.615/2023, art. 11 · P").
+  // Numa linha so, com a largura inteira, nao ha com o que colidir.
+  if (meta.legalRefs && meta.legalRefs.length > 0) {
+    const refs = `Conforme ${meta.legalRefs.join(' · ')}`;
+    const maxWidth = pageWidth - MARGIN_X * 2;
+    // Encolhe ate caber numa linha; citacoes longas (3 portarias) cabem
+    // com folga em 6.5pt.
+    let size = 7;
+    pdf.setFontSize(size);
+    while (size > 4.5 && pdf.getTextWidth(refs) > maxWidth) {
+      size -= 0.25;
+      pdf.setFontSize(size);
+    }
+    pdf.text(refs, pageWidth / 2, footerY + 3.4, { align: 'center' });
+    pdf.setFontSize(7.5);
+  }
 
   // Linha cinza acima do footer
   pdf.setDrawColor(220, 220, 220);
