@@ -36,9 +36,12 @@ const BAND_HEIGHT_PT = 19;
 const MIN_PAGE_WIDTH_PT = 300;
 const MIN_PAGE_HEIGHT_PT = 400;
 
-// Azul-marinho do selo ICP-Brasil do modelo antigo.
-const NAVY = rgb(0.086, 0.196, 0.361);
+// Paleta oficial do gov.br (azul #1351B4, verde #168821).
+const GOV_BLUE = rgb(0.075, 0.318, 0.706);
+const GOV_GREEN = rgb(0.086, 0.533, 0.129);
 const WHITE = rgb(1, 1, 1);
+const INK = rgb(0.1, 0.1, 0.1);
+const MUTED = rgb(0.35, 0.35, 0.35);
 
 /** Retangulo reservado pelo gerador, em mm a partir do topo-esquerda. */
 export interface SealAnchor {
@@ -91,7 +94,8 @@ function formatSignedAt(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   });
-  return `${d} as ${t}`;
+  // "às" com acento: WinAnsi cobre à (0xE0), entao o toWinAnsi preserva.
+  return `${d} às ${t}`;
 }
 
 /** Encolhe a fonte ate o texto caber na largura disponivel. */
@@ -112,64 +116,80 @@ function drawCentered(
 }
 
 /**
- * Selo "ASSINATURA ELETRONICA QUALIFICADA / ICP-Brasil", desenhado no
- * espaco da rubrica. Reproduz o modelo que o clube ja usava.
+ * Selo no padrao do Assinador Digital do gov.br: moldura clara, marca
+ * "gov.br" a esquerda e, a direita, "Documento assinado digitalmente" +
+ * nome do signatario + data/hora + endereco do validador oficial.
  */
 function drawBadge(
   page: PDFPage,
   box: { x: number; y: number; w: number; h: number },
+  info: { signerName: string; signedAt: Date },
   fonts: { regular: PDFFont; bold: PDFFont },
 ): void {
   const { x, y, w, h } = box;
   const { regular, bold } = fonts;
 
-  page.drawRectangle({ x, y, width: w, height: h, color: NAVY, borderColor: NAVY, borderWidth: 0.4 });
+  // Moldura clara com fundo branco — o gov.br carimba sobre a folha, nao
+  // num bloco solido.
+  page.drawRectangle({
+    x, y, width: w, height: h,
+    color: WHITE,
+    borderColor: GOV_BLUE,
+    borderWidth: 0.6,
+  });
 
-  const cx = x + w / 2;
-  // Cabecalho: "ASSINATURA ELETRONICA" / "QUALIFICADA"
-  const t1 = 'ASSINATURA ELETRONICA';
-  const s1 = fitSize(regular, t1, w - 8, 4.2);
-  drawCentered(page, t1, { cx, y: y + h - 6, size: s1, font: regular, color: WHITE });
+  // ── Marca gov.br, centralizada na coluna da esquerda ──────────────
+  const logoColW = 30;
+  const logoSize = Math.min(9, h / 3);
+  const govW = bold.widthOfTextAtSize('gov', logoSize);
+  const brW = bold.widthOfTextAtSize('.br', logoSize);
+  const logoX = x + (logoColW - (govW + brW)) / 2;
+  const logoY = y + (h - logoSize * 0.72) / 2;
+  page.drawText('gov', { x: logoX, y: logoY, size: logoSize, font: bold, color: GOV_BLUE });
+  page.drawText('.br', { x: logoX + govW, y: logoY, size: logoSize, font: bold, color: GOV_GREEN });
 
-  const t2 = 'QUALIFICADA';
-  const s2 = fitSize(bold, t2, w - 8, 6.4);
-  drawCentered(page, t2, { cx, y: y + h - 13, size: s2, font: bold, color: WHITE });
+  // Filete separando a marca do texto
+  page.drawLine({
+    start: { x: x + logoColW, y: y + 2.5 },
+    end: { x: x + logoColW, y: y + h - 2.5 },
+    thickness: 0.4,
+    color: rgb(0.78, 0.82, 0.88),
+  });
 
-  // Bloco branco "ICP Brasil" a esquerda
-  const bw = 19;
-  const bh = Math.min(11, h - 4);
-  const bx = x + 6;
-  const by = y + 2.5;
-  page.drawRectangle({ x: bx, y: by, width: bw, height: bh, color: WHITE });
-  drawCentered(page, 'ICP', { cx: bx + bw / 2, y: by + bh - 5.2, size: 5, font: bold, color: NAVY });
-  drawCentered(page, 'Brasil', { cx: bx + bw / 2, y: by + bh - 10, size: 4, font: bold, color: NAVY });
+  // ── Texto a direita ───────────────────────────────────────────────
+  const tx = x + logoColW + 5;
+  const tw = x + w - tx - 4;
+  const { name } = splitHolder(info.signerName);
 
-  // Base legal a direita. Duas linhas, nao tres: a caixa tem ~11pt uteis e
-  // uma terceira linha encavalava na segunda.
-  const lx = bx + bw + 5;
-  const lw = x + w - lx - 4;
-  const l1 = 'Conforme MP 2.200-2/01';
-  const l2 = 'e Lei 14.063/20';
-  const ls = Math.min(4, fitSize(bold, l1, lw, 4));
-  page.drawText(l1, { x: lx, y: by + bh - 5, size: ls, font: bold, color: WHITE });
-  page.drawText(l2, { x: lx, y: by + bh - 10.2, size: ls, font: bold, color: WHITE });
+  const linhas: Array<{ txt: string; size: number; font: PDFFont; color: ReturnType<typeof rgb> }> = [
+    { txt: 'Documento assinado digitalmente', size: 4.8, font: bold, color: GOV_BLUE },
+    { txt: toWinAnsi(name), size: 4.4, font: bold, color: INK },
+    { txt: toWinAnsi(`Data: ${formatSignedAt(info.signedAt)}`), size: 3.9, font: regular, color: MUTED },
+    { txt: 'Verifique em validar.iti.gov.br', size: 3.9, font: regular, color: MUTED },
+  ];
+
+  // Baselines em fracao da altura: mantem folga no topo e, principalmente,
+  // embaixo — distribuir igualmente encostava a ultima linha na moldura e
+  // cortava os descendentes (g, q, y).
+  const FRACOES = [0.23, 0.44, 0.635, 0.83];
+  linhas.forEach((l, i) => {
+    const size = fitSize(l.font, l.txt, tw, l.size);
+    page.drawText(l.txt, { x: tx, y: y + h - FRACOES[i] * h, size, font: l.font, color: l.color });
+  });
 }
 
 /**
- * Linha discreta com hash + validador oficial, logo abaixo do selo.
- * Mesma informacao que o modelo antigo imprimia sob o carimbo.
+ * Codigo de verificacao do documento, discreto no rodape. O endereco do
+ * validador ja vai dentro do selo gov.br, entao aqui fica so o hash — que
+ * e o que permite conferir que o arquivo nao foi trocado.
  */
 function drawHashLine(
   page: PDFPage,
   opts: { cx: number; y: number; maxWidth: number; sha256: string; font: PDFFont },
 ): void {
-  const muted = rgb(0.35, 0.35, 0.35);
-  const l1 = toWinAnsi(`Hash SHA-256 do original: ${opts.sha256}`);
-  const s1 = fitSize(opts.font, l1, opts.maxWidth, 4.2);
-  drawCentered(page, l1, { cx: opts.cx, y: opts.y + 5, size: s1, font: opts.font, color: muted });
-  const l2 = 'Verifique a validade em validar.iti.gov.br';
-  const s2 = fitSize(opts.font, l2, opts.maxWidth, 4.2);
-  drawCentered(page, l2, { cx: opts.cx, y: opts.y, size: s2, font: opts.font, color: muted });
+  const linha = toWinAnsi(`Código de verificação (SHA-256): ${opts.sha256}`);
+  const size = fitSize(opts.font, linha, opts.maxWidth, 4.2);
+  drawCentered(page, linha, { cx: opts.cx, y: opts.y, size, font: opts.font, color: MUTED });
 }
 
 /** Faixa de rodape — usada quando o gerador nao reservou espaco de rubrica. */
@@ -235,7 +255,7 @@ export async function drawSignatureSeal(
         h: a.hMm * MM,
       };
       if (box.x >= 0 && box.y >= 0 && box.x + box.w <= width && box.y + box.h <= height) {
-        drawBadge(page, box, { regular, bold });
+        drawBadge(page, box, { signerName: info.holderName, signedAt: info.signedAt }, { regular, bold });
         // Hash + validador na faixa de rodape reservada da mesma pagina,
         // longe do bloco de assinatura (que ja traz nome, cargo e CPF).
         drawHashLine(page, {

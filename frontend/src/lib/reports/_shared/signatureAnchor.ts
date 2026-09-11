@@ -49,6 +49,10 @@ export function currentPage(pdf: jsPDF): number {
   return info?.pageNumber ?? pdf.getNumberOfPages();
 }
 
-/** Dimensoes do selo (mm). Espelhadas em backend/src/lib/signatureSeal.ts. */
-export const SEAL_W_MM = 52;
+/**
+ * Dimensoes do selo (mm). Largura folgada porque o selo gov.br tem quatro
+ * linhas de texto ao lado da marca; a altura e limitada pelo vao de 14mm
+ * que o bloco de assinatura deixa acima da linha da rubrica.
+ */
+export const SEAL_W_MM = 62;
 export const SEAL_H_MM = 10;
