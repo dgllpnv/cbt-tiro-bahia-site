@@ -126,6 +126,8 @@ export interface ShootersAmmoReport {
     visits: number;
     totalShots: number;
     calibers: Array<{ caliber: string; shots: number }>;
+    /** Dias (YYYY-MM-DD) em que o atirador frequentou o clube no periodo. */
+    dates: string[];
   }>;
 }
 

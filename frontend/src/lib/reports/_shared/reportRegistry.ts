@@ -8,7 +8,7 @@
 // =====================================================
 
 import type { ReportCategory, ReportClubInfo } from './reportBase';
-import { finalizeReportOutput } from './pdfSigning';
+import { finalizeReportOutput, type ReportOutput } from './pdfSigning';
 import type { ClubSettings } from '@/services/clubSettingsService';
 import { reportsService } from '@/services/reportsService';
 import { getHabitualityDeclarationData } from '@/services/documentsService';
@@ -25,6 +25,7 @@ import { buildEquipmentInventoryPdf } from '../pdfEquipmentInventory';
 import { buildAmmoInPdf } from '../pdfAmmoIn';
 import { buildAmmoOutPdf } from '../pdfAmmoOut';
 import { buildShootersAmmoPdf } from '../pdfShootersAmmo';
+import { buildShootersAttendancePdf } from '../pdfShootersAttendance';
 import { buildAnnualPlanPdf } from '../pdfAnnualPlan';
 import { buildComplianceChecklistPdf } from '../pdfComplianceChecklist';
 import { buildDGAPdf } from '../declarations/pdfDGA';
@@ -71,7 +72,7 @@ export interface ReportConfig {
   isOfficial: boolean;
   legalRef?: string;
   filters: ReportFilter[];
-  generate: (filters: ReportFilterValues, club: ClubSettings) => Promise<{ filename: string; blobUrl: string; save: () => void }>;
+  generate: (filters: ReportFilterValues, club: ClubSettings) => Promise<ReportOutput>;
 }
 
 function clubToInfo(c: ClubSettings): ReportClubInfo {
@@ -409,6 +410,24 @@ export const REPORT_REGISTRY: ReportConfig[] = [
       const data = await reportsService.shootersAmmo(f.period.from, f.period.to);
       const pdf = await buildShootersAmmoPdf(data, clubToInfo(club));
       const filename = `atiradores-municoes-${f.period.from}-a-${f.period.to}.pdf`;
+      return finalizeReportOutput(pdf, filename);
+    },
+  },
+
+  {
+    id: 'shooters-attendance',
+    title: 'Relação de atiradores e atletas frequentadores',
+    description: 'Relação nominal no modelo do Exército: clube, CR do clube, atirador, CPF, CR, quantidade de tiros e datas em que frequentou o clube no período.',
+    category: 'ACERVO_MUNICOES',
+    isOfficial: true,
+    legalRef: 'Decreto 11.615/2023',
+    filters: [
+      { kind: 'period', key: 'period', label: 'Período', default: { from: startOfYearISO(), to: today() } },
+    ],
+    async generate(f, club) {
+      const data = await reportsService.shootersAmmo(f.period.from, f.period.to);
+      const pdf = await buildShootersAttendancePdf(data, clubToInfo(club));
+      const filename = `relacao-atiradores-${f.period.from}-a-${f.period.to}.pdf`;
       return finalizeReportOutput(pdf, filename);
     },
   },

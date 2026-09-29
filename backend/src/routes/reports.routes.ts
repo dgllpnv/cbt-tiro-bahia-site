@@ -498,12 +498,14 @@ router.get('/shooters-ammo', async (req: Request, res: Response): Promise<void> 
       },
     });
 
-    // Agrupa por membro
+    // Agrupa por membro. `dates` guarda os dias (YYYY-MM-DD) em que o atirador
+    // frequentou o clube — usado pela Relacao de Atiradores e Atletas.
     const byMember = new Map<string, {
       member: any;
       visits: number;
       calibers: Map<string, number>;
       totalShots: number;
+      dates: Set<string>;
     }>();
 
     for (const v of visits) {
@@ -514,10 +516,13 @@ router.get('/shooters-ammo', async (req: Request, res: Response): Promise<void> 
           visits: 0,
           calibers: new Map(),
           totalShots: 0,
+          dates: new Set(),
         });
       }
       const entry = byMember.get(key)!;
       entry.visits += 1;
+      // visitDate e @db.Date (meia-noite UTC): o dia do calendario e a parte ISO.
+      entry.dates.add(v.visitDate.toISOString().slice(0, 10));
       for (const d of v.details) {
         entry.totalShots += d.shotsFired;
         entry.calibers.set(d.caliber, (entry.calibers.get(d.caliber) ?? 0) + d.shotsFired);
@@ -530,6 +535,7 @@ router.get('/shooters-ammo', async (req: Request, res: Response): Promise<void> 
         visits: s.visits,
         totalShots: s.totalShots,
         calibers: Array.from(s.calibers.entries()).map(([caliber, shots]) => ({ caliber, shots })),
+        dates: Array.from(s.dates).sort(),
       }))
       .sort((a, b) => b.totalShots - a.totalShots);
 

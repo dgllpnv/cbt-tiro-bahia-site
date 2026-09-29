@@ -62,6 +62,7 @@ export interface ReportMeta {
   legalRefs?: string[];           // Ex: ["Decreto 11.615/2023, art. 11", "Portaria 166-COLOG/2023"]
   category: ReportCategory;
   isOfficial?: boolean;           // Default false. Se true, marca d'agua + selo
+  orientation?: 'portrait' | 'landscape'; // Default 'portrait'. Paisagem para tabelas largas
 }
 
 export interface PdfReportContext {
@@ -176,7 +177,7 @@ export async function startReport(
   meta: ReportMeta,
   club: ReportClubInfo,
 ): Promise<PdfReportContext> {
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pdf = new jsPDF({ orientation: meta.orientation ?? 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
