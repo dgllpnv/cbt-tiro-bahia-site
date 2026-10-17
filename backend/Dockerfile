@@ -30,9 +30,14 @@ COPY --from=deps /app/prisma ./prisma
 COPY . .
 
 EXPOSE 3002
+# /live nao consulta o banco: se o Postgres oscilar, o Docker nao mata
+# a API em cascata. O /health (com banco) fica para monitoramento externo.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:3002/health || exit 1
+  CMD curl -f http://localhost:3002/live || exit 1
 
 # tsx executa TS direto (sem compilar). Mesmo runtime do dev,
 # mas sem watch — ideal para producao.
-CMD ["npm", "run", "start:prod"]
+# Chama o tsx direto (equivale ao `npm run start:prod`), sem o npm no meio:
+# assim o SIGTERM chega na API, o encerramento gracioso roda e o codigo de
+# saida e o que a API define (143) — ver gracefulShutdown em src/index.ts.
+CMD ["./node_modules/.bin/tsx", "src/index.ts"]

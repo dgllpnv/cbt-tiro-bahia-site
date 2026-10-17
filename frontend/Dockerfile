@@ -31,6 +31,10 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copia o build estatico
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Wrapper que garante que o container volte sozinho apos reboot da VPS
+# (ver comentario dentro do script)
+COPY nginx-run.sh /nginx-run.sh
+
 EXPOSE 80
 
 # Sem HEALTHCHECK aqui — o EasyPanel define o proprio probe HTTP
@@ -38,4 +42,4 @@ EXPOSE 80
 # usando wget --spider pode falhar em alguns ambientes mesmo com
 # nginx funcionando, derrubando o container desnecessariamente.
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "/nginx-run.sh"]

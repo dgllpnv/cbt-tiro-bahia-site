@@ -106,6 +106,14 @@ if (process.env.NODE_ENV === 'development') {
 // HEALTH CHECK
 // =====================================================
 
+// Liveness: so diz se o processo esta de pe, SEM tocar no banco. Usado
+// pelo HEALTHCHECK do Dockerfile — se o banco oscilar, o Docker nao deve
+// matar o backend em cascata (reiniciar a API nao conserta o banco).
+app.get('/live', (_req, res) => {
+  res.json({ success: true, data: { status: 'alive', timestamp: new Date().toISOString() } });
+});
+
+// Readiness: confere o banco. Usado por monitoramento externo (UptimeRobot etc.).
 app.get('/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -194,7 +202,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 // START SERVER
 // =====================================================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n========================================`);
   console.log(`  CBT Backend - Clube Baiano de Tiro`);
   console.log(`  Servidor rodando na porta ${PORT}`);
@@ -212,12 +220,30 @@ app.listen(PORT, () => {
 // GRACEFUL SHUTDOWN
 // =====================================================
 
-const gracefulShutdown = async (signal: string) => {
+// Sai com codigo != 0 DE PROPOSITO (128 + numero do sinal). O EasyPanel
+// cria o servico com restart policy "on-failure": se sairmos com 0, o
+// Docker entende "terminou com sucesso" e NAO sobe o backend de novo
+// depois de um reboot/desligamento da VPS (foi o que derrubou o frontend
+// no incidente de 17/10/2026). Em deploy normal nada muda.
+const gracefulShutdown = async (signal: string, exitCode: number) => {
   console.log(`\n[SERVER] ${signal} recebido. Encerrando graciosamente...`);
+  server.close();
   await prisma.$disconnect();
   console.log('[SERVER] Conexao com banco de dados encerrada');
-  process.exit(0);
+  process.exit(exitCode);
 };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM', 143));
+process.on('SIGINT', () => gracefulShutdown('SIGINT', 130));
+
+// Rede de seguranca: promessa rejeitada sem tratamento so e registrada
+// (sem isso o Node 22 derruba o processo inteiro). Excecao nao capturada
+// deixa o processo em estado incerto — registra e sai com erro para o
+// Docker recriar o container limpo.
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Promise rejeitada sem tratamento:', reason);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Excecao nao capturada — reiniciando:', error);
+  process.exit(1);
+});
