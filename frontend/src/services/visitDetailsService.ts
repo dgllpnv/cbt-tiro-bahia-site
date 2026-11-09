@@ -4,12 +4,19 @@ import api from './api';
 
 export type AmmunitionType = 'RELOADED' | 'FACTORY';
 
+/** Origem da arma usada na linha de tiro: do acervo do associado (OWN) ou de terceiro. */
+export type FirearmOwnership = 'OWN' | 'THIRD_PARTY';
+
 export interface VisitDetailItem {
   id: string;
   visitId: string;
   memberId: string;
   caliber: string;
   firearmName: string | null;
+  firearmOwnership?: FirearmOwnership | null;
+  memberFirearmId?: string | null;
+  firearmSerial?: string | null;
+  firearmRegistrationId?: string | null;
   shotsFired: number;
   ammunitionType: AmmunitionType | null;
   notes: string | null;
@@ -24,6 +31,8 @@ export interface VisitDetailItem {
 export interface CreateVisitDetailData {
   caliber: string;
   firearmName?: string;
+  firearmOwnership?: FirearmOwnership | null;
+  memberFirearmId?: string | null;
   shotsFired: number;
   ammunitionType?: AmmunitionType | null;
   notes?: string;

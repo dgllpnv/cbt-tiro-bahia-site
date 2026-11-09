@@ -59,14 +59,28 @@ export async function generateMembershipCard(memberId: string) {
 
 // ── Pacote completo da Declaracao de Habitualidade (para gerar PDF no client) ──
 
+export interface HabitualityActivityLine {
+  firearmName: string | null;
+  firearmOwnership?: 'OWN' | 'THIRD_PARTY' | null;
+  firearmSerial?: string | null;
+  firearmRegistrationId?: string | null;
+  shotsFired: number | null;
+  ammunitionType: 'RELOADED' | 'FACTORY' | null;
+}
+
 export interface HabitualityActivity {
   date: string;
   activityType: 'TRAINING' | 'COMPETITION';
   modality: string;
   caliber: string;
   firearmName: string | null;
+  firearmOwnership?: 'OWN' | 'THIRD_PARTY' | null;
+  firearmSerial?: string | null;
+  firearmRegistrationId?: string | null;
   shotsFired: number | null;
   ammunitionType: 'RELOADED' | 'FACTORY' | null;
+  /** Linhas de mesmo calibre (quando houver); senao usar os campos escalares. */
+  details?: HabitualityActivityLine[];
   eventTitle: string | null;
   source: 'EVENT' | 'VISIT' | 'MANUAL';
   recordId: string;

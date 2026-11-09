@@ -6,6 +6,7 @@ import MemberSearch from '@/components/shared/MemberSearch';
 import EmptyState from '@/components/shared/EmptyState';
 import NewHabitualityDialog from '@/components/admin/NewHabitualityDialog';
 import EditHabitualityDialog from '@/components/admin/EditHabitualityDialog';
+import { OwnershipBadge } from '@/components/admin/FirearmOwnershipSelector';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -162,7 +163,11 @@ const HabitualityManualPage = () => {
                         {ACTIVITY_LABEL[r.activityType]}
                       </TableCell>
                       <TableCell className="text-foreground font-medium">{r.caliber}</TableCell>
-                      <TableCell className="text-foreground/85 text-sm">{r.firearmName ?? '—'}</TableCell>
+                      <TableCell className="text-foreground/85 text-sm"><span className="inline-flex items-center gap-2">
+                          {r.firearmName ?? '—'}
+                          <OwnershipBadge ownership={r.firearmOwnership} />
+                        </span>
+                      </TableCell>
                       <TableCell className="text-foreground/85 text-sm text-right">
                         {r.shotsFired != null ? r.shotsFired : '—'}
                       </TableCell>
@@ -212,6 +217,7 @@ const HabitualityManualPage = () => {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         record={editingRecord}
+        memberId={memberId}
         onSaved={fetchRecords}
       />
     </div>

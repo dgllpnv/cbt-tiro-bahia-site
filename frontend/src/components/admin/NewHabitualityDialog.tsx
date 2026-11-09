@@ -24,7 +24,9 @@ import {
   type FirearmCategory,
 } from '@/lib/firearmsCatalog';
 import { createManualSession } from '@/services/habitualityService';
-import type { AmmunitionType } from '@/services/visitDetailsService';
+import type { MemberFirearm } from '@/services/memberFirearmsService';
+import type { AmmunitionType, FirearmOwnership } from '@/services/visitDetailsService';
+import FirearmOwnershipSelector, { memberFirearmName } from '@/components/admin/FirearmOwnershipSelector';
 
 // =====================================================
 // NewHabitualityDialog — modal de lancamento retroativo de habitualidade
@@ -58,6 +60,8 @@ interface DetailLine {
   otherCaliber: string;
   shotsFired: string;
   ammunitionType: AmmunitionType | null;
+  firearmOwnership: FirearmOwnership | null;
+  memberFirearmId: string | null;
 }
 
 function newLine(): DetailLine {
@@ -70,6 +74,8 @@ function newLine(): DetailLine {
     otherCaliber: '',
     shotsFired: '',
     ammunitionType: null,
+    firearmOwnership: null,
+    memberFirearmId: null,
   };
 }
 
@@ -124,6 +130,25 @@ const NewHabitualityDialog = ({ open, onOpenChange, memberId, memberName, onCrea
       ...(entry ? { caliber: entry.defaultCaliber, otherCaliber: '' } : {}),
     });
   };
+  const handleOwnershipChange = (lineId: string, next: FirearmOwnership | null) => {
+    // Trocar a origem desfaz qualquer vinculo com o acervo.
+    updateLine(lineId, { firearmOwnership: next, memberFirearmId: null });
+  };
+  const handlePickMemberFirearm = (lineId: string, f: MemberFirearm | null) => {
+    if (!f) {
+      updateLine(lineId, { memberFirearmId: null });
+      return;
+    }
+    const cal = f.caliber?.trim() ?? '';
+    const common = COMMON_CALIBERS.includes(cal);
+    updateLine(lineId, {
+      memberFirearmId: f.id,
+      firearmCategory: f.category,
+      firearmName: 'OTHER',
+      otherFirearmName: memberFirearmName(f),
+      ...(cal ? { caliber: common ? cal : 'OTHER', otherCaliber: common ? '' : cal } : {}),
+    });
+  };
   const handlePickCategory = (lineId: string, cat: FirearmCategory) => {
     updateLine(lineId, { firearmCategory: cat, firearmName: '' });
   };
@@ -143,6 +168,8 @@ const NewHabitualityDialog = ({ open, onOpenChange, memberId, memberName, onCrea
       details: lines.map((l) => ({
         caliber: resolveCaliber(l),
         firearmName: resolveFirearm(l) || undefined,
+        firearmOwnership: l.firearmOwnership,
+        memberFirearmId: l.firearmOwnership === 'OWN' ? l.memberFirearmId : null,
         shotsFired: parseInt(l.shotsFired, 10),
         ammunitionType: l.ammunitionType,
       })),
@@ -262,6 +289,16 @@ const NewHabitualityDialog = ({ open, onOpenChange, memberId, memberName, onCrea
                   )}
                 </div>
 
+                <FirearmOwnershipSelector
+                  memberId={memberId}
+                  ownership={line.firearmOwnership}
+                  memberFirearmId={line.memberFirearmId}
+                  onOwnershipChange={(o) => handleOwnershipChange(line.id, o)}
+                  onPickMemberFirearm={(f) => handlePickMemberFirearm(line.id, f)}
+                />
+
+                {!line.memberFirearmId && (
+                <>
                 {/* Categoria de arma */}
                 <div className="space-y-2">
                   <Label className="text-foreground/85 font-tactical text-xs">Categoria de arma</Label>
@@ -330,7 +367,20 @@ const NewHabitualityDialog = ({ open, onOpenChange, memberId, memberName, onCrea
                   )}
                 </div>
 
+                </>
+                )}
+
                 {/* Calibre */}
+                {line.memberFirearmId && resolveCaliber(line) ? (
+                  <div className="space-y-2">
+                    <Label className="text-foreground/85 font-tactical text-xs">Calibre * (da arma cadastrada)</Label>
+                    <Input
+                      readOnly
+                      value={resolveCaliber(line)}
+                      className="bg-muted border-input text-foreground font-tactical opacity-80"
+                    />
+                  </div>
+                ) : (
                 <div className="space-y-2">
                   <Label className="text-foreground/85 font-tactical text-xs">Calibre *</Label>
                   <div className="flex flex-wrap gap-2">
@@ -370,6 +420,7 @@ const NewHabitualityDialog = ({ open, onOpenChange, memberId, memberName, onCrea
                     />
                   )}
                 </div>
+                )}
 
                 {/* Tipo de municao + Quantidade */}
                 <div className="grid sm:grid-cols-2 gap-4">

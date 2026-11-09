@@ -20,7 +20,9 @@ import {
   type ActivityType,
   type HabitualityRecord,
 } from '@/services/habitualityService';
-import type { AmmunitionType } from '@/services/visitDetailsService';
+import type { MemberFirearm } from '@/services/memberFirearmsService';
+import type { AmmunitionType, FirearmOwnership } from '@/services/visitDetailsService';
+import FirearmOwnershipSelector, { memberFirearmName } from '@/components/admin/FirearmOwnershipSelector';
 
 // =====================================================
 // EditHabitualityDialog — edita um registro ja lancado: calibre, data,
@@ -32,6 +34,7 @@ interface EditHabitualityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   record: HabitualityRecord | null;
+  memberId: string;
   onSaved: () => void;
 }
 
@@ -43,11 +46,13 @@ interface FormState {
   firearmName: string;
   shotsFired: string;
   ammunitionType: AmmunitionType | null;
+  firearmOwnership: FirearmOwnership | null;
+  memberFirearmId: string | null;
 }
 
 const inputCls = 'bg-muted border-input text-foreground font-tactical';
 
-const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabitualityDialogProps) => {
+const EditHabitualityDialog = ({ open, onOpenChange, record, memberId, onSaved }: EditHabitualityDialogProps) => {
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>({
     caliber: '',
@@ -57,6 +62,8 @@ const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabi
     firearmName: '',
     shotsFired: '',
     ammunitionType: null,
+    firearmOwnership: null,
+    memberFirearmId: null,
   });
   const [saving, setSaving] = useState(false);
 
@@ -70,9 +77,25 @@ const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabi
         firearmName: record.firearmName ?? '',
         shotsFired: record.shotsFired != null ? String(record.shotsFired) : '',
         ammunitionType: record.ammunitionType ?? null,
+        firearmOwnership: record.firearmOwnership ?? null,
+        memberFirearmId: record.memberFirearmId ?? null,
       });
     }
   }, [record]);
+
+  const linked = form.firearmOwnership === 'OWN' && !!form.memberFirearmId;
+  const handlePickMemberFirearm = (f: MemberFirearm | null) => {
+    if (!f) {
+      setForm((p) => ({ ...p, memberFirearmId: null }));
+      return;
+    }
+    setForm((p) => ({
+      ...p,
+      memberFirearmId: f.id,
+      firearmName: memberFirearmName(f),
+      caliber: f.caliber?.trim() || p.caliber,
+    }));
+  };
 
   const hasVisitDetail = !!record?.visitDetailId;
 
@@ -102,6 +125,8 @@ const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabi
             firearmName: form.firearmName.trim() || null,
             shotsFired: parseInt(form.shotsFired, 10),
             ammunitionType: form.ammunitionType,
+            firearmOwnership: form.firearmOwnership,
+            memberFirearmId: form.firearmOwnership === 'OWN' ? form.memberFirearmId : null,
           }
         : {}),
     });
@@ -127,6 +152,7 @@ const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabi
             <Label className="font-tactical text-xs text-muted-foreground/90">Calibre</Label>
             <Input
               value={form.caliber}
+              readOnly={linked}
               onChange={(e) => setForm({ ...form, caliber: e.target.value })}
               placeholder="Ex: 9mm"
               className={`mt-1 ${inputCls}`}
@@ -168,11 +194,22 @@ const EditHabitualityDialog = ({ open, onOpenChange, record, onSaved }: EditHabi
           {hasVisitDetail ? (
             <>
               <div className="col-span-2">
+                <FirearmOwnershipSelector
+                  memberId={memberId}
+                  ownership={form.firearmOwnership}
+                  memberFirearmId={form.memberFirearmId}
+                  fallbackLabel={record?.firearmName ?? undefined}
+                  onOwnershipChange={(o) => setForm({ ...form, firearmOwnership: o, memberFirearmId: null })}
+                  onPickMemberFirearm={handlePickMemberFirearm}
+                />
+              </div>
+              <div className="col-span-2">
                 <Label className="font-tactical text-xs text-muted-foreground/90">
                   Arma <span className="text-muted-foreground/70">(opcional)</span>
                 </Label>
                 <Input
                   value={form.firearmName}
+                  readOnly={linked}
                   onChange={(e) => setForm({ ...form, firearmName: e.target.value })}
                   placeholder="Ex: Glock G17"
                   className={`mt-1 ${inputCls}`}

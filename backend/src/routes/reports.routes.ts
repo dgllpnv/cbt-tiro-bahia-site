@@ -278,7 +278,7 @@ router.get('/habituality-book', async (req: Request, res: Response): Promise<voi
         visit: {
           select: {
             id: true, visitDate: true, checkInTime: true,
-            details: { select: { caliber: true, firearmName: true, shotsFired: true, ammunitionType: true } },
+            details: { select: { caliber: true, firearmName: true, shotsFired: true, ammunitionType: true, firearmOwnership: true, firearmSerial: true, firearmRegistrationId: true, memberFirearmId: true } },
           },
         },
       },

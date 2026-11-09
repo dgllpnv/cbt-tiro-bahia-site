@@ -1,11 +1,13 @@
 import api from './api';
-import type { AmmunitionType } from './visitDetailsService';
+import type { AmmunitionType, FirearmOwnership } from './visitDetailsService';
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
 
 export interface ManualSessionDetail {
   caliber: string;
   firearmName?: string;
+  firearmOwnership?: FirearmOwnership | null;
+  memberFirearmId?: string | null;
   shotsFired: number;
   ammunitionType?: AmmunitionType | null;
 }
@@ -37,6 +39,10 @@ export interface HabitualityRecord {
   verifiedBy?: { id: string; fullName: string } | null;
   /** Enriquecido pelo backend a partir do VisitDetail casado por calibre — mesmo dado que sai na Declaração de Habitualidade. */
   firearmName?: string | null;
+  firearmOwnership?: FirearmOwnership | null;
+  memberFirearmId?: string | null;
+  firearmSerial?: string | null;
+  firearmRegistrationId?: string | null;
   shotsFired?: number | null;
   ammunitionType?: AmmunitionType | null;
   /** Id da linha do VisitDetail casada (para reenviar no PUT e editar arma/tiros/munição). Null se o registro não tem visita vinculada. */
@@ -51,6 +57,8 @@ export interface UpdateHabitualityPayload {
   /** Repassa o mesmo id vindo em HabitualityRecord.visitDetailId — so envie quando o registro tiver visita vinculada. */
   visitDetailId?: string | null;
   firearmName?: string | null;
+  firearmOwnership?: FirearmOwnership | null;
+  memberFirearmId?: string | null;
   shotsFired?: number | null;
   ammunitionType?: AmmunitionType | null;
 }

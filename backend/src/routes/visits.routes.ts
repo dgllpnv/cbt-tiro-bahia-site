@@ -168,7 +168,7 @@ router.get('/today', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: 
         },
         details: {
           orderBy: { createdAt: 'desc' },
-          select: { id: true, caliber: true, shotsFired: true, notes: true, createdAt: true },
+          select: { id: true, caliber: true, firearmName: true, shotsFired: true, ammunitionType: true, firearmOwnership: true, firearmSerial: true, firearmRegistrationId: true, memberFirearmId: true, notes: true, createdAt: true },
         },
       },
     });

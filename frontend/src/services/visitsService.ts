@@ -53,6 +53,8 @@ export interface Visit {
     id: string;
     caliber: string;
     firearmName?: string | null;
+    firearmOwnership?: 'OWN' | 'THIRD_PARTY' | null;
+    memberFirearmId?: string | null;
     shotsFired: number;
     notes: string | null;
     createdAt: string;

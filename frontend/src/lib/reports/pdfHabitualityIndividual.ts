@@ -24,6 +24,28 @@ import {
 } from './_shared/reportBase';
 import type { HabitualityDeclarationPacket } from '@/services/documentsService';
 import { ammunitionTypeLabels } from '@/lib/constants';
+import { firearmCellTextMany } from './_shared/firearmLabel';
+import type { HabitualityActivity } from '@/services/documentsService';
+
+// Linhas de arma da atividade: `details` (mesmo calibre) se existir, senao escalares.
+function activityLines(a: HabitualityActivity) {
+  return a.details && a.details.length > 0 ? a.details : [a];
+}
+
+// Uma linha de tabela por linha de arma (mesmo calibre): evita desalinhar
+// Munição/Tipo mun. quando o nome da arma quebra em varias linhas.
+function activityRows(a: HabitualityActivity, idx: number): string[][] {
+  return activityLines(a).map((l, i) => [
+    i === 0 ? String(idx + 1) : '',
+    fmtDate(a.date),
+    a.activityType === 'COMPETITION' ? 'Competição' : 'Treinamento',
+    a.modality,
+    a.caliber,
+    firearmCellTextMany([l]),
+    l.shotsFired != null ? String(l.shotsFired) : '—',
+    l.ammunitionType ? ammunitionTypeLabels[l.ammunitionType] : '—',
+  ]);
+}
 
 export async function buildHabitualityIndividualPdf(
   packet: HabitualityDeclarationPacket,
@@ -90,16 +112,7 @@ export async function buildHabitualityIndividualPdf(
   addSectionTitle(ctx, 'Atividades registradas');
 
   const tableBody = packet.activities.length
-    ? packet.activities.map((a, idx) => [
-        String(idx + 1),
-        fmtDate(a.date),
-        a.activityType === 'COMPETITION' ? 'Competição' : 'Treinamento',
-        a.modality,
-        a.caliber,
-        a.firearmName ?? '—',
-        a.shotsFired != null ? String(a.shotsFired) : '—',
-        a.ammunitionType ? ammunitionTypeLabels[a.ammunitionType] : '—',
-      ])
+    ? packet.activities.flatMap(activityRows)
     : [['—', '—', '—', 'Nenhuma atividade registrada no período', '—', '—', '—', '—']];
 
   // Coluna "Tipo mun." adicionada apos "Municao" (Portaria 260-COLOG/2025
@@ -109,15 +122,16 @@ export async function buildHabitualityIndividualPdf(
     [['#', 'Data', 'Tipo', 'Modalidade', 'Calibre', 'Arma', 'Munição', 'Tipo mun.']],
     tableBody,
     {
+      rowPageBreak: 'avoid',
       columnStyles: {
         0: { cellWidth: 8, halign: 'center' },
         1: { cellWidth: 20 },
-        2: { cellWidth: 20 },
-        3: { cellWidth: 32 },
+        2: { cellWidth: 23 },
+        3: { cellWidth: 22 },
         4: { cellWidth: 18 },
-        5: { cellWidth: 32 },
-        6: { cellWidth: 15, halign: 'right' },
-        7: { cellWidth: 22, halign: 'center' },
+        5: { cellWidth: 40 },
+        6: { cellWidth: 19, halign: 'right' },
+        7: { cellWidth: 21, halign: 'center' },
       },
     },
   );
@@ -199,16 +213,7 @@ export async function buildHabitualityIndividualPdf(
 // atividades + totais por calibre + linha de totais do ano.
 function addYearActivities(ctx: Awaited<ReturnType<typeof startReport>>, packet: HabitualityDeclarationPacket): void {
   const tableBody = packet.activities.length
-    ? packet.activities.map((a, idx) => [
-        String(idx + 1),
-        fmtDate(a.date),
-        a.activityType === 'COMPETITION' ? 'Competição' : 'Treinamento',
-        a.modality,
-        a.caliber,
-        a.firearmName ?? '—',
-        a.shotsFired != null ? String(a.shotsFired) : '—',
-        a.ammunitionType ? ammunitionTypeLabels[a.ammunitionType] : '—',
-      ])
+    ? packet.activities.flatMap(activityRows)
     : [['—', '—', '—', 'Nenhuma atividade registrada no ano', '—', '—', '—', '—']];
 
   addAutoTable(
@@ -216,15 +221,16 @@ function addYearActivities(ctx: Awaited<ReturnType<typeof startReport>>, packet:
     [['#', 'Data', 'Tipo', 'Modalidade', 'Calibre', 'Arma', 'Munição', 'Tipo mun.']],
     tableBody,
     {
+      rowPageBreak: 'avoid',
       columnStyles: {
         0: { cellWidth: 8, halign: 'center' },
         1: { cellWidth: 20 },
-        2: { cellWidth: 20 },
-        3: { cellWidth: 32 },
+        2: { cellWidth: 23 },
+        3: { cellWidth: 22 },
         4: { cellWidth: 18 },
-        5: { cellWidth: 32 },
-        6: { cellWidth: 15, halign: 'right' },
-        7: { cellWidth: 22, halign: 'center' },
+        5: { cellWidth: 40 },
+        6: { cellWidth: 19, halign: 'right' },
+        7: { cellWidth: 21, halign: 'center' },
       },
     },
   );

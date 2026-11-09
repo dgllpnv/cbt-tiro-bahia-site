@@ -10,6 +10,7 @@ import {
 } from './_shared/reportBase';
 import type { HabitualityBookReport } from '@/services/reportsService';
 import { ammunitionTypeShortLabels } from '@/lib/constants';
+import { firearmCellTextMany } from './_shared/firearmLabel';
 
 const ACTIVITY_LABEL: Record<string, string> = {
   TRAINING: 'Treinamento',
@@ -48,37 +49,45 @@ export async function buildHabitualityBookPdf(
       [
         ['#', 'Data', 'Atirador / CPF', 'CR / Nível', 'Calibre', 'Arma', 'Tiros', 'Mun.', 'Tipo', 'Verif. por'],
       ],
-      payload.records.map((r, idx) => {
-        // Casa o detail pelo calibre (mesma logica do documents.routes).
-        // Fallback no [0] preserva comportamento antigo se nao houver match.
-        const detail =
-          r.visit?.details?.find((d) => d.caliber === r.caliber) ?? r.visit?.details?.[0];
+      payload.records.flatMap((r, idx) => {
+        // Linhas do mesmo calibre (todas); fallback no [0] preserva comportamento antigo.
+        const all = r.visit?.details ?? [];
+        const same = all.filter((d) => d.caliber === r.caliber);
+        const lines = same.length > 0 ? same : all.slice(0, 1);
         const cr = [r.member.cr, r.member.crLevel ? `N${r.member.crLevel}` : null]
           .filter(Boolean)
           .join(' · ') || '—';
-        return [
-          String(idx + 1),
+        // Uma linha de tabela por linha de arma (mesmo calibre), mantendo
+        // Tiros/Mun. alinhados com a arma mesmo quando o nome quebra de linha.
+        const rowsOf = lines.length ? lines : [null];
+        return rowsOf.map((d, i) => [
+          i === 0 ? String(idx + 1) : '',
           fmtDate(r.activityDate),
-          `${r.member.fullName}\n${fmtCpf(r.member.cpf)}`,
+          `${r.member.fullName}
+${fmtCpf(r.member.cpf)}`,
           cr,
           r.caliber,
-          detail?.firearmName ?? '—',
-          detail?.shotsFired != null ? String(detail.shotsFired) : '—',
-          detail?.ammunitionType ? ammunitionTypeShortLabels[detail.ammunitionType] : '—',
+          d ? firearmCellTextMany([d]) : '—',
+          d?.shotsFired != null ? String(d.shotsFired) : '—',
+          d?.ammunitionType ? ammunitionTypeShortLabels[d.ammunitionType] : '—',
           ACTIVITY_LABEL[r.activityType] ?? r.activityType,
           r.verifiedBy?.fullName ?? '—',
-        ];
+        ]);
       }),
       {
+        rowPageBreak: 'avoid',
         styles: { fontSize: 7.5, cellPadding: 1.4 },
         columnStyles: {
           0: { cellWidth: 8, halign: 'center' },
-          1: { cellWidth: 18 },
-          3: { cellWidth: 22 },
-          4: { cellWidth: 18 },
-          6: { cellWidth: 12, halign: 'center' },
-          7: { cellWidth: 12, halign: 'center' },
-          8: { cellWidth: 22 },
+          1: { cellWidth: 17 },
+          2: { cellWidth: 27 },
+          3: { cellWidth: 18 },
+          4: { cellWidth: 14 },
+          5: { cellWidth: 26 },
+          6: { cellWidth: 11, halign: 'center' },
+          7: { cellWidth: 11, halign: 'center' },
+          8: { cellWidth: 20 },
+          9: { cellWidth: 22 },
         },
       },
     );

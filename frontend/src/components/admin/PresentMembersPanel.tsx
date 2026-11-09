@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { OwnershipBadge } from '@/components/admin/FirearmOwnershipSelector';
 import ShotEntryDialog from '@/components/admin/ShotEntryDialog';
 import OpenTabDialog from '@/components/admin/OpenTabDialog';
 import CloseTabDialog from '@/components/admin/CloseTabDialog';
@@ -316,6 +317,7 @@ const PresentCard = ({
                   <Icon className="h-3 w-3" style={{ color: iconColor }} />
                   <span className="text-foreground">{d.caliber}</span>
                   <span className="text-cbt-orange">{d.shotsFired}</span>
+                  <OwnershipBadge ownership={d.firearmOwnership} />
                 </span>
               );
             })}
@@ -404,7 +406,7 @@ const PresentMembersPanel = () => {
   );
 
   // ShotEntryDialog state
-  const [shotDialog, setShotDialog] = useState<{ visitId: string; memberName: string; activityType: 'TRAINING' | 'COMPETITION' | null } | null>(null);
+  const [shotDialog, setShotDialog] = useState<{ visitId: string; memberId: string; memberName: string; activityType: 'TRAINING' | 'COMPETITION' | null } | null>(null);
 
   // Checkout prompt state (sem tiros + sem comanda)
   const [checkoutPrompt, setCheckoutPrompt] = useState<Visit | null>(null);
@@ -769,7 +771,7 @@ const PresentMembersPanel = () => {
               }
               onNewSale={handleNewSale}
               onRegisterShot={(visit) =>
-                setShotDialog({ visitId: visit.id, memberName: visit.member.fullName, activityType: visit.activityType })
+                setShotDialog({ visitId: visit.id, memberId: visit.member.id, memberName: visit.member.fullName, activityType: visit.activityType })
               }
               onIssueLoan={handleIssueLoan}
               onReturnLoan={handleReturnLoan}
@@ -782,6 +784,7 @@ const PresentMembersPanel = () => {
       {/* Shot entry dialog */}
       <ShotEntryDialog
         visitId={shotDialog?.visitId ?? null}
+        memberId={shotDialog?.memberId ?? ''}
         memberName={shotDialog?.memberName ?? ''}
         initialActivityType={shotDialog?.activityType ?? null}
         open={!!shotDialog}
@@ -818,6 +821,7 @@ const PresentMembersPanel = () => {
                 if (checkoutPrompt) {
                   setShotDialog({
                     visitId: checkoutPrompt.id,
+                    memberId: checkoutPrompt.member.id,
                     memberName: checkoutPrompt.member.fullName,
                     activityType: checkoutPrompt.activityType,
                   });

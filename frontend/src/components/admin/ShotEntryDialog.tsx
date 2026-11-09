@@ -21,8 +21,11 @@ import {
   deleteVisitDetail,
   listVisitDetails,
   type AmmunitionType,
+  type FirearmOwnership,
   type VisitDetailItem,
 } from '@/services/visitDetailsService';
+import type { MemberFirearm } from '@/services/memberFirearmsService';
+import FirearmOwnershipSelector, { OwnershipBadge, memberFirearmName } from '@/components/admin/FirearmOwnershipSelector';
 import { updateVisit } from '@/services/visitsService';
 
 type ActivityType = 'TRAINING' | 'COMPETITION';
@@ -54,6 +57,7 @@ const QUICK_QTY = [10, 25, 50, 100];
 
 interface ShotEntryDialogProps {
   visitId: string | null;
+  memberId: string;
   memberName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -65,7 +69,7 @@ interface ShotEntryDialogProps {
 
 const FIREARM_CAT_KEYS: FirearmCategory[] = ['PISTOL', 'REVOLVER', 'RIFLE', 'SHOTGUN'];
 
-const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, initialActivityType }: ShotEntryDialogProps) => {
+const ShotEntryDialog = ({ visitId, memberId, memberName, open, onOpenChange, onSaved, initialActivityType }: ShotEntryDialogProps) => {
   const { toast } = useToast();
 
   // Existing details
@@ -85,6 +89,8 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
   const [otherCaliber, setOtherCaliber] = useState('');
   const [shotsFired, setShotsFired] = useState('');
   const [ammunitionType, setAmmunitionType] = useState<AmmunitionType | null>(null);
+  const [firearmOwnership, setFirearmOwnership] = useState<FirearmOwnership | null>(null);
+  const [memberFirearmId, setMemberFirearmId] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [touchedAny, setTouchedAny] = useState(false);
@@ -100,6 +106,8 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
       setShotsFired('');
       setAmmunitionType(null);
       setNotes('');
+      setFirearmOwnership(null);
+      setMemberFirearmId(null);
       setTouchedAny(false);
       // Pre-seleciona o tipo de atividade a partir do valor ja gravado na
       // visita; sem valor, cai em treino (default de habitualidade).
@@ -156,6 +164,27 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
   };
 
   // When category changes, clear firearm
+  const handleOwnershipChange = (next: FirearmOwnership | null) => {
+    setFirearmOwnership(next);
+    setMemberFirearmId(null);
+  };
+  const handlePickMemberFirearm = (f: MemberFirearm | null) => {
+    if (!f) {
+      setMemberFirearmId(null);
+      return;
+    }
+    const cal = f.caliber?.trim() ?? '';
+    const common = COMMON_CALIBERS.includes(cal);
+    setMemberFirearmId(f.id);
+    setFirearmCategory(f.category);
+    setFirearmName('OTHER');
+    setOtherFirearmName(memberFirearmName(f));
+    if (cal) {
+      setCaliber(common ? cal : 'OTHER');
+      setOtherCaliber(common ? '' : cal);
+    }
+  };
+
   const handlePickCategory = (cat: FirearmCategory) => {
     setFirearmCategory(cat);
     setFirearmName('');
@@ -172,6 +201,8 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
     const result = await createVisitDetail(visitId, {
       caliber: finalCaliber,
       firearmName: finalFirearm || undefined,
+      firearmOwnership,
+      memberFirearmId: firearmOwnership === 'OWN' ? memberFirearmId : null,
       shotsFired: shotsNum,
       ammunitionType,
       notes: notes.trim() || undefined,
@@ -292,7 +323,8 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
                     <div className="min-w-0 flex-1 text-xs font-tactical">
                       <span className="text-foreground">
                         {d.firearmName || 'Arma não informada'}
-                      </span>
+                      </span>{' '}
+                      <OwnershipBadge ownership={d.firearmOwnership} />
                       <span className="text-muted-foreground/80"> · {d.caliber} · </span>
                       <span className="text-cbt-orange font-semibold">{d.shotsFired} disparos</span>
                       {d.notes && <span className="text-muted-foreground/80"> · {d.notes}</span>}
@@ -318,6 +350,16 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
             Adicionar novo tiro
           </p>
 
+          <FirearmOwnershipSelector
+            memberId={memberId}
+            ownership={firearmOwnership}
+            memberFirearmId={memberFirearmId}
+            onOwnershipChange={handleOwnershipChange}
+            onPickMemberFirearm={handlePickMemberFirearm}
+          />
+
+          {!memberFirearmId && (
+          <>
           {/* Firearm category */}
           <div className="space-y-2">
             <Label className="text-foreground/85 font-tactical text-sm">Categoria de arma</Label>
@@ -388,7 +430,20 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
             )}
           </div>
 
+          </>
+          )}
+
           {/* Caliber */}
+          {memberFirearmId && finalCaliber ? (
+            <div className="space-y-2">
+              <Label className="text-foreground/85 font-tactical text-sm">Calibre * (da arma cadastrada)</Label>
+              <Input
+                readOnly
+                value={finalCaliber}
+                className="bg-muted border-input text-foreground font-tactical opacity-80"
+              />
+            </div>
+          ) : (
           <div className="space-y-2">
             <Label className="text-foreground/85 font-tactical text-sm">Calibre *</Label>
             <div className="flex flex-wrap gap-2">
@@ -428,6 +483,7 @@ const ShotEntryDialog = ({ visitId, memberName, open, onOpenChange, onSaved, ini
               />
             )}
           </div>
+          )}
 
           {/* Ammunition type (recarregada vs original) — opcional */}
           <div className="space-y-2">

@@ -4,6 +4,12 @@ import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 import { createAuditLog } from '../services/auditService.js';
 import { startOfYearUtc, endOfYearUtc } from '../lib/dateOnly.js';
+import {
+  firearmOwnershipSchema,
+  memberFirearmIdSchema,
+  resolveFirearmFields,
+  FIREARM_DETAIL_SELECT,
+} from '../lib/firearmOwnership.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -41,7 +47,7 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
           select: {
             id: true,
             visitDate: true,
-            details: { select: { id: true, caliber: true, firearmName: true, shotsFired: true, ammunitionType: true } },
+            details: { select: FIREARM_DETAIL_SELECT },
           },
         },
         verifiedBy: { select: { id: true, fullName: true } },
@@ -55,13 +61,20 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
     // sem precisar re-casar por calibre (evita ambiguidade se houver duas linhas
     // do mesmo calibre na mesma visita).
     const data = records.map((r) => {
-      const detail = r.visit?.details.find((d) => d.caliber === r.caliber);
+      const matching = r.visit?.details.filter((d) => d.caliber === r.caliber) ?? [];
+      const detail = matching[0];
       return {
         ...r,
         visitDetailId: detail?.id ?? null,
         firearmName: detail?.firearmName ?? null,
         shotsFired: detail?.shotsFired ?? null,
         ammunitionType: detail?.ammunitionType ?? null,
+        firearmOwnership: detail?.firearmOwnership ?? null,
+        firearmSerial: detail?.firearmSerial ?? null,
+        firearmRegistrationId: detail?.firearmRegistrationId ?? null,
+        memberFirearmId: detail?.memberFirearmId ?? null,
+        // Todas as linhas de tiro do mesmo calibre na visita (escalares acima = primeira).
+        details: matching,
       };
     });
 
@@ -166,6 +179,8 @@ const manualDetailSchema = z.object({
   firearmName: z.string().max(100).optional(),
   shotsFired: z.number().int().min(1, 'Minimo 1 tiro por linha'),
   ammunitionType: z.enum(['RELOADED', 'FACTORY']).nullable().optional(),
+  firearmOwnership: firearmOwnershipSchema,
+  memberFirearmId: memberFirearmIdSchema,
 });
 
 const manualSessionSchema = z.object({
@@ -210,6 +225,17 @@ router.post('/manual', requireRole('ADMIN', 'CASHIER'), async (req: Request, res
     const marker = `[MANUAL] Lancamento retroativo por ${adminName} em ${todayIso}` +
       (data.notes ? ` — ${data.notes}` : '');
 
+    // Resolve arma propria/terceiro de cada linha (valida posse no servidor).
+    const resolvedDetails: Array<{ d: (typeof data.details)[number]; f: Record<string, any> }> = [];
+    for (const d of data.details) {
+      const r = await resolveFirearmFields(data.memberId, d);
+      if (!r.ok) {
+        res.status(400).json({ success: false, error: r.error });
+        return;
+      }
+      resolvedDetails.push({ d, f: r.fields });
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       // Visit fantasma — checkInTime = activityDate 12:00 (meio-dia) como
       // representacao convencional. checkOutTime fica null (nao houve sessao
@@ -234,19 +260,20 @@ router.post('/manual', requireRole('ADMIN', 'CASHIER'), async (req: Request, res
 
       // VisitDetails — 1 por linha do form
       await tx.visitDetail.createMany({
-        data: data.details.map((d) => ({
+        data: resolvedDetails.map(({ d, f }) => ({
           visitId: visit.id,
           memberId: data.memberId,
           caliber: d.caliber,
           firearmName: d.firearmName?.trim() || null,
           shotsFired: d.shotsFired,
           ammunitionType: d.ammunitionType ?? null,
+          ...f,
         })),
       });
 
       // HabitualityRecord — 1 por calibre unico. activityType vem do form.
       // description marca origem manual (aparece no portal e nos PDFs).
-      const uniqueCalibers = Array.from(new Set(data.details.map((d) => d.caliber)));
+      const uniqueCalibers = Array.from(new Set(resolvedDetails.map(({ d, f }) => (f.caliber as string | undefined) ?? d.caliber)));
       await tx.habitualityRecord.createMany({
         data: uniqueCalibers.map((caliber) => ({
           clubId: member.clubId,
@@ -299,6 +326,8 @@ const updateSchema = z.object({
   firearmName: z.string().max(100).nullable().optional(),
   shotsFired: z.number().int().min(1, 'Minimo 1 tiro').nullable().optional(),
   ammunitionType: z.enum(['RELOADED', 'FACTORY']).nullable().optional(),
+  firearmOwnership: firearmOwnershipSchema,
+  memberFirearmId: memberFirearmIdSchema,
 });
 
 router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Response): Promise<void> => {
@@ -336,11 +365,26 @@ router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Re
       }
     }
 
+    let firearmFields: Record<string, any> = {};
+    if (visitDetail) {
+      const r = await resolveFirearmFields(existing.memberId, {
+        firearmOwnership: data.firearmOwnership,
+        memberFirearmId: data.memberFirearmId,
+        firearmName: data.firearmName,
+      });
+      if (!r.ok) {
+        res.status(400).json({ success: false, error: r.error });
+        return;
+      }
+      firearmFields = r.fields;
+    }
+    const finalCaliber: string = firearmFields.caliber ?? data.caliber;
+
     const [updated] = await prisma.$transaction([
       prisma.habitualityRecord.update({
         where: { id: existing.id },
         data: {
-          caliber: data.caliber,
+          caliber: finalCaliber,
           activityDate,
           activityType: data.activityType,
           description: data.description ?? null,
@@ -351,10 +395,11 @@ router.put('/:id', requireRole('ADMIN', 'CASHIER'), async (req: Request, res: Re
             prisma.visitDetail.update({
               where: { id: visitDetail.id },
               data: {
-                caliber: data.caliber,
+                caliber: finalCaliber,
                 firearmName: data.firearmName?.trim() || null,
                 ...(data.shotsFired != null ? { shotsFired: data.shotsFired } : {}),
                 ammunitionType: data.ammunitionType ?? null,
+                ...firearmFields,
               },
             }),
           ]

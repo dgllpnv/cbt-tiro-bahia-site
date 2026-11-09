@@ -277,6 +277,8 @@ model MemberFirearm {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  visitDetails     VisitDetail[] @relation("VisitDetailFirearm")
+
   @@index([memberId])
   @@index([clubId])
 }
@@ -388,12 +390,23 @@ model VisitDetail {
   // Aparece na Declaracao de Habitualidade (coluna apos "Municao"=tiros) e
   // no Livro de Habitualidade. Whitelist validada no Zod do backend.
   ammunitionType String?
+  // Propriedade da arma usada na linha: 'OWN' (propria do atirador, vinda do
+  // acervo MemberFirearm) ou 'THIRD_PARTY' (terceiro/clube). Opcional —
+  // registros antigos ficam null ("nao informado"). Whitelist no Zod.
+  firearmOwnership     String?
+  memberFirearmId      String?
+  memberFirearm        MemberFirearm? @relation("VisitDetailFirearm", fields: [memberFirearmId], references: [id], onDelete: SetNull)
+  // Snapshot do acervo no momento do lancamento: o documento e historico e
+  // nao pode mudar se a arma do acervo for editada/apagada depois.
+  firearmSerial         String?
+  firearmRegistrationId String?
   notes       String?  @db.Text
   createdAt   DateTime @default(now())
 
   @@index([visitId])
   @@index([memberId])
   @@index([firearmName])
+  @@index([memberFirearmId])
 }
 
 model Product {

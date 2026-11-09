@@ -201,7 +201,7 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
             select: {
               id: true,
               visitDate: true,
-              details: { select: { caliber: true, firearmName: true, shotsFired: true, ammunitionType: true } },
+              details: { select: { caliber: true, firearmName: true, shotsFired: true, ammunitionType: true, firearmOwnership: true, firearmSerial: true, firearmRegistrationId: true } },
             },
           },
         },
@@ -226,6 +226,17 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
       firearmName: string | null;
       shotsFired: number | null;
       ammunitionType: string | null;
+      firearmOwnership: string | null;
+      firearmSerial: string | null;
+      firearmRegistrationId: string | null;
+      lines: Array<{
+        firearmName: string | null;
+        shotsFired: number | null;
+        ammunitionType: string | null;
+        firearmOwnership: string | null;
+        firearmSerial: string | null;
+        firearmRegistrationId: string | null;
+      }>;
       eventTitle: string | null;
       source: 'EVENT' | 'VISIT' | 'MANUAL';
       recordId: string;
@@ -233,7 +244,8 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
 
     const activities: ActivityRow[] = records.map((r) => {
       // Best-effort: dentre os details da visita, casar pelo calibre.
-      const detail = r.visit?.details.find((d) => d.caliber === r.caliber);
+      const matching = r.visit?.details.filter((d) => d.caliber === r.caliber) ?? [];
+      const detail = matching[0];
       const source: ActivityRow['source'] = r.eventId ? 'EVENT' : r.visitId ? 'VISIT' : 'MANUAL';
       return {
         date: r.activityDate,
@@ -243,6 +255,17 @@ router.get('/declaration/habituality/:memberId', async (req: Request, res: Respo
         firearmName: detail?.firearmName ?? null,
         shotsFired: detail?.shotsFired ?? null,
         ammunitionType: detail?.ammunitionType ?? null,
+        firearmOwnership: detail?.firearmOwnership ?? null,
+        firearmSerial: detail?.firearmSerial ?? null,
+        firearmRegistrationId: detail?.firearmRegistrationId ?? null,
+        lines: matching.map((d) => ({
+          firearmName: d.firearmName ?? null,
+          shotsFired: d.shotsFired ?? null,
+          ammunitionType: d.ammunitionType ?? null,
+          firearmOwnership: d.firearmOwnership ?? null,
+          firearmSerial: d.firearmSerial ?? null,
+          firearmRegistrationId: d.firearmRegistrationId ?? null,
+        })),
         eventTitle: r.event?.title ?? null,
         source,
         recordId: r.id,

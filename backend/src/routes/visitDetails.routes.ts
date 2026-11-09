@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
+import { firearmOwnershipSchema, memberFirearmIdSchema, resolveFirearmFields } from '../lib/firearmOwnership.js';
 
 const router = Router();
 
@@ -22,6 +23,8 @@ const createVisitDetailSchema = z.object({
   firearmName: z.string().max(100).optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1'),
   ammunitionType: ammunitionTypeSchema,
+  firearmOwnership: firearmOwnershipSchema,
+  memberFirearmId: memberFirearmIdSchema,
   notes: z.string().optional(),
 });
 
@@ -30,6 +33,8 @@ const updateVisitDetailSchema = z.object({
   firearmName: z.string().max(100).nullable().optional(),
   shotsFired: z.number().int().min(1, 'Quantidade de tiros deve ser no minimo 1').optional(),
   ammunitionType: ammunitionTypeSchema,
+  firearmOwnership: firearmOwnershipSchema,
+  memberFirearmId: memberFirearmIdSchema,
   notes: z.string().nullable().optional(),
 });
 
@@ -115,15 +120,23 @@ router.post('/visit/:visitId', async (req: Request, res: Response): Promise<void
 
     const data = validation.data;
 
+    const resolved = await resolveFirearmFields(visit.memberId, data);
+    if (!resolved.ok) {
+      res.status(400).json({ success: false, error: resolved.error });
+      return;
+    }
+    const { caliber: resolvedCaliber, ...firearmFields } = resolved.fields;
+
     const detail = await prisma.visitDetail.create({
       data: {
         visitId,
         memberId: visit.memberId,
-        caliber: data.caliber,
+        caliber: resolvedCaliber ?? data.caliber,
         firearmName: data.firearmName?.trim() || null,
         shotsFired: data.shotsFired,
         ammunitionType: data.ammunitionType ?? null,
         notes: data.notes || null,
+        ...firearmFields,
       },
       include: {
         member: {
@@ -177,11 +190,21 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const data = validation.data;
+    const { firearmOwnership, memberFirearmId, ...rest } = validation.data;
+
+    const resolved = await resolveFirearmFields(existing.visit.memberId, {
+      firearmOwnership,
+      memberFirearmId,
+      firearmName: rest.firearmName ?? existing.firearmName,
+    });
+    if (!resolved.ok) {
+      res.status(400).json({ success: false, error: resolved.error });
+      return;
+    }
 
     const detail = await prisma.visitDetail.update({
       where: { id },
-      data,
+      data: { ...rest, ...resolved.fields },
       include: {
         member: {
           select: { id: true, fullName: true, memberNumber: true },
