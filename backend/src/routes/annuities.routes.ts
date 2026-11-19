@@ -112,14 +112,14 @@ router.get('/expiring', requireRole('ADMIN', 'CASHIER'), async (req: Request, re
 });
 
 // =====================================================
-// GET /api/annuities/member/:memberId — Annuity history (ADMIN or self)
+// GET /api/annuities/member/:memberId — Annuity history (ADMIN, CASHIER or self)
 // =====================================================
 router.get('/member/:memberId', async (req: Request, res: Response): Promise<void> => {
   try {
     const { memberId } = req.params;
 
-    // ADMIN or the member themselves
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    // ADMIN, CASHIER ou o proprio associado
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Acesso negado. Permissao insuficiente' });
       return;
     }

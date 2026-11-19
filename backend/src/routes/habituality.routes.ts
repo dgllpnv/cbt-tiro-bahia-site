@@ -19,8 +19,8 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
   try {
     const memberId = req.params.id;
 
-    // ASSOCIATE can only see own, ADMIN can see any
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    // ASSOCIATE so ve o proprio; ADMIN e CASHIER veem qualquer um
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }
@@ -90,7 +90,7 @@ router.get('/member/:id/summary', async (req: Request, res: Response): Promise<v
   try {
     const memberId = req.params.id;
 
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }

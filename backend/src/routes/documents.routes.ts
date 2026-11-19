@@ -16,7 +16,7 @@ router.use(authMiddleware);
 router.get('/member/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const memberId = req.params.id;
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }
@@ -39,12 +39,12 @@ router.get('/member/:id', async (req: Request, res: Response): Promise<void> => 
 // GET /api/documents/declaration/filiation/:memberId
 // Pacote { member, club } (mesmo shape de /api/reports/declaration-data) para o
 // associado — ou admin — gerar a Declaracao de Filiacao no cliente
-// (buildFiliacaoPdf). Permissao: ADMIN ou self. O reports/declaration-data e
+// (buildFiliacaoPdf). Permissao: ADMIN, CASHIER ou self. O reports/declaration-data e
 // admin-only, por isso o associado precisa deste endpoint self-acessivel.
 router.get('/declaration/filiation/:memberId', async (req: Request, res: Response): Promise<void> => {
   try {
     const memberId = req.params.memberId;
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }
@@ -152,12 +152,12 @@ router.post('/generate/membership-card/:memberId', async (req: Request, res: Res
 // GET /api/documents/declaration/habituality/:memberId?year=YYYY
 // Retorna pacote completo para renderizar a Declaracao de Habitualidade
 // (Anexo E da Portaria 166-COLOG/2023, alterada pela 260-COLOG/2025).
-// Permissao: ADMIN ou self.
+// Permissao: ADMIN, CASHIER ou self.
 // =====================================================
 router.get('/declaration/habituality/:memberId', async (req: Request, res: Response): Promise<void> => {
   try {
     const memberId = req.params.memberId;
-    if (req.user?.role !== 'ADMIN' && req.user?.id !== memberId) {
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'CASHIER' && req.user?.id !== memberId) {
       res.status(403).json({ success: false, error: 'Permissao negada' });
       return;
     }
